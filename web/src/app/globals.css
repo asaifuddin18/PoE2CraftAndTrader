@@ -1,0 +1,46 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=JetBrains+Mono&display=swap');
+@import "tailwindcss";
+
+:root {
+  --bg-base: #0E0F13;
+  --bg-surface: #16181F;
+  --bg-elevated: #1E2029;
+  --border: #2A2D3A;
+  --text-primary: #E8E9EE;
+  --text-secondary: #8B8FA8;
+  --text-disabled: #4A4D5E;
+  --accent: #7B68EE;
+  --accent-hover: #9B8FFF;
+  --status-positive: #4ADE80;
+  --status-warning: #FBBF24;
+  --status-negative: #F87171;
+  --status-info: #60A5FA;
+}
+
+@theme inline {
+  --color-bg-base: var(--bg-base);
+  --color-bg-surface: var(--bg-surface);
+  --color-bg-elevated: var(--bg-elevated);
+  --color-border: var(--border);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-disabled: var(--text-disabled);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-status-positive: var(--status-positive);
+  --color-status-warning: var(--status-warning);
+  --color-status-negative: var(--status-negative);
+  --color-status-info: var(--status-info);
+  --font-sans: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+}
