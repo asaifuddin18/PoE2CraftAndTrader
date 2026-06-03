@@ -10,17 +10,20 @@ Output: data/parsed/mods_coe.json
 
 Output schema — flat list, one entry per (mod × base item type × tier):
 {
-  "modId":       str,   # craftofexile internal id e.g. "5042"
-  "name":        str,   # human-readable name e.g. "+# to maximum Life"
-  "affix":       str,   # "prefix" or "suffix"
-  "groups":      [str], # exclusivity groups (at most one mod per group per item)
-  "baseId":      str,   # craftofexile base item id e.g. "1"
-  "baseName":    str,   # human-readable e.g. "Ring"
-  "baseGroup":   str,   # item category e.g. "Jewellery"
-  "tier":        int,   # 1 = best (highest ilvl requirement), ascending
-  "requiredLevel": int, # min item level for this tier to roll
-  "weight":      int,   # spawn weight (0 = cannot roll naturally)
-  "values":      [[float, float]], # stat value ranges [[min, max], ...] per stat
+  "modId":         str,        # craftofexile internal id e.g. "5046"
+  "name":          str,        # display name e.g. "Adds # to # Fire damage to Attacks"
+  "affix":         str,        # "prefix" or "suffix"
+  "modgroups":     [str],      # family names e.g. ["FireDamage"] — used by essence targeting
+  "tags":          [str],      # decoded mtype names e.g. ["Damage","Elemental","Fire","Attack"]
+  "tagIds":        [str],      # raw mtype IDs e.g. ["33","20","6","3"]
+  "isHybrid":      bool,       # true if mod has two stats (e.g. local armour + life)
+  "baseId":        str,        # craftofexile base id e.g. "1"
+  "baseName":      str,        # e.g. "Ring"
+  "baseGroup":     str,        # item category e.g. "Jewellery"
+  "tier":          int,        # 1 = best (highest ilvl req), ascending
+  "requiredLevel": int,        # min item level for this tier to roll
+  "weight":        int,        # spawn weight per tier (0 = cannot roll naturally)
+  "values":        [...],      # stat value ranges — each element is [min, max] or a scalar
 }
 """
 
@@ -44,8 +47,16 @@ CRAFTABLE_BGROUPS = {
     "8": "Offhands",
 }
 
-# Only extract regular crafting mods
 CRAFTABLE_AFFIXES = {"prefix", "suffix"}
+
+
+def parse_mtypes(mtypes_str: str | None, mtype_lookup: dict) -> tuple[list[str], list[str]]:
+    """Parse pipe-delimited mtype IDs into (tag_names, tag_ids)."""
+    if not mtypes_str:
+        return [], []
+    ids = [x for x in mtypes_str.strip("|").split("|") if x]
+    names = [mtype_lookup.get(i, {}).get("name_mtype", i) for i in ids]
+    return names, ids
 
 
 def main() -> None:
@@ -63,9 +74,10 @@ def main() -> None:
     data = json.loads(raw)
 
     # Build lookups
-    mods_by_id   = {m["id_modifier"]: m for m in data["modifiers"]["seq"]}
+    mods_by_id    = {m["id_modifier"]: m for m in data["modifiers"]["seq"]}
     bgroups_by_id = {bg["id_bgroup"]: bg for bg in data["bgroups"]["seq"]}
-    bases_by_id  = {b["id_base"]: b for b in data["bases"]["seq"]}
+    bases_by_id   = {b["id_base"]: b for b in data["bases"]["seq"]}
+    mtype_by_id   = {mt["id_mtype"]: mt for mt in data["mtypes"]["seq"]}
 
     results: list[dict] = []
     skipped_no_tiers = 0
@@ -90,24 +102,23 @@ def main() -> None:
                 skipped_non_craft += 1
                 continue
 
-            # Get tier data for this mod on this base
             tier_list = data["tiers"].get(mod_id, {}).get(base_id, [])
             if not tier_list:
                 skipped_no_tiers += 1
                 continue
 
-            # Parse exclusivity groups
             try:
-                groups = json.loads(mod["modgroups"]) if mod.get("modgroups") else []
+                modgroups = json.loads(mod["modgroups"]) if mod.get("modgroups") else []
             except (json.JSONDecodeError, TypeError):
-                groups = []
+                modgroups = []
 
-            # Sort tiers by ilvl descending (T1 = highest ilvl = best)
+            tag_names, tag_ids = parse_mtypes(mod.get("mtypes"), mtype_by_id)
+
             sorted_tiers = sorted(tier_list, key=lambda t: -int(t["ilvl"]))
 
             for tier_index, tier in enumerate(sorted_tiers, start=1):
                 try:
-                    values = json.loads(tier["nvalues"])
+                    values = json.loads(tier["nvalues"]) if tier.get("nvalues") else []
                 except (json.JSONDecodeError, TypeError):
                     values = []
 
@@ -115,7 +126,10 @@ def main() -> None:
                     "modId":         mod_id,
                     "name":          mod["name_modifier"],
                     "affix":         mod["affix"],
-                    "groups":        groups,
+                    "modgroups":     modgroups,
+                    "tags":          tag_names,
+                    "tagIds":        tag_ids,
+                    "isHybrid":      mod.get("hybrid") == "1",
                     "baseId":        base_id,
                     "baseName":      base_name,
                     "baseGroup":     group_name,
@@ -129,14 +143,20 @@ def main() -> None:
     print(f"Skipped {skipped_non_craft} non-craftable affix entries", file=sys.stderr)
     print(f"Skipped {skipped_no_tiers} mods with no tier data for that base", file=sys.stderr)
 
-    # Sanity check: ring max life
-    ring_life = [r for r in results
-                 if r["baseId"] == "1" and "+# to maximum Life" in r["name"]]
-    print(f"\n--- Ring +# to maximum Life (sanity check) ---", file=sys.stderr)
-    for r in ring_life:
-        print(f"  T{r['tier']} ilvl={r['requiredLevel']:3d}  w={r['weight']}  values={r['values']}", file=sys.stderr)
+    # Sanity check: ring fire damage mod — should have Damage, Elemental, Fire, Attack tags
+    fire = next((r for r in results
+                 if r["baseId"] == "1" and "Fire damage to Attacks" in r["name"] and r["tier"] == 1), None)
+    if fire:
+        print(f"\n--- Ring fire damage T1 (sanity check) ---", file=sys.stderr)
+        print(f"  name:      {fire['name']}", file=sys.stderr)
+        print(f"  modgroups: {fire['modgroups']}", file=sys.stderr)
+        print(f"  tags:      {fire['tags']}", file=sys.stderr)
+        print(f"  tagIds:    {fire['tagIds']}", file=sys.stderr)
+        print(f"  isHybrid:  {fire['isHybrid']}", file=sys.stderr)
+        print(f"  weight:    {fire['weight']}", file=sys.stderr)
+        print(f"  values:    {fire['values']}", file=sys.stderr)
 
-    # Summary by base group
+    # Summary
     from collections import Counter
     by_group = Counter(r["baseGroup"] for r in results)
     print(f"\n--- Entries by item group ---", file=sys.stderr)
