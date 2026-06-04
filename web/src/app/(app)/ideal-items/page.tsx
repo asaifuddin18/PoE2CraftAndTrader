@@ -44,9 +44,9 @@ export interface TargetMod {
   modId:     string;
   label:     string;
   affix:     "prefix" | "suffix";
-  tier:      number;        // selected tier (1 = best)
+  tier:      number;        // target tier (1 = best)
   tierRange: [number, number] | null; // value range for selected tier
-  minRoll:   number | "";   // optional: minimum within the tier range
+  minTier:   number | "";   // lowest acceptable tier (e.g. 3 = T1/T2/T3 all ok)
   required:  boolean;
 }
 
@@ -180,7 +180,7 @@ function ModDropdown({ baseId, ilvl, selected, onSelect, disabledAffixes, select
       affix:     mod.affix,
       tier:      1,
       tierRange: best ? getTierRange(best) : null,
-      minRoll:   "",
+      minTier:   "",
       required:  true,
     });
     setQ("");
@@ -248,12 +248,12 @@ function ModDropdown({ baseId, ilvl, selected, onSelect, disabledAffixes, select
 
 // ── Tier selector ─────────────────────────────────────────────────────────────
 
-function TierSelector({ mod, baseId, ilvl, onChangeTier, onChangeMinRoll, onChangeRequired }: {
+function TierSelector({ mod, baseId, ilvl, onChangeTier, onChangeMinTier, onChangeRequired }: {
   mod:              TargetMod;
   baseId:           string;
   ilvl:             number;
   onChangeTier:     (tier: number, range: [number, number] | null) => void;
-  onChangeMinRoll:  (v: number | "") => void;
+  onChangeMinTier:  (v: number | "") => void;
   onChangeRequired: (v: boolean) => void;
 }) {
   const [tiers, setTiers] = useState<ModTier[]>([]);
@@ -302,13 +302,24 @@ function TierSelector({ mod, baseId, ilvl, onChangeTier, onChangeMinRoll, onChan
         </div>
       )}
 
-      {/* Optional min roll within tier */}
-      <div>
-        <label style={lbl}>Min roll (optional)</label>
-        <input type="number" placeholder="any" value={mod.minRoll}
-          onChange={e => onChangeMinRoll(e.target.value === "" ? "" : Number(e.target.value))}
-          style={{ ...sel, width: 70, textAlign: "center" as const }} />
-      </div>
+      {/* Min tier: lowest acceptable tier (e.g. T3 means T1/T2/T3 all ok) */}
+      {tiers.length > 1 && (
+        <div>
+          <label style={lbl}>Min tier</label>
+          <select
+            value={mod.minTier === "" ? "" : mod.minTier}
+            onChange={e => onChangeMinTier(e.target.value === "" ? "" : Number(e.target.value))}
+            style={sel}
+          >
+            <option value="">same as target</option>
+            {tiers.filter(t => t.tier >= mod.tier).map(t => (
+              <option key={t.tier} value={t.tier}>
+                T{t.tier} — {fmtVal(getTierRange(t) ?? t.values[0] as number)}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {/* Required toggle */}
       <label className="flex items-center gap-1.5 cursor-pointer" style={{ marginTop: 14 }}>
@@ -377,7 +388,7 @@ function EditorModal({ initial, onSave, onClose }: {
     if (form.targetMods.length >= 6) return;
     setForm(f => ({
       ...f,
-      targetMods: [...f.targetMods, { statId: null, modId: "", label: "", affix: "prefix", tier: 1, tierRange: null, minRoll: "", required: true }],
+      targetMods: [...f.targetMods, { statId: null, modId: "", label: "", affix: "prefix", tier: 1, tierRange: null, minTier: "", required: true }],
     }));
   }
 
@@ -513,8 +524,9 @@ function EditorModal({ initial, onSave, onClose }: {
                       onChangeTier={(tier, tierRange) => {
                         updMod(i, "tier", tier);
                         updMod(i, "tierRange", tierRange);
+                        updMod(i, "minTier", ""); // reset min tier when target changes
                       }}
-                      onChangeMinRoll={v => updMod(i, "minRoll", v)}
+                      onChangeMinTier={v => updMod(i, "minTier", v)}
                       onChangeRequired={v => updMod(i, "required", v)}
                     />
                   )}
@@ -581,7 +593,7 @@ function IdealItemCard({ item, onEdit, onDelete }: {
                 <p className="text-xs shrink-0" style={{ color: "var(--text-secondary)" }}>
                   T{mod.tier}
                   {mod.tierRange && ` [${fmtVal(mod.tierRange)}]`}
-                  {mod.minRoll !== "" && ` ≥${mod.minRoll}`}
+                  {mod.minTier !== "" && mod.minTier !== mod.tier && `–T${mod.minTier}`}
                 </p>
               </div>
             ))}
