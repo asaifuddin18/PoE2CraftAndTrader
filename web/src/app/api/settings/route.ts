@@ -17,10 +17,11 @@ export async function GET() {
   const item = await dbGet(userPK(session.user!.email!), PROFILE_SK);
 
   return NextResponse.json({
-    poeLeague:   item?.poeLeague ?? "Runes of Aldur",
-    displayName: session.user?.name,
-    email:       session.user?.email,
-    avatarUrl:   session.user?.image,
+    poeLeague:      item?.poeLeague      ?? "Runes of Aldur",
+    poeAccountName: item?.poeAccountName ?? "",
+    displayName:    session.user?.name,
+    email:          session.user?.email,
+    avatarUrl:      session.user?.image,
   });
 }
 
@@ -39,7 +40,10 @@ export async function PUT(req: NextRequest) {
     email:       userId,
     displayName: session.user?.name,
     avatarUrl:   session.user?.image,
-    poeLeague:   body.poeLeague ?? existing.poeLeague ?? "Runes of Aldur",
+    poeLeague:      body.poeLeague      ?? existing.poeLeague      ?? "Runes of Aldur",
+    poeAccountName: body.poeAccountName !== undefined
+      ? body.poeAccountName
+      : (existing.poeAccountName ?? ""),
     updatedAt:   new Date().toISOString(),
   });
 

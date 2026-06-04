@@ -9,13 +9,15 @@ const LEAGUES = ["Runes of Aldur", "HC Runes of Aldur", "Standard", "Hardcore"];
 
 export default function SettingsPage() {
   const [profile, setProfile] = useState<{
-    poeLeague: string;
+    poeLeague:      string;
+    poeAccountName: string;
     displayName?: string | null;
     email?: string | null;
     avatarUrl?: string | null;
   } | null>(null);
 
-  const [league, setLeague] = useState("Runes of Aldur");
+  const [league, setLeague]             = useState("Runes of Aldur");
+  const [poeAccountName, setPoeAccountName] = useState("");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [bridgeActive, setBridgeActive] = useState(false);
@@ -33,6 +35,7 @@ export default function SettingsPage() {
       .then(d => {
         setProfile(d);
         setLeague(d.poeLeague ?? "Runes of Aldur");
+        setPoeAccountName(d.poeAccountName ?? "");
       });
   }, []);
 
@@ -42,7 +45,7 @@ export default function SettingsPage() {
     await fetch("/api/settings", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ poeLeague: league }),
+      body: JSON.stringify({ poeLeague: league, poeAccountName }),
     });
     setSaving(false);
     setSaved(true);
@@ -155,6 +158,20 @@ export default function SettingsPage() {
         <h2 className="text-sm font-semibold mb-4" style={{ color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
           Path of Exile
         </h2>
+        <div className="mb-4">
+          <label style={label}>GGG Account Name</label>
+          <input
+            type="text"
+            placeholder="Your Path of Exile account name"
+            value={poeAccountName}
+            onChange={e => setPoeAccountName(e.target.value)}
+            style={inputStyle}
+          />
+          <p className="mt-1.5 text-xs" style={{ color: "var(--text-disabled)" }}>
+            Used to display your active listings. Find it on pathofexile.com → your profile.
+          </p>
+        </div>
+
         <label style={label}>Active League</label>
         <select value={league} onChange={e => setLeague(e.target.value)} style={inputStyle}>
           {LEAGUES.map(l => <option key={l} value={l}>{l}</option>)}
