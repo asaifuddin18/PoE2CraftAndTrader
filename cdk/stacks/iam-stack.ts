@@ -23,11 +23,13 @@ export class IamStack extends cdk.Stack {
 
     // ── GitHub Actions OIDC ──────────────────────────────────────────────────
 
-    const githubOidc = new iam.OpenIdConnectProvider(this, "GitHubOidc", {
-      url: "https://token.actions.githubusercontent.com",
-      clientIds: ["sts.amazonaws.com"],
-      thumbprints: ["6938fd4d98bab03faadb97b34396831e3780aea1"],
-    });
+    // GitHub OIDC provider already exists in this account (created by CookBook).
+    // Import it rather than creating a new one — one provider per account per URL.
+    const githubOidc = iam.OpenIdConnectProvider.fromOpenIdConnectProviderArn(
+      this,
+      "GitHubOidc",
+      `arn:aws:iam::${account}:oidc-provider/token.actions.githubusercontent.com`,
+    );
 
     const githubDeployRole = new iam.Role(this, "GitHubActionsDeployRole", {
       roleName: `poe2-github-deploy-${env_name}`,

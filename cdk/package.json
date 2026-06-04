@@ -10,6 +10,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@aws-sdk/client-iam": "^3.1061.0",
     "aws-cdk-lib": "^2.257.0",
     "constructs": "^10.6.0",
     "source-map-support": "^0.5.21"
