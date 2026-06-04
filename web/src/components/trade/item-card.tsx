@@ -260,7 +260,7 @@ export function ItemCard({ listing, bookmarked, onBookmark, onUnbookmark }: Prop
         {/* Action buttons */}
         <div className="flex gap-1.5">
           {info.account.online ? (
-            /* Seller is online → Buy Now (travel to hideout) */
+            /* Seller is online → In Person trade, visit their hideout */
             <button
               onClick={copyHideout}
               className="flex-1 text-xs py-1.5 rounded border cursor-pointer font-semibold transition-colors"
@@ -269,12 +269,12 @@ export function ItemCard({ listing, bookmarked, onBookmark, onUnbookmark }: Prop
                 borderColor: copiedHideout ? "var(--status-positive)" : "var(--accent)",
                 color: "#fff",
               }}
-              title="Copy hideout whisper — paste in game to visit seller"
+              title="Copy /hideout whisper — paste in game, seller will invite you"
             >
-              {copiedHideout ? "✓ Copied" : "🏠 Buy Now"}
+              {copiedHideout ? "✓ Copied" : "🏠 Visit Hideout"}
             </button>
           ) : (
-            /* Seller is offline → Whisper to send message */
+            /* Seller offline / Instant Buyout — whisper triggers automatic trade */
             <button
               onClick={copyWhisper}
               className="flex-1 text-xs py-1.5 rounded border cursor-pointer font-semibold"
@@ -283,9 +283,17 @@ export function ItemCard({ listing, bookmarked, onBookmark, onUnbookmark }: Prop
                 borderColor: "var(--border)",
                 color: copied ? "#fff" : "var(--text-secondary)",
               }}
-              title="Copy whisper — paste in game to message seller"
+              title={
+                info.price.type === "~price"
+                  ? "Instant Buyout — whisper triggers automatic trade"
+                  : "Copy whisper — paste in game to buy"
+              }
             >
-              {copied ? "✓ Copied" : "💬 Send Message"}
+              {copied
+                ? "✓ Copied"
+                : info.price.type === "~price"
+                  ? "⚡ Instant Buy"
+                  : "💬 Whisper"}
             </button>
           )}
           <button
