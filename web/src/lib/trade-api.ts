@@ -1,8 +1,7 @@
 const BASE_URL = "https://www.pathofexile.com/api/trade2";
 const REALM = "poe2";
 
-function gggHeaders(): Record<string, string> {
-  const league = process.env.POE_LEAGUE ?? "Runes of Aldur";
+function gggHeaders(poeSessionId: string, league: string): Record<string, string> {
   return {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
     "Accept": "*/*",
@@ -11,8 +10,18 @@ function gggHeaders(): Record<string, string> {
     "Origin": "https://www.pathofexile.com",
     "Referer": `https://www.pathofexile.com/trade2/search/${REALM}/${encodeURIComponent(league)}`,
     "X-Requested-With": "XMLHttpRequest",
-    "Cookie": `POESESSID=${process.env.POE_SESSION_ID}`,
+    "Cookie": `POESESSID=${poeSessionId}`,
   };
+}
+
+/** Look up the calling user's POESESSID and league from DynamoDB. */
+export async function getUserTradeConfig(userEmail: string): Promise<{ poeSessionId: string; league: string }> {
+  const { dbGet, userPK } = await import("./db");
+  const profile = await dbGet(userPK(userEmail), "PROFILE");
+  const poeSessionId = profile?.poeSessionId ?? process.env.POE_SESSION_ID ?? "";
+  const league = profile?.poeLeague ?? process.env.POE_LEAGUE ?? "Runes of Aldur";
+  if (!poeSessionId) throw new Error("No GGG session configured. Add your POESESSID in Settings.");
+  return { poeSessionId, league };
 }
 
 export interface SearchResult {
@@ -66,13 +75,12 @@ export interface ModDetail {
   magnitudes: { hash: string; min: string; max: string }[];
 }
 
-export async function tradeSearch(query: object): Promise<SearchResult> {
-  const league = process.env.POE_LEAGUE ?? "Runes of Aldur";
+export async function tradeSearch(query: object, poeSessionId: string, league: string): Promise<SearchResult> {
   const url = `${BASE_URL}/search/${REALM}/${encodeURIComponent(league)}`;
 
   const res = await fetch(url, {
     method: "POST",
-    headers: gggHeaders(),
+    headers: gggHeaders(poeSessionId, league),
     body: JSON.stringify(query),
   });
 
@@ -85,12 +93,14 @@ export async function tradeSearch(query: object): Promise<SearchResult> {
 
 export async function tradeFetch(
   listingIds: string[],
-  queryId: string
+  queryId: string,
+  poeSessionId: string,
+  league: string,
 ): Promise<FetchResult> {
   const ids = listingIds.slice(0, 10).join(",");
   const url = `${BASE_URL}/fetch/${ids}?query=${queryId}&realm=${REALM}`;
 
-  const res = await fetch(url, { headers: gggHeaders() });
+  const res = await fetch(url, { headers: gggHeaders(poeSessionId, league) });
 
   if (!res.ok) {
     const body = await res.text();
