@@ -27,14 +27,15 @@ function parsePropValue(val: string): { min: number; max: number } | null {
 
 interface WeaponStats {
   phys: number; elem: number; total: number;
-  aps: number; crit: string;
+  aps: number; crit: string; reloadTime?: string;
 }
 
 function calcWeaponStats(properties: ListingRaw["item"]["properties"], typeLine?: string): WeaponStats | null {
   if (!properties?.length) return null;
 
+  // Property names have the same [key|display] markup as mods — strip it before comparing
   const get = (name: string) =>
-    properties.find(p => p.name === name)?.values?.[0]?.[0] as string | undefined;
+    properties.find(p => parseMod(p.name) === name)?.values?.[0]?.[0] as string | undefined;
 
   // Debug: log all property names and values for weapons
   if (process.env.NODE_ENV === "development" || typeof window !== "undefined") {
@@ -68,14 +69,16 @@ function calcWeaponStats(properties: ListingRaw["item"]["properties"], typeLine?
 
   if (physDps === 0 && elemDps === 0) return null;
 
-  const critStr = get("Critical Hit Chance") ?? get("Critical Strike Chance") ?? "";
+  const critStr       = get("Critical Hit Chance") ?? get("Critical Strike Chance") ?? "";
+  const reloadTimeStr = get("Reload Time");
 
   return {
-    phys:  Math.round(physDps * 10) / 10,
-    elem:  Math.round(elemDps * 10) / 10,
-    total: Math.round((physDps + elemDps) * 10) / 10,
-    aps:   Math.round(apsVal * 100) / 100,
-    crit:  critStr,
+    phys:       Math.round(physDps * 10) / 10,
+    elem:       Math.round(elemDps * 10) / 10,
+    total:      Math.round((physDps + elemDps) * 10) / 10,
+    aps:        Math.round(apsVal * 100) / 100,
+    crit:       critStr,
+    reloadTime: reloadTimeStr,
   };
 }
 
@@ -210,6 +213,7 @@ export function ItemCard({ listing, bookmarked, onBookmark, onUnbookmark }: Prop
           {weaponStats.phys > 0 && <span><span style={{ color: "var(--text-disabled)" }}>Phys DPS </span>{weaponStats.phys}</span>}
           {weaponStats.crit && <span><span style={{ color: "var(--text-disabled)" }}>Crit </span>{weaponStats.crit}</span>}
           {weaponStats.elem > 0 && <span><span style={{ color: "var(--text-disabled)" }}>Elem DPS </span>{weaponStats.elem}</span>}
+          {weaponStats.reloadTime && <span><span style={{ color: "var(--text-disabled)" }}>Reload </span>{weaponStats.reloadTime}s</span>}
         </div>
       )}
 
