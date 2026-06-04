@@ -16,11 +16,12 @@ export async function GET() {
   const items = await dbQuery(userPK(session.user!.email!), "QUERY#");
   const queries = items
     .map(item => ({
-      queryId:   item.queryId,
-      name:      item.name,
-      gggQuery:  item.gggQuery,
-      createdAt: item.createdAt,
-      lastRunAt: item.lastRunAt ?? null,
+      queryId:    item.queryId,
+      name:       item.name,
+      gggQuery:   item.gggQuery,
+      queryState: item.queryState ?? null,
+      createdAt:  item.createdAt,
+      lastRunAt:  item.lastRunAt ?? null,
     }))
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
@@ -31,7 +32,7 @@ export async function POST(req: NextRequest) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { name, gggQuery } = await req.json();
+  const { name, gggQuery, queryState } = await req.json();
   if (!name?.trim()) return NextResponse.json({ error: "name required" }, { status: 400 });
   if (!gggQuery)      return NextResponse.json({ error: "gggQuery required" }, { status: 400 });
 
@@ -39,12 +40,13 @@ export async function POST(req: NextRequest) {
   const userId  = session.user!.email!;
 
   await dbPut({
-    PK:        userPK(userId),
-    SK:        querySK(queryId),
+    PK:         userPK(userId),
+    SK:         querySK(queryId),
     queryId,
-    name:      name.trim(),
+    name:       name.trim(),
     gggQuery,
-    createdAt: new Date().toISOString(),
+    queryState: queryState ?? null,
+    createdAt:  new Date().toISOString(),
   });
 
   return NextResponse.json({ queryId });

@@ -1,18 +1,15 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import { QueryBuilder } from "@/components/trade/query-builder";
+import { QueryBuilder, type QueryState } from "@/components/trade/query-builder";
 import { ItemCard } from "@/components/trade/item-card";
 import { isBridgeReady, bridgeSearch, bridgeFetch } from "@/lib/trade-bridge";
 import type { ListingRaw } from "@/lib/trade-api";
 
 const DEFAULT_LEAGUE = "Runes of Aldur";
+const PENDING_KEY    = "poe2:pending-query";
 
 export default function TradePage() {
-  const searchParams  = useSearchParams();
-  const router        = useRouter();
-
   const [loading, setLoading]           = useState(false);
   const [error, setError]               = useState<string | null>(null);
   const [listings, setListings]         = useState<ListingRaw[]>([]);
@@ -23,13 +20,31 @@ export default function TradePage() {
   const [loadingMore, setLoadingMore]   = useState(false);
   const [bridgeActive, setBridgeActive] = useState(false);
 
-  // Save query modal state
-  const [lastGGGQuery, setLastGGGQuery] = useState<object | null>(null);
-  const [saveOpen, setSaveOpen]         = useState(false);
-  const [saveName, setSaveName]         = useState("");
-  const [saving, setSaving]             = useState(false);
-  const [savedMsg, setSavedMsg]         = useState("");
+  // Saved query state
+  const [lastGGGQuery, setLastGGGQuery]     = useState<object | null>(null);
+  const [lastQueryState, setLastQueryState] = useState<QueryState | null>(null);
+  const [saveOpen, setSaveOpen]             = useState(false);
+  const [saveName, setSaveName]             = useState("");
+  const [saving, setSaving]                 = useState(false);
+  const [savedMsg, setSavedMsg]             = useState("");
 
+  // Pending query from /queries page (set via sessionStorage)
+  const [pendingQuery, setPendingQuery] = useState<{ gggQuery: object; queryState: QueryState } | null>(null);
+  const [formState, setFormState]       = useState<QueryState | null>(null);
+
+  // Read pending query from sessionStorage on mount
+  useEffect(() => {
+    const raw = sessionStorage.getItem(PENDING_KEY);
+    if (!raw) return;
+    sessionStorage.removeItem(PENDING_KEY);
+    try {
+      const parsed = JSON.parse(raw) as { gggQuery: object; queryState: QueryState };
+      setFormState(parsed.queryState);   // restore form immediately
+      setPendingQuery(parsed);           // queue execution for when bridge is ready
+    } catch { /* ignore */ }
+  }, []);
+
+  // Bridge detection
   useEffect(() => {
     if (isBridgeReady()) setBridgeActive(true);
     const handler = () => setBridgeActive(true);
@@ -37,22 +52,15 @@ export default function TradePage() {
     return () => window.removeEventListener("poe2:bridge-ready", handler);
   }, []);
 
-  // Auto-execute if coming from /queries page
-  const autoQuery = searchParams.get("q");
+  // Execute pending query once bridge is ready
   useEffect(() => {
-    if (!autoQuery) return;
-    try {
-      const decoded = JSON.parse(atob(autoQuery));
-      handleSearch(decoded);
-      // Clear param from URL without navigate
-      router.replace("/trade", { scroll: false });
-    } catch { /* invalid param, ignore */ }
+    if (!bridgeActive || !pendingQuery) return;
+    setPendingQuery(null);
+    executeSearch(pendingQuery.gggQuery);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoQuery]);
+  }, [bridgeActive, pendingQuery]);
 
-  const handleSearch = useCallback(async (gggQuery: object) => {
-    if (!bridgeActive) return;
-    setLastGGGQuery(gggQuery);
+  const executeSearch = useCallback(async (gggQuery: object) => {
     setLoading(true);
     setError(null);
     setListings([]);
@@ -72,7 +80,14 @@ export default function TradePage() {
     } finally {
       setLoading(false);
     }
-  }, [bridgeActive]);
+  }, []);
+
+  function handleSearch(gggQuery: object, queryState: QueryState) {
+    if (!bridgeActive) return;
+    setLastGGGQuery(gggQuery);
+    setLastQueryState(queryState);
+    executeSearch(gggQuery);
+  }
 
   async function loadMore() {
     if (!queryId || loadingMore || !bridgeActive) return;
@@ -86,18 +101,22 @@ export default function TradePage() {
   }
 
   async function saveQuery() {
-    if (!lastGGGQuery || !saveName.trim()) return;
+    if (!lastGGGQuery || !lastQueryState || !saveName.trim()) return;
     setSaving(true);
     await fetch("/api/queries", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: saveName.trim(), gggQuery: lastGGGQuery }),
+      body: JSON.stringify({
+        name:       saveName.trim(),
+        gggQuery:   lastGGGQuery,
+        queryState: lastQueryState,
+      }),
     });
     setSaving(false);
     setSaveOpen(false);
     setSaveName("");
-    setSavedMsg("Query saved!");
-    setTimeout(() => setSavedMsg(""), 3000);
+    setSavedMsg("Saved!");
+    setTimeout(() => setSavedMsg(""), 2000);
   }
 
   async function handleBookmark(listing: ListingRaw) {
@@ -125,27 +144,17 @@ export default function TradePage() {
 
       {/* Save query modal */}
       {saveOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center"
+        <div className="fixed inset-0 z-50 flex items-center justify-center"
           style={{ background: "rgba(0,0,0,0.6)" }}
-          onClick={e => e.target === e.currentTarget && setSaveOpen(false)}
-        >
+          onClick={e => e.target === e.currentTarget && setSaveOpen(false)}>
           <div className="rounded-xl border p-6 w-80 flex flex-col gap-4"
             style={{ background: "var(--bg-elevated)", borderColor: "var(--border)" }}>
             <h3 className="font-semibold" style={{ color: "var(--text-primary)" }}>Save Query</h3>
-            <input
-              autoFocus
-              type="text"
-              placeholder="e.g. T1 Life Rings"
-              value={saveName}
-              onChange={e => setSaveName(e.target.value)}
+            <input autoFocus type="text" placeholder="e.g. T1 Life Rings"
+              value={saveName} onChange={e => setSaveName(e.target.value)}
               onKeyDown={e => e.key === "Enter" && saveQuery()}
-              style={{
-                background: "var(--bg-base)", border: "1px solid var(--border)",
-                color: "var(--text-primary)", borderRadius: 6, padding: "8px 12px",
-                fontSize: 14, outline: "none", width: "100%", boxSizing: "border-box",
-              }}
-            />
+              style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)",
+                borderRadius: 6, padding: "8px 12px", fontSize: 14, outline: "none", width: "100%", boxSizing: "border-box" }} />
             <div className="flex gap-2 justify-end">
               <button onClick={() => setSaveOpen(false)}
                 className="text-sm px-4 py-2 rounded cursor-pointer"
@@ -163,33 +172,32 @@ export default function TradePage() {
       )}
 
       {/* Left: Query builder */}
-      <aside
-        className="w-72 shrink-0 rounded-lg p-4 border self-start sticky top-0 max-h-[calc(100vh-80px)] overflow-y-auto"
-        style={{ background: "var(--bg-surface)", borderColor: "var(--border)" }}
-      >
+      <aside className="w-72 shrink-0 rounded-lg p-4 border self-start sticky top-0 max-h-[calc(100vh-80px)] overflow-y-auto"
+        style={{ background: "var(--bg-surface)", borderColor: "var(--border)" }}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-1.5 text-xs"
             style={{ color: bridgeActive ? "var(--status-positive)" : "var(--status-warning)" }}>
             <span>{bridgeActive ? "●" : "○"}</span>
             {bridgeActive
               ? "Bridge active"
-              : <span>Bridge off — <a href="/settings" style={{ color: "var(--accent)" }}>install</a></span>
-            }
+              : <span>Bridge off — <a href="/settings" style={{ color: "var(--accent)" }}>install</a></span>}
           </div>
-          {lastGGGQuery && bridgeActive && (
-            <button
-              onClick={() => setSaveOpen(true)}
-              className="text-xs px-2 py-1 rounded cursor-pointer"
-              style={{ color: "var(--accent)", background: "transparent", border: "1px solid var(--accent)" }}
-            >
-              Save query
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            {savedMsg && <span className="text-xs" style={{ color: "var(--status-positive)" }}>{savedMsg}</span>}
+            {lastGGGQuery && bridgeActive && (
+              <button onClick={() => setSaveOpen(true)}
+                className="text-xs px-2 py-1 rounded cursor-pointer"
+                style={{ color: "var(--accent)", background: "transparent", border: "1px solid var(--accent)" }}>
+                Save
+              </button>
+            )}
+          </div>
         </div>
-        {savedMsg && (
-          <p className="text-xs mb-3 text-center" style={{ color: "var(--status-positive)" }}>{savedMsg}</p>
-        )}
-        <QueryBuilder onSearch={handleSearch} loading={loading} />
+        <QueryBuilder
+          onSearch={handleSearch}
+          loading={loading}
+          initialState={formState}
+        />
       </aside>
 
       {/* Right: Results */}

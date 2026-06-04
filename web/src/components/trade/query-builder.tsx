@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MinMaxRow, SelectRow, FilterSection } from "./filter-row";
 import { StatFilterGroup, type StatGroup } from "./stat-filter";
 
@@ -118,7 +118,7 @@ const SORT_OPTIONS = [
 interface MM { min: number | ""; max: number | "" }
 function mm(): MM { return { min: "", max: "" }; }
 
-interface QueryState {
+export interface QueryState {
   // Status
   status: string;
   // Type
@@ -237,12 +237,18 @@ export function buildGGGQuery(q: QueryState): object {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 interface Props {
-  onSearch: (gggQuery: object) => void;
+  onSearch: (gggQuery: object, queryState: QueryState) => void;
   loading: boolean;
+  initialState?: QueryState | null;
 }
 
-export function QueryBuilder({ onSearch, loading }: Props) {
-  const [q, setQ] = useState<QueryState>(defaultState);
+export function QueryBuilder({ onSearch, loading, initialState }: Props) {
+  const [q, setQ] = useState<QueryState>(initialState ?? defaultState);
+
+  // Reset form when initialState is provided (e.g. running a saved query)
+  useEffect(() => {
+    if (initialState) setQ(initialState);
+  }, [initialState]);
 
   function upd<K extends keyof QueryState>(key: K, val: QueryState[K]) {
     setQ(prev => ({ ...prev, [key]: val }));
@@ -374,7 +380,7 @@ export function QueryBuilder({ onSearch, loading }: Props) {
             Reset
           </button>
           <button
-            onClick={() => onSearch(buildGGGQuery(q))}
+            onClick={() => onSearch(buildGGGQuery(q), q)}
             disabled={loading}
             className="flex-2 py-2 rounded text-sm font-semibold cursor-pointer disabled:opacity-50"
             style={{ background: "var(--accent)", color: "#fff", flex: 2, border: "none" }}

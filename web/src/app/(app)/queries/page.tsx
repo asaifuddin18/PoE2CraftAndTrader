@@ -4,12 +4,15 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 interface SavedQuery {
-  queryId:   string;
-  name:      string;
-  gggQuery:  object;
-  createdAt: string;
-  lastRunAt: string | null;
+  queryId:    string;
+  name:       string;
+  gggQuery:   object;
+  queryState: object | null;
+  createdAt:  string;
+  lastRunAt:  string | null;
 }
+
+const PENDING_KEY = "poe2:pending-query";
 
 function timeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
@@ -25,9 +28,9 @@ function timeAgo(iso: string): string {
 
 export default function QueriesPage() {
   const router = useRouter();
-  const [queries, setQueries]     = useState<SavedQuery[]>([]);
-  const [loading, setLoading]     = useState(true);
-  const [deleting, setDeleting]   = useState<string | null>(null);
+  const [queries, setQueries]   = useState<SavedQuery[]>([]);
+  const [loading, setLoading]   = useState(true);
+  const [deleting, setDeleting] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/queries")
@@ -36,16 +39,21 @@ export default function QueriesPage() {
       .catch(() => setLoading(false));
   }, []);
 
-  async function runQuery(q: SavedQuery) {
-    // Encode query as base64 and navigate to trade page
-    const encoded = btoa(JSON.stringify(q.gggQuery));
+  function runQuery(q: SavedQuery) {
+    // Write to sessionStorage so trade page can restore form + auto-execute
+    sessionStorage.setItem(PENDING_KEY, JSON.stringify({
+      gggQuery:   q.gggQuery,
+      queryState: q.queryState,
+    }));
+
     // Update lastRunAt in background
     fetch("/api/queries", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ queryId: q.queryId }),
     }).catch(console.error);
-    router.push(`/trade?q=${encoded}`);
+
+    router.push("/trade");
   }
 
   async function deleteQuery(queryId: string) {
@@ -96,10 +104,7 @@ export default function QueriesPage() {
     <div style={{ color: "var(--text-primary)" }}>
       <div className="flex items-center justify-between mb-5">
         <h1 className="text-lg font-semibold">Saved Queries</h1>
-        <button
-          onClick={() => router.push("/trade")}
-          style={{ ...btn(true) }}
-        >
+        <button onClick={() => router.push("/trade")} style={btn(true)}>
           + New Search
         </button>
       </div>
@@ -108,14 +113,13 @@ export default function QueriesPage() {
         <div className="text-center py-16">
           <p className="text-sm mb-2" style={{ color: "var(--text-secondary)" }}>No saved queries yet.</p>
           <p className="text-xs" style={{ color: "var(--text-disabled)" }}>
-            Run a search on the Trade page and click <strong style={{ color: "var(--text-secondary)" }}>Save query</strong>.
+            Run a search on the Trade page and click <strong style={{ color: "var(--text-secondary)" }}>Save</strong>.
           </p>
         </div>
       ) : (
         <div className="flex flex-col gap-2">
           {queries.map(q => (
             <div key={q.queryId} style={row}>
-              {/* Info */}
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold truncate" style={{ color: "var(--text-primary)" }}>
                   {q.name}
@@ -125,17 +129,12 @@ export default function QueriesPage() {
                   {q.lastRunAt && ` · Last run ${timeAgo(q.lastRunAt)}`}
                 </p>
               </div>
-
-              {/* Actions */}
               <div className="flex gap-2">
-                <button onClick={() => runQuery(q)} style={btn(true)}>
-                  ▶ Run
-                </button>
+                <button onClick={() => runQuery(q)} style={btn(true)}>▶ Run</button>
                 <button
                   onClick={() => deleteQuery(q.queryId)}
                   disabled={deleting === q.queryId}
-                  style={{ ...btn(), color: "var(--status-negative)", borderColor: "var(--border)" }}
-                >
+                  style={{ ...btn(), color: "var(--status-negative)" }}>
                   {deleting === q.queryId ? "…" : "Delete"}
                 </button>
               </div>
