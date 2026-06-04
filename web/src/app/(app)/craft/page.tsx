@@ -390,10 +390,16 @@ export default function CraftPage() {
                 <div className="flex items-center justify-between mb-1">
                   <p className="text-sm font-semibold">Cost vs Success Probability</p>
                   <p className="text-xs" style={{ color: "var(--text-disabled)" }}>
-                    {result.mode === "exact" ? "Exact tiers" : "Min tiers"} · Chaos Orb · 100k sims
+                    {result.mode === "exact" ? "Exact tiers" : "Min tiers"} · Chaos Orb ·{" "}
+                    {result.isAnalytical ? "analytical estimate" : "100k sims"}
                     {result.elapsed_ms ? ` · ${result.elapsed_ms}ms` : ""}
                   </p>
                 </div>
+                {result.isAnalytical && (
+                  <p className="text-xs mb-2" style={{ color: "var(--status-warning)" }}>
+                    ⚠ Probability is too low to measure with Monte Carlo — using analytical calculation instead.
+                  </p>
+                )}
                 <CostProbChart data={result.chartData} divineInExalt={result.divineInExalt} />
               </div>
             )}
