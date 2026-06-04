@@ -25,9 +25,12 @@ function parsePropValue(val: string): { min: number; max: number } | null {
   return { min, max };
 }
 
-interface DPS { phys: number; elem: number; total: number }
+interface WeaponStats {
+  phys: number; elem: number; total: number;
+  aps: number; crit: string;
+}
 
-function calcDPS(properties: ListingRaw["item"]["properties"]): DPS | null {
+function calcWeaponStats(properties: ListingRaw["item"]["properties"]): WeaponStats | null {
   if (!properties?.length) return null;
 
   const get = (name: string) =>
@@ -41,7 +44,7 @@ function calcDPS(properties: ListingRaw["item"]["properties"]): DPS | null {
   const aps  = parsePropValue(apsStr);
   if (!phys || !aps) return null;
 
-  const apsVal = (aps.min + aps.max) / 2;
+  const apsVal  = (aps.min + aps.max) / 2;
   const physDps = ((phys.min + phys.max) / 2) * apsVal;
 
   const ELEM_NAMES = ["Fire Damage", "Cold Damage", "Lightning Damage", "Chaos Damage"];
@@ -53,10 +56,14 @@ function calcDPS(properties: ListingRaw["item"]["properties"]): DPS | null {
     if (range) elemDps += ((range.min + range.max) / 2) * apsVal;
   }
 
+  const critStr = get("Critical Hit Chance") ?? get("Critical Strike Chance") ?? "";
+
   return {
     phys:  Math.round(physDps * 10) / 10,
     elem:  Math.round(elemDps * 10) / 10,
     total: Math.round((physDps + elemDps) * 10) / 10,
+    aps:   Math.round(apsVal * 100) / 100,
+    crit:  critStr,
   };
 }
 
@@ -87,7 +94,7 @@ export function ItemCard({ listing, bookmarked, onBookmark, onUnbookmark }: Prop
   const rarityColor = RARITY_COLOR[item.rarity] ?? "#c8c8c8";
   const price = info.price;
   const currency = CURRENCY_ABBREV[price.currency] ?? price.currency;
-  const dps = calcDPS(item.properties);
+  const weaponStats = calcWeaponStats(item.properties);
 
   // Build a map from mod text → extended detail for tier/range lookup
   const extMods: ModDetail[] = [
@@ -180,15 +187,17 @@ export function ItemCard({ listing, bookmarked, onBookmark, onUnbookmark }: Prop
         </div>
       </div>
 
-      {/* DPS (weapons only) */}
-      {dps && (
+      {/* Weapon stats */}
+      {weaponStats && (
         <div
-          className="px-3 py-1.5 flex gap-3 text-xs border-b"
+          className="px-3 py-1.5 grid grid-cols-2 gap-x-3 gap-y-0.5 text-xs border-b"
           style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
         >
-          <span><span style={{ color: "var(--text-disabled)" }}>Total </span><span style={{ color: "var(--text-primary)", fontWeight: 600 }}>{dps.total}</span></span>
-          <span><span style={{ color: "var(--text-disabled)" }}>Phys </span>{dps.phys}</span>
-          {dps.elem > 0 && <span><span style={{ color: "var(--text-disabled)" }}>Elem </span>{dps.elem}</span>}
+          <span><span style={{ color: "var(--text-disabled)" }}>Total DPS </span><span style={{ color: "var(--text-primary)", fontWeight: 600 }}>{weaponStats.total}</span></span>
+          <span><span style={{ color: "var(--text-disabled)" }}>APS </span>{weaponStats.aps}</span>
+          <span><span style={{ color: "var(--text-disabled)" }}>Phys DPS </span>{weaponStats.phys}</span>
+          {weaponStats.crit && <span><span style={{ color: "var(--text-disabled)" }}>Crit </span>{weaponStats.crit}</span>}
+          {weaponStats.elem > 0 && <span><span style={{ color: "var(--text-disabled)" }}>Elem DPS </span>{weaponStats.elem}</span>}
         </div>
       )}
 
