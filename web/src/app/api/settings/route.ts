@@ -16,13 +16,20 @@ export async function GET() {
 
   const item = await dbGet(userPK(session.user!.email!), PROFILE_SK);
 
-  // Never return the raw POESESSID — only indicate whether it's been set
+  // Return a masked POESESSID so the user can confirm which session is set
+  // without exposing the full value (last 6 chars visible, rest masked)
+  const rawSession: string | undefined = item?.poeSessionId;
+  const maskedSession = rawSession
+    ? "••••••••••••••••••••••••••" + rawSession.slice(-6)
+    : null;
+
   return NextResponse.json({
-    hasPoeSession:  !!item?.poeSessionId,
-    poeLeague:      item?.poeLeague ?? "Runes of Aldur",
-    displayName:    session.user?.name,
-    email:          session.user?.email,
-    avatarUrl:      session.user?.image,
+    hasPoeSession:     !!rawSession,
+    maskedPoeSession:  maskedSession,
+    poeLeague:         item?.poeLeague ?? "Runes of Aldur",
+    displayName:       session.user?.name,
+    email:             session.user?.email,
+    avatarUrl:         session.user?.image,
   });
 }
 

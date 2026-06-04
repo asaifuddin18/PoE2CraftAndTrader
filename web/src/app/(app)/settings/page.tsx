@@ -9,6 +9,7 @@ const LEAGUES = ["Runes of Aldur", "HC Runes of Aldur", "Standard", "Hardcore"];
 export default function SettingsPage() {
   const [profile, setProfile] = useState<{
     hasPoeSession: boolean;
+    maskedPoeSession?: string | null;
     poeLeague: string;
     displayName?: string | null;
     email?: string | null;
@@ -137,9 +138,9 @@ export default function SettingsPage() {
           <label style={label}>GGG Session ID (POESESSID)</label>
           {profile.hasPoeSession && !showSessionInput ? (
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 flex-1 px-3 py-2 rounded" style={{ background: "var(--bg-elevated)", border: "1px solid var(--border)" }}>
+              <div className="flex items-center gap-2 flex-1 px-3 py-2 rounded" style={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", fontFamily: "var(--font-mono, monospace)", fontSize: 13 }}>
                 <span style={{ color: "var(--status-positive)", fontSize: 12 }}>●</span>
-                <span className="text-sm" style={{ color: "var(--text-secondary)" }}>Session configured</span>
+                <span style={{ color: "var(--text-secondary)" }}>{profile.maskedPoeSession ?? "Session configured"}</span>
               </div>
               <button onClick={() => setShowSessionInput(true)} className="text-sm px-3 py-2 rounded cursor-pointer" style={{ border: "1px solid var(--border)", color: "var(--text-secondary)", background: "transparent", whiteSpace: "nowrap" }}>
                 Update
