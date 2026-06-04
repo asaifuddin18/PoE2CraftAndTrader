@@ -109,9 +109,10 @@ interface Props {
   bookmarked: boolean;
   onBookmark: (listing: ListingRaw) => void;
   onUnbookmark: (id: string) => void;
+  showActions?: boolean; // default true — set false on My Listings page
 }
 
-export function ItemCard({ listing, bookmarked, onBookmark, onUnbookmark }: Props) {
+export function ItemCard({ listing, bookmarked, onBookmark, onUnbookmark, showActions = true }: Props) {
   const { item, listing: info } = listing;
   const [copied, setCopied] = useState(false);
   const [copiedHideout, setCopiedHideout] = useState(false);
@@ -258,7 +259,7 @@ export function ItemCard({ listing, bookmarked, onBookmark, onUnbookmark }: Prop
         </div>
 
         {/* Action buttons */}
-        <div className="flex gap-1.5">
+        {showActions && <div className="flex gap-1.5">
           {info.account.online ? (
             /* Seller is online → In Person trade, visit their hideout */
             <button
@@ -307,7 +308,7 @@ export function ItemCard({ listing, bookmarked, onBookmark, onUnbookmark }: Prop
           >
             {bookmarked ? "★" : "☆"}
           </button>
-        </div>
+        </div>}
       </div>
     </div>
   );

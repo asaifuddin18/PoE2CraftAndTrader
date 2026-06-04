@@ -181,6 +181,7 @@ export default function ListingsPage() {
                 bookmarked={false}
                 onBookmark={() => {}}
                 onUnbookmark={() => {}}
+                showActions={false}
               />
             ))}
           </div>
