@@ -21,5 +21,6 @@ export const config = {
     "/ideal-items/:path*",
     "/sessions/:path*",
     "/settings/:path*",
+    "/economy/:path*",
   ],
 };

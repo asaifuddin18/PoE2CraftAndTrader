@@ -8,6 +8,7 @@ const NAV = [
     section: "Tools",
     items: [
       { label: "Trade Search", href: "/trade", icon: SearchIcon },
+      { label: "Economy", href: "/economy", icon: CoinIcon },
       { label: "Craft Solver", href: "/craft", icon: HammerIcon },
       { label: "Simulators", href: "/simulate", icon: DiceIcon },
     ],
@@ -110,6 +111,15 @@ function HammerIcon({ active }: { active: boolean }) {
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
       <path d="M2 14L7 9" stroke={active ? "var(--accent)" : "currentColor"} strokeWidth="1.5" strokeLinecap="round" />
       <rect x="7" y="3" width="7" height="4" rx="1" transform="rotate(45 7 3)" stroke={active ? "var(--accent)" : "currentColor"} strokeWidth="1.5" />
+    </svg>
+  );
+}
+
+function CoinIcon({ active }: { active: boolean }) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
+      <circle cx="8" cy="8" r="5.5" stroke={active ? "var(--accent)" : "currentColor"} strokeWidth="1.5" />
+      <path d="M8 5v1.5M8 9.5V11M6.5 6.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5S8.83 8 8 8s-1.5.67-1.5 1.5S7.17 11 8 11" stroke={active ? "var(--accent)" : "currentColor"} strokeWidth="1.3" strokeLinecap="round" />
     </svg>
   );
 }
