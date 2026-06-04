@@ -75,11 +75,13 @@ export class IamStack extends cdk.Stack {
     // Vercel uses team-scoped OIDC: https://oidc.vercel.com/{teamSlug}
     // Thumbprint: SHA-1 of oidc.vercel.com's leaf certificate
 
-    const vercelOidc = new iam.OpenIdConnectProvider(this, "VercelOidc", {
-      url: `https://oidc.vercel.com/${vercelTeamSlug}`,
-      clientIds: [`https://vercel.com/${vercelTeamSlug}`],
-      thumbprints: ["48395b97c4768a655b91ebdccb0e680a70de97f7"],
-    });
+    // Both Vercel OIDC providers already exist in this account — import them.
+    // We import the correct team-scoped one (asaifuddin18s-projects).
+    const vercelOidc = iam.OpenIdConnectProvider.fromOpenIdConnectProviderArn(
+      this,
+      "VercelOidc",
+      `arn:aws:iam::${account}:oidc-provider/oidc.vercel.com/${vercelTeamSlug}`,
+    );
 
     const vercelAppRole = new iam.Role(this, "VercelAppRole", {
       roleName: `poe2-vercel-app-${env_name}`,
