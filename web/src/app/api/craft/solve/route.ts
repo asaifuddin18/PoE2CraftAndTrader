@@ -57,8 +57,29 @@ export async function POST(req: NextRequest) {
     const { chaosExalt, divineExalt } = await getPrices();
     const start  = Date.now();
     const result = runSolver(baseMods, input, chaosExalt, divineExalt);
+    const elapsed = Date.now() - start;
 
-    return NextResponse.json({ ...result, elapsed_ms: Date.now() - start });
+    // Debug info — remove once working
+    const prefixMods = baseMods.filter((m: Record<string,unknown>) => m.affix === "prefix");
+    const suffixMods = baseMods.filter((m: Record<string,unknown>) => m.affix === "suffix");
+    const debug = {
+      baseModsCount:   baseMods.length,
+      prefixModsCount: prefixMods.length,
+      suffixModsCount: suffixMods.length,
+      targetModsReceived: targetMods.map((m: Record<string,unknown>) => ({
+        modId: m.modId, affix: m.affix, tier: m.tier, minTier: m.minTier,
+      })),
+      poolModIds: {
+        prefix: prefixMods.map((m: Record<string,unknown>) => ({
+          modId: m.modId, tiers: (m.tiers as {tier:number;weight:number}[]).map(t => `T${t.tier}:w${t.weight}`).join(',')
+        })),
+        suffix: suffixMods.map((m: Record<string,unknown>) => ({
+          modId: m.modId, tiers: (m.tiers as {tier:number;weight:number}[]).map(t => `T${t.tier}:w${t.weight}`).join(',')
+        })),
+      }
+    };
+
+    return NextResponse.json({ ...result, elapsed_ms: elapsed, debug });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error("[craft/solve]", msg);
