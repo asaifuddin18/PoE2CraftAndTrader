@@ -36,16 +36,17 @@ function calcWeaponStats(properties: ListingRaw["item"]["properties"]): WeaponSt
   const get = (name: string) =>
     properties.find(p => p.name === name)?.values?.[0]?.[0] as string | undefined;
 
-  const physStr = get("Physical Damage");
-  const apsStr  = get("Attacks per Second");
-  if (!physStr || !apsStr) return null;
+  // APS is the reliable indicator that this is a weapon
+  const apsStr = get("Attacks per Second");
+  if (!apsStr) return null;
 
-  const phys = parsePropValue(physStr);
-  const aps  = parsePropValue(apsStr);
-  if (!phys || !aps) return null;
+  const aps = parsePropValue(apsStr);
+  if (!aps) return null;
+  const apsVal = (aps.min + aps.max) / 2;
 
-  const apsVal  = (aps.min + aps.max) / 2;
-  const physDps = ((phys.min + phys.max) / 2) * apsVal;
+  const physStr  = get("Physical Damage");
+  const physRange = physStr ? parsePropValue(physStr) : null;
+  const physDps  = physRange ? ((physRange.min + physRange.max) / 2) * apsVal : 0;
 
   const ELEM_NAMES = ["Fire Damage", "Cold Damage", "Lightning Damage", "Chaos Damage"];
   let elemDps = 0;
@@ -55,6 +56,9 @@ function calcWeaponStats(properties: ListingRaw["item"]["properties"]): WeaponSt
     const range = parsePropValue(str);
     if (range) elemDps += ((range.min + range.max) / 2) * apsVal;
   }
+
+  // Nothing meaningful to show if no damage at all
+  if (physDps === 0 && elemDps === 0) return null;
 
   const critStr = get("Critical Hit Chance") ?? get("Critical Strike Chance") ?? "";
 
