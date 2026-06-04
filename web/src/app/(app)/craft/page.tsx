@@ -48,13 +48,14 @@ function fmtProb(p: number): string {
   return `${(p * 100).toFixed(1)}%`;
 }
 
-function fmtCost(v: number, cur: "exalt" | "divine"): string {
+function fmtCost(v: number | null, cur: "exalt" | "divine"): string {
+  if (v == null || !isFinite(v)) return "—";
   const s = v >= 1000 ? v.toFixed(0) : v >= 100 ? v.toFixed(1) : v >= 10 ? v.toFixed(1) : v.toFixed(2);
   return `${s} ${cur === "divine" ? "div" : "ex"}`;
 }
 
-function fmtAttempts(n: number): string {
-  if (!isFinite(n)) return "∞";
+function fmtAttempts(n: number | null): string {
+  if (n == null || !isFinite(n)) return "∞";
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
   if (n >= 1_000)     return `${(n / 1_000).toFixed(1)}k`;
   return n.toFixed(0);
@@ -327,15 +328,16 @@ export default function CraftPage() {
                 {
                   label: "Expected Chaos Orbs",
                   value: fmtAttempts(result.expectedAttempts),
-                  sub: `× ${result.chaosPriceExalt.toFixed(2)} ex each`,
+                  sub: `× ${result.chaosPriceExalt?.toFixed(2) ?? "?"} ex each`,
                   color: "var(--text-primary)",
                 },
                 {
                   label: "Expected cost",
                   value: fmtCost(result.expectedCostDisplay, result.displayCurrency),
-                  sub: result.displayCurrency === "divine"
-                    ? `${result.expectedCostExalt.toFixed(1)} ex`
-                    : `${(result.expectedCostExalt / result.divineInExalt).toFixed(2)} div`,
+                  sub: result.expectedCostExalt == null ? "—"
+                    : result.displayCurrency === "divine"
+                      ? `${result.expectedCostExalt.toFixed(1)} ex`
+                      : `${(result.expectedCostExalt / result.divineInExalt).toFixed(2)} div`,
                   color: "var(--status-info)",
                 },
               ].map(card => (

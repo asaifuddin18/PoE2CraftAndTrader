@@ -35,9 +35,9 @@ export interface ChartPoint {
 export interface SolverResult {
   mode:                "exact" | "minTier";
   probability:         number;
-  expectedAttempts:    number;
-  expectedCostExalt:   number;
-  expectedCostDisplay: number;
+  expectedAttempts:    number | null;    // null when probability === 0
+  expectedCostExalt:   number | null;
+  expectedCostDisplay: number | null;
   displayCurrency:     "exalt" | "divine";
   divineInExalt:       number;
   chaosPriceExalt:     number;
@@ -196,11 +196,13 @@ export function runSolver(
 
   const probability = successes / numSims;
 
-  // Expected cost
-  const expectedAttempts  = probability > 0 ? 1 / probability : Infinity;
-  const expectedCostExalt = expectedAttempts * chaosPriceExalt;
-  const useDiv            = expectedCostExalt >= divineInExalt;
-  const expectedCostDisplay = useDiv ? expectedCostExalt / divineInExalt : expectedCostExalt;
+  // Expected cost — use null instead of Infinity so JSON serialisation is safe
+  const expectedAttempts    = probability > 0 ? 1 / probability : null;
+  const expectedCostExalt   = expectedAttempts != null ? expectedAttempts * chaosPriceExalt : null;
+  const useDiv              = expectedCostExalt != null && expectedCostExalt >= divineInExalt;
+  const expectedCostDisplay = expectedCostExalt != null
+    ? (useDiv ? expectedCostExalt / divineInExalt : expectedCostExalt)
+    : null;
 
   // Chart data: cost vs cumulative probability
   // P(success by N attempts) = 1 - (1-p)^N
