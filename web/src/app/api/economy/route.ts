@@ -1,29 +1,48 @@
 import { NextResponse } from "next/server";
 
 const POE2SCOUT = "https://poe2scout.com/api/poe2";
+const TTL_MS    = 5 * 60 * 1000;
 
-// Server-side cache — persists across warm invocations (5 min TTL)
+// Server-side cache
 let cache: { data: EconomyData; expiresAt: number } | null = null;
-const TTL_MS = 5 * 60 * 1000;
 
 export interface CurrencyEntry {
-  apiId:      string;
-  name:       string;
-  iconUrl:    string;
-  exaltValue: number;      // price in exalted orbs
-  divineValue: number;     // price in divine orbs
-  displayValue: number;    // value to display (in display currency)
+  apiId:           string;
+  name:            string;
+  iconUrl:         string;
+  exaltValue:      number;
+  divineValue:     number;
+  displayValue:    number;
   displayCurrency: "exalt" | "divine";
-  chaosValue: number | null;
-  category:   string;
+  category:        string;
+}
+
+export interface EconomyCategory {
+  id:      string;
+  label:   string;
+  entries: CurrencyEntry[];
 }
 
 export interface EconomyData {
-  league:       string;
-  divineInExalt: number;  // how many exalts per divine
-  updatedAt:    string;
-  currencies:   CurrencyEntry[];
+  league:        string;
+  divineInExalt: number;
+  updatedAt:     string;
+  categories:    EconomyCategory[];
 }
+
+// All categories to fetch with their display labels
+const CURRENCY_CATS: { id: string; label: string }[] = [
+  { id: "currency",   label: "Core Currency"    },
+  { id: "abyss",      label: "Abyss (Bones)"    },
+  { id: "essences",   label: "Essences"          },
+  { id: "ritual",     label: "Omens & Ritual"    },
+  { id: "breach",     label: "Breach Catalysts"  },
+  { id: "delirium",   label: "Liquid Emotions"   },
+  { id: "verisium",   label: "Alloys"            },
+  { id: "ultimatum",  label: "Soul Cores"        },
+  { id: "expedition", label: "Expedition"        },
+  { id: "incursion",  label: "Incursion"         },
+];
 
 async function fetchJson(url: string) {
   const res = await fetch(url, {
@@ -34,49 +53,55 @@ async function fetchJson(url: string) {
   return res.json();
 }
 
-async function buildEconomyData(league: string): Promise<EconomyData> {
+async function fetchCategory(catId: string, league: string, divineInExalt: number): Promise<CurrencyEntry[]> {
   const encoded = encodeURIComponent(league);
+  const url = `${POE2SCOUT}/Leagues/${encoded}/Currencies/ByCategory?Category=${catId}&PerPage=250`;
+  const data = await fetchJson(url);
+  const items = data.Items ?? [];
 
-  // League info (for divine price in exalts)
-  const leagues: { Value: string; DivinePrice: number }[] = await fetchJson(`${POE2SCOUT}/Leagues`);
-  const leagueInfo = leagues.find(l => l.Value === league) ?? leagues[0];
-  const divineInExalt = leagueInfo?.DivinePrice ?? 90;
-
-  // Fetch both pages of currencies
-  const [page1, page2] = await Promise.all([
-    fetchJson(`${POE2SCOUT}/Leagues/${encoded}/Currencies/ByCategory?Category=currency&Page=1`),
-    fetchJson(`${POE2SCOUT}/Leagues/${encoded}/Currencies/ByCategory?Category=currency&Page=2`),
-  ]);
-
-  const rawItems = [...(page1.Items ?? []), ...(page2.Items ?? [])];
-
-  const currencies: CurrencyEntry[] = rawItems
-    .filter(item => item.CurrentPrice != null && item.ApiId !== "exalted") // exalted = 1x always, skip
-    .map(item => {
+  return items
+    .filter((item: Record<string, unknown>) => item.CurrentPrice != null && item.ApiId !== "exalted")
+    .map((item: Record<string, unknown>): CurrencyEntry => {
       const exaltValue  = item.CurrentPrice as number;
       const divineValue = exaltValue / divineInExalt;
-      // Divine Orb itself would show "1 div" which is circular — always show in exalts
+      // Divine Orb itself: always show in exalts (avoid circular "1 div")
       const useDiv      = exaltValue >= divineInExalt && item.ApiId !== "divine";
       return {
-        apiId:           item.ApiId ?? "",
-        name:            item.Text ?? "",
-        iconUrl:         item.IconUrl ?? "",
+        apiId:           String(item.ApiId  ?? ""),
+        name:            String(item.Text   ?? ""),
+        iconUrl:         String(item.IconUrl ?? ""),
         exaltValue,
         divineValue,
         displayValue:    useDiv ? divineValue : exaltValue,
-        displayCurrency: (useDiv ? "divine" : "exalt") as "exalt" | "divine",
-        chaosValue:      null,
-        category:        item.CategoryApiId ?? "currency",
+        displayCurrency: useDiv ? "divine" : "exalt",
+        category:        catId,
       };
     })
-    .sort((a, b) => b.exaltValue - a.exaltValue);
+    .sort((a: CurrencyEntry, b: CurrencyEntry) => b.exaltValue - a.exaltValue);
+}
 
-  return {
-    league,
-    divineInExalt,
-    updatedAt: new Date().toISOString(),
-    currencies,
-  };
+async function buildEconomyData(league: string): Promise<EconomyData> {
+  const encoded = encodeURIComponent(league);
+
+  // League info for divine/exalt rate
+  const leagues: Record<string, unknown>[] = await fetchJson(`${POE2SCOUT}/Leagues`);
+  const leagueInfo  = leagues.find(l => l.Value === league) ?? leagues.find(l => l.IsCurrent) ?? leagues[0];
+  const divineInExalt = (leagueInfo as Record<string, unknown>)?.DivinePrice as number ?? 90;
+
+  // Fetch all categories in parallel
+  const results = await Promise.allSettled(
+    CURRENCY_CATS.map(cat => fetchCategory(cat.id, league, divineInExalt))
+  );
+
+  const categories: EconomyCategory[] = CURRENCY_CATS
+    .map((cat, i) => ({
+      id:      cat.id,
+      label:   cat.label,
+      entries: results[i].status === "fulfilled" ? results[i].value : [],
+    }))
+    .filter(cat => cat.entries.length > 0);
+
+  return { league, divineInExalt, updatedAt: new Date().toISOString(), categories };
 }
 
 export async function GET(req: Request) {
