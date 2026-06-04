@@ -16,23 +16,11 @@ export async function GET() {
 
   const item = await dbGet(userPK(session.user!.email!), PROFILE_SK);
 
-  // Return a masked POESESSID so the user can confirm which session is set
-  // without exposing the full value (last 6 chars visible, rest masked)
-  const rawSession: string | undefined = item?.poeSessionId;
-  const rawCf: string | undefined = item?.cfClearance;
-
-  const masked = (val?: string) =>
-    val ? "••••••••••••••••••••••••••" + val.slice(-6) : null;
-
   return NextResponse.json({
-    hasPoeSession:     !!rawSession,
-    maskedPoeSession:  masked(rawSession),
-    hasCfClearance:    !!rawCf,
-    maskedCfClearance: masked(rawCf),
-    poeLeague:         item?.poeLeague ?? "Runes of Aldur",
-    displayName:       session.user?.name,
-    email:             session.user?.email,
-    avatarUrl:         session.user?.image,
+    poeLeague:   item?.poeLeague ?? "Runes of Aldur",
+    displayName: session.user?.name,
+    email:       session.user?.email,
+    avatarUrl:   session.user?.image,
   });
 }
 
@@ -42,21 +30,17 @@ export async function PUT(req: NextRequest) {
 
   const body = await req.json();
   const userId = session.user!.email!;
-
   const existing = await dbGet(userPK(userId), PROFILE_SK) ?? {};
 
   await dbPut({
     ...existing,
-    PK:           userPK(userId),
-    SK:           PROFILE_SK,
-    email:        userId,
-    displayName:  session.user?.name,
-    avatarUrl:    session.user?.image,
-    ...(body.poeSessionId  !== undefined ? { poeSessionId:  body.poeSessionId  } : {}),
-    ...(body.cfClearance   !== undefined ? { cfClearance:   body.cfClearance   } : {}),
-    ...(body.clearPoeSession ? { poeSessionId: null, cfClearance: null } : {}),
-    poeLeague:    body.poeLeague ?? existing.poeLeague ?? "Runes of Aldur",
-    updatedAt:    new Date().toISOString(),
+    PK:          userPK(userId),
+    SK:          PROFILE_SK,
+    email:       userId,
+    displayName: session.user?.name,
+    avatarUrl:   session.user?.image,
+    poeLeague:   body.poeLeague ?? existing.poeLeague ?? "Runes of Aldur",
+    updatedAt:   new Date().toISOString(),
   });
 
   return NextResponse.json({ ok: true });
