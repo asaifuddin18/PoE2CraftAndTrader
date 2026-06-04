@@ -9,8 +9,8 @@ export async function POST(req: NextRequest) {
   }
   try {
     const query = await req.json();
-    const { poeSessionId, league } = await getUserTradeConfig(session.user.email);
-    const result = await tradeSearch(query, poeSessionId, league);
+    const { poeSessionId, cfClearance, league } = await getUserTradeConfig(session.user.email);
+    const result = await tradeSearch(query, poeSessionId, league, cfClearance);
     return NextResponse.json(result);
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);

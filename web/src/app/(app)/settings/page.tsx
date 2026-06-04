@@ -10,6 +10,8 @@ export default function SettingsPage() {
   const [profile, setProfile] = useState<{
     hasPoeSession: boolean;
     maskedPoeSession?: string | null;
+    hasCfClearance: boolean;
+    maskedCfClearance?: string | null;
     poeLeague: string;
     displayName?: string | null;
     email?: string | null;
@@ -17,10 +19,12 @@ export default function SettingsPage() {
   } | null>(null);
 
   const [poeSessionInput, setPoeSessionInput] = useState("");
+  const [cfClearanceInput, setCfClearanceInput] = useState("");
   const [league, setLeague] = useState("Runes of Aldur");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [showSessionInput, setShowSessionInput] = useState(false);
+  const [showCfInput, setShowCfInput] = useState(false);
 
   useEffect(() => {
     fetch("/api/settings")
@@ -39,15 +43,17 @@ export default function SettingsPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         poeLeague: league,
-        ...(poeSessionInput ? { poeSessionId: poeSessionInput } : {}),
+        ...(poeSessionInput  ? { poeSessionId: poeSessionInput  } : {}),
+        ...(cfClearanceInput ? { cfClearance:  cfClearanceInput } : {}),
       }),
     });
-    // Refresh profile to reflect new hasPoeSession state
     const updated = await fetch("/api/settings").then(r => r.json());
     setProfile(updated);
     setLeague(updated.poeLeague ?? "Runes of Aldur");
     setPoeSessionInput("");
+    setCfClearanceInput("");
     setShowSessionInput(false);
+    setShowCfInput(false);
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
@@ -59,7 +65,7 @@ export default function SettingsPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ clearPoeSession: true }),
     });
-    setProfile(p => p ? { ...p, hasPoeSession: false } : p);
+    setProfile(p => p ? { ...p, hasPoeSession: false, maskedPoeSession: null, hasCfClearance: false, maskedCfClearance: null } : p);
   }
 
   const card: React.CSSProperties = {
@@ -88,6 +94,76 @@ export default function SettingsPage() {
     outline: "none",
     boxSizing: "border-box",
   };
+
+  const monoDisplay: React.CSSProperties = {
+    background: "var(--bg-elevated)",
+    border: "1px solid var(--border)",
+    borderRadius: 6,
+    padding: "8px 12px",
+    fontFamily: "var(--font-mono, monospace)",
+    fontSize: 13,
+    color: "var(--text-secondary)",
+    flex: 1,
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+  };
+
+  function CookieRow({
+    label: lbl,
+    hasValue,
+    masked,
+    showInput,
+    setShowInput,
+    inputValue,
+    setInputValue,
+    placeholder,
+    hint,
+  }: {
+    label: string;
+    hasValue: boolean;
+    masked?: string | null;
+    showInput: boolean;
+    setShowInput: (v: boolean) => void;
+    inputValue: string;
+    setInputValue: (v: string) => void;
+    placeholder: string;
+    hint: string;
+  }) {
+    return (
+      <div className="mb-4">
+        <label style={label}>{lbl}</label>
+        {hasValue && !showInput ? (
+          <div className="flex items-center gap-2">
+            <div style={monoDisplay}>
+              <span style={{ color: "var(--status-positive)", fontSize: 11 }}>●</span>
+              {masked ?? "Configured"}
+            </div>
+            <button onClick={() => setShowInput(true)} className="text-sm px-3 py-2 rounded cursor-pointer whitespace-nowrap" style={{ border: "1px solid var(--border)", color: "var(--text-secondary)", background: "transparent" }}>
+              Update
+            </button>
+          </div>
+        ) : (
+          <div>
+            <input
+              type="password"
+              placeholder={placeholder}
+              value={inputValue}
+              onChange={e => setInputValue(e.target.value)}
+              style={inputStyle}
+              autoComplete="off"
+            />
+            <p className="mt-1.5 text-xs" style={{ color: "var(--text-disabled)" }}>{hint}</p>
+            {showInput && (
+              <button onClick={() => setShowInput(false)} className="mt-1 text-xs cursor-pointer" style={{ color: "var(--text-disabled)", background: "none", border: "none" }}>
+                Cancel
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   if (!profile) {
     return <div style={{ color: "var(--text-disabled)", fontSize: 14 }}>Loading…</div>;
@@ -123,7 +199,10 @@ export default function SettingsPage() {
 
       {/* PoE Account */}
       <div style={card}>
-        <h2 className="text-sm font-semibold mb-4" style={{ color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.06em" }}>Path of Exile Account</h2>
+        <h2 className="text-sm font-semibold mb-1" style={{ color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.06em" }}>Path of Exile Account</h2>
+        <p className="text-xs mb-4" style={{ color: "var(--text-disabled)" }}>
+          Find both cookies in Chrome: DevTools (F12) → Application → Cookies → www.pathofexile.com
+        </p>
 
         {/* League */}
         <div className="mb-4">
@@ -133,43 +212,35 @@ export default function SettingsPage() {
           </select>
         </div>
 
-        {/* POESESSID */}
-        <div>
-          <label style={label}>GGG Session ID (POESESSID)</label>
-          {profile.hasPoeSession && !showSessionInput ? (
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 flex-1 px-3 py-2 rounded" style={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", fontFamily: "var(--font-mono, monospace)", fontSize: 13 }}>
-                <span style={{ color: "var(--status-positive)", fontSize: 12 }}>●</span>
-                <span style={{ color: "var(--text-secondary)" }}>{profile.maskedPoeSession ?? "Session configured"}</span>
-              </div>
-              <button onClick={() => setShowSessionInput(true)} className="text-sm px-3 py-2 rounded cursor-pointer" style={{ border: "1px solid var(--border)", color: "var(--text-secondary)", background: "transparent", whiteSpace: "nowrap" }}>
-                Update
-              </button>
-              <button onClick={clearSession} className="text-sm px-3 py-2 rounded cursor-pointer" style={{ border: "1px solid var(--border)", color: "var(--status-negative)", background: "transparent" }}>
-                Clear
-              </button>
-            </div>
-          ) : (
-            <div>
-              <input
-                type="password"
-                placeholder="Paste your POESESSID cookie value…"
-                value={poeSessionInput}
-                onChange={e => setPoeSessionInput(e.target.value)}
-                style={inputStyle}
-                autoComplete="off"
-              />
-              <p className="mt-2 text-xs" style={{ color: "var(--text-disabled)" }}>
-                Find it in Chrome: DevTools → Application → Cookies → pathofexile.com → POESESSID
-              </p>
-              {showSessionInput && (
-                <button onClick={() => setShowSessionInput(false)} className="mt-2 text-xs cursor-pointer" style={{ color: "var(--text-disabled)", background: "none", border: "none" }}>
-                  Cancel
-                </button>
-              )}
-            </div>
-          )}
-        </div>
+        <CookieRow
+          label="POESESSID"
+          hasValue={profile.hasPoeSession}
+          masked={profile.maskedPoeSession}
+          showInput={showSessionInput}
+          setShowInput={setShowSessionInput}
+          inputValue={poeSessionInput}
+          setInputValue={setPoeSessionInput}
+          placeholder="Paste POESESSID value…"
+          hint="Your GGG session token — keep this private."
+        />
+
+        <CookieRow
+          label="cf_clearance (required for server-side requests)"
+          hasValue={profile.hasCfClearance}
+          masked={profile.maskedCfClearance}
+          showInput={showCfInput}
+          setShowInput={setShowCfInput}
+          inputValue={cfClearanceInput}
+          setInputValue={setCfClearanceInput}
+          placeholder="Paste cf_clearance value…"
+          hint="Cloudflare session cookie from pathofexile.com — refresh periodically if searches stop working."
+        />
+
+        {(profile.hasPoeSession || profile.hasCfClearance) && (
+          <button onClick={clearSession} className="text-xs cursor-pointer mt-1" style={{ color: "var(--status-negative)", background: "none", border: "none" }}>
+            Clear all session cookies
+          </button>
+        )}
       </div>
 
       {/* Save */}
