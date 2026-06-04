@@ -9,8 +9,8 @@ const app = new cdk.App();
 const envName          = (app.node.tryGetContext("env")               as string) ?? "dev";
 const githubOrg        = (app.node.tryGetContext("githubOrg")         as string) ?? "asaifuddin18";
 const githubRepo       = (app.node.tryGetContext("githubRepo")        as string) ?? "PoE2CraftAndTrader";
-const vercelTeamSlug   = (app.node.tryGetContext("vercelTeamSlug")    as string) ?? "asaifuddin18";
-const vercelProjectName= (app.node.tryGetContext("vercelProjectName") as string) ?? "poe2-craft-and-trader";
+const vercelTeamSlug   = (app.node.tryGetContext("vercelTeamSlug")    as string) ?? "asaifuddin18s-projects";
+const vercelProjectName= (app.node.tryGetContext("vercelProjectName") as string) ?? "po-e2-craft-and-trader";
 
 const awsEnv = {
   account: process.env.CDK_DEFAULT_ACCOUNT,
