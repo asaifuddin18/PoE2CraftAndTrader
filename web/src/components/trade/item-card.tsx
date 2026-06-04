@@ -30,13 +30,21 @@ interface WeaponStats {
   aps: number; crit: string;
 }
 
-function calcWeaponStats(properties: ListingRaw["item"]["properties"]): WeaponStats | null {
+function calcWeaponStats(properties: ListingRaw["item"]["properties"], typeLine?: string): WeaponStats | null {
   if (!properties?.length) return null;
 
   const get = (name: string) =>
     properties.find(p => p.name === name)?.values?.[0]?.[0] as string | undefined;
 
-  // APS is the reliable indicator that this is a weapon
+  // Debug: log all property names and values for weapons
+  if (process.env.NODE_ENV === "development" || typeof window !== "undefined") {
+    const hasAps = properties.some(p => p.name === "Attacks per Second");
+    if (hasAps) {
+      console.log("[ItemCard] weapon properties for", typeLine, ":",
+        properties.map(p => `${p.name}=${JSON.stringify(p.values)}`).join(", "));
+    }
+  }
+
   const apsStr = get("Attacks per Second");
   if (!apsStr) return null;
 
@@ -44,6 +52,7 @@ function calcWeaponStats(properties: ListingRaw["item"]["properties"]): WeaponSt
   if (!aps) return null;
   const apsVal = (aps.min + aps.max) / 2;
 
+  // Physical damage — may be 0 on fully-converted weapons
   const physStr  = get("Physical Damage");
   const physRange = physStr ? parsePropValue(physStr) : null;
   const physDps  = physRange ? ((physRange.min + physRange.max) / 2) * apsVal : 0;
@@ -57,7 +66,6 @@ function calcWeaponStats(properties: ListingRaw["item"]["properties"]): WeaponSt
     if (range) elemDps += ((range.min + range.max) / 2) * apsVal;
   }
 
-  // Nothing meaningful to show if no damage at all
   if (physDps === 0 && elemDps === 0) return null;
 
   const critStr = get("Critical Hit Chance") ?? get("Critical Strike Chance") ?? "";
@@ -98,7 +106,7 @@ export function ItemCard({ listing, bookmarked, onBookmark, onUnbookmark }: Prop
   const rarityColor = RARITY_COLOR[item.rarity] ?? "#c8c8c8";
   const price = info.price;
   const currency = CURRENCY_ABBREV[price.currency] ?? price.currency;
-  const weaponStats = calcWeaponStats(item.properties);
+  const weaponStats = calcWeaponStats(item.properties, item.typeLine);
 
   // Build a map from mod text → extended detail for tier/range lookup
   const extMods: ModDetail[] = [
@@ -199,7 +207,7 @@ export function ItemCard({ listing, bookmarked, onBookmark, onUnbookmark }: Prop
         >
           <span><span style={{ color: "var(--text-disabled)" }}>Total DPS </span><span style={{ color: "var(--text-primary)", fontWeight: 600 }}>{weaponStats.total}</span></span>
           <span><span style={{ color: "var(--text-disabled)" }}>APS </span>{weaponStats.aps}</span>
-          <span><span style={{ color: "var(--text-disabled)" }}>Phys DPS </span>{weaponStats.phys}</span>
+          {weaponStats.phys > 0 && <span><span style={{ color: "var(--text-disabled)" }}>Phys DPS </span>{weaponStats.phys}</span>}
           {weaponStats.crit && <span><span style={{ color: "var(--text-disabled)" }}>Crit </span>{weaponStats.crit}</span>}
           {weaponStats.elem > 0 && <span><span style={{ color: "var(--text-disabled)" }}>Elem DPS </span>{weaponStats.elem}</span>}
         </div>
