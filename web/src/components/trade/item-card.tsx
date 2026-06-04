@@ -16,6 +16,16 @@ const CURRENCY_ABBREV: Record<string, string> = {
   divine: "divine", "orb-of-alchemy": "alch", vaal: "vaal",
 };
 
+function timeAgo(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const m = Math.floor(diff / 60_000);
+  if (m < 1)  return "just now";
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h / 24)}d ago`;
+}
+
 // Parse a property value like "10-20" or "150" into a number range
 function parsePropValue(val: string): { min: number; max: number } | null {
   const m = val.match(/^([\d.]+)(?:-([\d.]+))?$/);
@@ -229,21 +239,64 @@ export function ItemCard({ listing, bookmarked, onBookmark, onUnbookmark }: Prop
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between px-3 py-2 border-t gap-2" style={{ borderColor: "var(--border)" }}>
-        <p className="text-xs truncate" style={{ color: "var(--text-disabled)" }}>{info.account.lastCharacterName}</p>
-        <div className="flex gap-1 shrink-0">
-          <button onClick={copyHideout} className="text-xs px-2 py-1 rounded border cursor-pointer"
-            style={{ color: copiedHideout ? "var(--status-positive)" : "var(--text-secondary)", borderColor: "var(--border)", background: "transparent" }}
-            title="Copy hideout whisper">
-            {copiedHideout ? "✓" : "🏠"}
-          </button>
-          <button onClick={copyWhisper} className="text-xs px-2 py-1 rounded border cursor-pointer"
-            style={{ color: copied ? "var(--status-positive)" : "var(--text-secondary)", borderColor: "var(--border)", background: "transparent" }}
-            title="Copy trade whisper">
-            {copied ? "✓" : "💬"}
-          </button>
-          <button onClick={toggleBookmark} className="text-xs px-2 py-1 rounded border cursor-pointer"
-            style={{ color: bookmarked ? "var(--status-warning)" : "var(--text-secondary)", borderColor: bookmarked ? "var(--status-warning)" : "var(--border)", background: "transparent" }}>
+      <div className="px-3 py-2 border-t" style={{ borderColor: "var(--border)" }}>
+        {/* Seller row */}
+        <div className="flex items-center justify-between gap-2 mb-1.5">
+          <div className="flex items-center gap-1.5 min-w-0">
+            {/* Online indicator */}
+            <span
+              title={info.account.online ? "Online" : "Offline"}
+              style={{ color: info.account.online ? "var(--status-positive)" : "var(--text-disabled)", fontSize: 8, flexShrink: 0 }}
+            >●</span>
+            <p className="text-xs truncate" style={{ color: "var(--text-disabled)" }}>
+              {info.account.lastCharacterName}
+            </p>
+          </div>
+          <p className="text-xs shrink-0" style={{ color: "var(--text-disabled)" }}>
+            {timeAgo(info.indexed)}
+          </p>
+        </div>
+
+        {/* Action buttons */}
+        <div className="flex gap-1.5">
+          {info.account.online ? (
+            /* Seller is online → Buy Now (travel to hideout) */
+            <button
+              onClick={copyHideout}
+              className="flex-1 text-xs py-1.5 rounded border cursor-pointer font-semibold transition-colors"
+              style={{
+                background: copiedHideout ? "var(--status-positive)" : "var(--accent)",
+                borderColor: copiedHideout ? "var(--status-positive)" : "var(--accent)",
+                color: "#fff",
+              }}
+              title="Copy hideout whisper — paste in game to visit seller"
+            >
+              {copiedHideout ? "✓ Copied" : "🏠 Buy Now"}
+            </button>
+          ) : (
+            /* Seller is offline → Whisper to send message */
+            <button
+              onClick={copyWhisper}
+              className="flex-1 text-xs py-1.5 rounded border cursor-pointer font-semibold"
+              style={{
+                background: copied ? "var(--status-positive)" : "var(--bg-elevated)",
+                borderColor: "var(--border)",
+                color: copied ? "#fff" : "var(--text-secondary)",
+              }}
+              title="Copy whisper — paste in game to message seller"
+            >
+              {copied ? "✓ Copied" : "💬 Send Message"}
+            </button>
+          )}
+          <button
+            onClick={toggleBookmark}
+            className="text-xs px-2.5 py-1.5 rounded border cursor-pointer"
+            style={{
+              color: bookmarked ? "var(--status-warning)" : "var(--text-secondary)",
+              borderColor: bookmarked ? "var(--status-warning)" : "var(--border)",
+              background: "transparent",
+            }}
+          >
             {bookmarked ? "★" : "☆"}
           </button>
         </div>
