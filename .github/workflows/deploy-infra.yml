@@ -16,7 +16,7 @@ on:
         options: [dev, prod]
 
 permissions:
-  id-token: write  # required for OIDC
+  id-token: write
   contents: read
 
 jobs:
@@ -33,25 +33,16 @@ jobs:
           cache: npm
           cache-dependency-path: cdk/package-lock.json
 
-      - name: Install CDK dependencies
+      - name: Install dependencies
         working-directory: cdk
         run: npm ci
 
-      - name: Configure AWS credentials (OIDC)
+      - name: Configure AWS credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          role-session-name: GitHubActions-CDK-${{ github.run_id }}
-          aws-region: ${{ secrets.AWS_REGION || 'us-east-1' }}
-
-      - name: CDK Diff
-        working-directory: cdk
-        run: npx cdk diff --all --context env=${{ github.event.inputs.env || 'dev' }}
-        continue-on-error: true
+          role-to-assume: arn:aws:iam::664658497880:role/poe2-github-deploy-dev
+          aws-region: us-east-1
 
       - name: CDK Deploy
         working-directory: cdk
-        run: |
-          npx cdk deploy --all \
-            --require-approval never \
-            --context env=${{ github.event.inputs.env || 'dev' }}
+        run: npx cdk deploy --all --require-approval never --context env=${{ github.event.inputs.env || 'dev' }}
