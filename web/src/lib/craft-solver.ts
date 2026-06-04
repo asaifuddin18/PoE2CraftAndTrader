@@ -34,14 +34,15 @@ export interface ChartPoint {
 
 export interface SolverResult {
   mode:                "exact" | "minTier";
-  probability:         number;   // P(success in 1 attempt)
-  expectedAttempts:    number;   // 1/P
-  expectedCostExalt:   number;   // expectedAttempts × chaosPrice
-  expectedCostDisplay: number;   // in display currency
+  probability:         number;
+  expectedAttempts:    number;
+  expectedCostExalt:   number;
+  expectedCostDisplay: number;
   displayCurrency:     "exalt" | "divine";
   divineInExalt:       number;
   chaosPriceExalt:     number;
   chartData:           ChartPoint[];
+  elapsed_ms?:         number;
 }
 
 // ── Mod pool types (from ideal-item-data.json) ────────────────────────────────
