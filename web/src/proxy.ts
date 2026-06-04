@@ -22,5 +22,6 @@ export const config = {
     "/sessions/:path*",
     "/settings/:path*",
     "/economy/:path*",
+    "/craft/:path*",
   ],
 };
