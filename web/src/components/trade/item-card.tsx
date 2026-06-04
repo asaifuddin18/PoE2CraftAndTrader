@@ -30,6 +30,7 @@ interface Props {
 export function ItemCard({ listing, bookmarked, onBookmark, onUnbookmark }: Props) {
   const { item, listing: info } = listing;
   const [copied, setCopied] = useState(false);
+  const [copiedHideout, setCopiedHideout] = useState(false);
 
   const rarityColor = RARITY_COLOR[item.rarity] ?? "#c8c8c8";
   const price = info.price;
@@ -46,6 +47,14 @@ export function ItemCard({ listing, bookmarked, onBookmark, onUnbookmark }: Prop
     navigator.clipboard.writeText(info.whisper);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  }
+
+  function copyHideout() {
+    // Sends the seller a whisper to visit their hideout
+    const charName = info.account.lastCharacterName;
+    navigator.clipboard.writeText(`@${charName} /hideout`);
+    setCopiedHideout(true);
+    setTimeout(() => setCopiedHideout(false), 2000);
   }
 
   function toggleBookmark() {
@@ -128,6 +137,18 @@ export function ItemCard({ listing, bookmarked, onBookmark, onUnbookmark }: Prop
         </p>
         <div className="flex gap-1 shrink-0">
           <button
+            onClick={copyHideout}
+            className="text-xs px-2 py-1 rounded border cursor-pointer transition-colors"
+            style={{
+              color: copiedHideout ? "var(--status-positive)" : "var(--text-secondary)",
+              borderColor: "var(--border)",
+              background: "transparent",
+            }}
+            title="Copy hideout whisper — paste in game to visit seller's hideout"
+          >
+            {copiedHideout ? "✓" : "🏠"}
+          </button>
+          <button
             onClick={copyWhisper}
             className="text-xs px-2 py-1 rounded border cursor-pointer transition-colors"
             style={{
@@ -135,7 +156,7 @@ export function ItemCard({ listing, bookmarked, onBookmark, onUnbookmark }: Prop
               borderColor: "var(--border)",
               background: "transparent",
             }}
-            title="Copy whisper"
+            title="Copy trade whisper"
           >
             {copied ? "✓" : "💬"}
           </button>
