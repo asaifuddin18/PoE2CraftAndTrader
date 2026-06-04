@@ -128,11 +128,12 @@ function PortalDropdown({ anchorRef, open, children }: {
 
 // ── Mod search dropdown ───────────────────────────────────────────────────────
 
-function ModDropdown({ baseId, ilvl, selected, onSelect }: {
-  baseId:   string;
-  ilvl:     number;
-  selected: TargetMod | null;
-  onSelect: (mod: TargetMod) => void;
+function ModDropdown({ baseId, ilvl, selected, onSelect, disabledAffixes }: {
+  baseId:          string;
+  ilvl:            number;
+  selected:        TargetMod | null;
+  onSelect:        (mod: TargetMod) => void;
+  disabledAffixes: Set<"prefix" | "suffix">; // affixes at limit — hide from results
 }) {
   const [q, setQ]       = useState("");
   const [mods, setMods] = useState<ModDef[]>([]);
@@ -146,9 +147,13 @@ function ModDropdown({ baseId, ilvl, selected, onSelect }: {
     });
   }, [baseId, ilvl]);
 
+  // Hide mods whose affix type is at the limit (unless it's the currently selected mod)
+  const available = mods.filter(m =>
+    m.modId === selected?.modId || !disabledAffixes.has(m.affix as "prefix" | "suffix")
+  );
   const filtered = q.length >= 1
-    ? mods.filter(m => m.name.toLowerCase().includes(q.toLowerCase())).slice(0, 20)
-    : mods.slice(0, 20);
+    ? available.filter(m => m.name.toLowerCase().includes(q.toLowerCase())).slice(0, 20)
+    : available.slice(0, 20);
 
   useEffect(() => {
     function h(e: MouseEvent) {
@@ -187,15 +192,34 @@ function ModDropdown({ baseId, ilvl, selected, onSelect }: {
 
   return (
     <div ref={wrapRef} style={{ flex: 1 }}>
-      <input
-        ref={inputRef as React.RefObject<HTMLInputElement>}
-        type="text"
-        placeholder={selected?.label ?? "Search mods…"}
-        value={q}
-        onFocus={() => setOpen(true)}
-        onChange={e => { setQ(e.target.value); setOpen(true); }}
-        style={{ ...inp, color: selected && !q ? "var(--text-secondary)" : "var(--text-primary)" }}
-      />
+      {/* Show selected mod name as coloured text when not actively searching */}
+      {selected && !q && !open ? (
+        <div
+          onClick={() => { setOpen(true); setTimeout(() => inputRef.current?.focus(), 10); }}
+          style={{
+            ...inp, cursor: "text",
+            color: "var(--status-info)", fontStyle: "normal",
+            display: "flex", alignItems: "center", gap: 6,
+          }}
+        >
+          <span style={{ fontSize: 9, padding: "1px 4px", borderRadius: 3, background: "var(--bg-elevated)", color: "var(--text-disabled)", flexShrink: 0 }}>
+            {selected.affix === "prefix" ? "P" : "S"}
+          </span>
+          {selected.label}
+        </div>
+      ) : (
+        <input
+          ref={inputRef as React.RefObject<HTMLInputElement>}
+          type="text"
+          placeholder={selected?.label ?? "Search mods…"}
+          value={q}
+          onFocus={() => setOpen(true)}
+          onBlur={() => { if (!q) setOpen(false); }}
+          onChange={e => { setQ(e.target.value); setOpen(true); }}
+          style={{ ...inp }}
+          autoFocus={!!selected}
+        />
+      )}
       <PortalDropdown anchorRef={inputRef as React.RefObject<HTMLElement>} open={open && filtered.length > 0}>
         {filtered.map(m => {
           const tiers  = eligibleTiers(m, ilvl);
@@ -459,14 +483,11 @@ function EditorModal({ initial, onSave, onClose }: {
                       baseId={cls?.baseIds[0] ?? form.baseId}
                       ilvl={form.ilvl}
                       selected={mod.modId ? mod : null}
+                      disabledAffixes={new Set([
+                        ...(prefixCount >= 3 ? ["prefix" as const] : []),
+                        ...(suffixCount >= 3 ? ["suffix" as const] : []),
+                      ])}
                       onSelect={selected => {
-                        // Check prefix/suffix limits before accepting
-                        const currentAffix = mod.modId ? mod.affix : null;
-                        const newAffix = selected.affix;
-                        if (currentAffix !== newAffix) {
-                          const count = form.targetMods.filter((m, idx) => idx !== i && m.affix === newAffix).length;
-                          if (count >= 3) return; // would exceed limit
-                        }
                         const mods = [...form.targetMods];
                         mods[i] = { ...selected, required: mod.required };
                         setForm(f => ({ ...f, targetMods: mods }));
