@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { QueryBuilder } from "@/components/trade/query-builder";
 import { ItemCard } from "@/components/trade/item-card";
 import { isBridgeReady, bridgeSearch, bridgeFetch } from "@/lib/trade-bridge";
@@ -9,15 +10,25 @@ import type { ListingRaw } from "@/lib/trade-api";
 const DEFAULT_LEAGUE = "Runes of Aldur";
 
 export default function TradePage() {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [listings, setListings] = useState<ListingRaw[]>([]);
+  const searchParams  = useSearchParams();
+  const router        = useRouter();
+
+  const [loading, setLoading]           = useState(false);
+  const [error, setError]               = useState<string | null>(null);
+  const [listings, setListings]         = useState<ListingRaw[]>([]);
   const [totalResults, setTotalResults] = useState<number | null>(null);
-  const [queryId, setQueryId] = useState<string | null>(null);
-  const [allIds, setAllIds] = useState<string[]>([]);
-  const [bookmarks, setBookmarks] = useState<Record<string, ListingRaw>>({});
-  const [loadingMore, setLoadingMore] = useState(false);
+  const [queryId, setQueryId]           = useState<string | null>(null);
+  const [allIds, setAllIds]             = useState<string[]>([]);
+  const [bookmarks, setBookmarks]       = useState<Record<string, ListingRaw>>({});
+  const [loadingMore, setLoadingMore]   = useState(false);
   const [bridgeActive, setBridgeActive] = useState(false);
+
+  // Save query modal state
+  const [lastGGGQuery, setLastGGGQuery] = useState<object | null>(null);
+  const [saveOpen, setSaveOpen]         = useState(false);
+  const [saveName, setSaveName]         = useState("");
+  const [saving, setSaving]             = useState(false);
+  const [savedMsg, setSavedMsg]         = useState("");
 
   useEffect(() => {
     if (isBridgeReady()) setBridgeActive(true);
@@ -26,8 +37,22 @@ export default function TradePage() {
     return () => window.removeEventListener("poe2:bridge-ready", handler);
   }, []);
 
-  async function handleSearch(gggQuery: object) {
+  // Auto-execute if coming from /queries page
+  const autoQuery = searchParams.get("q");
+  useEffect(() => {
+    if (!autoQuery) return;
+    try {
+      const decoded = JSON.parse(atob(autoQuery));
+      handleSearch(decoded);
+      // Clear param from URL without navigate
+      router.replace("/trade", { scroll: false });
+    } catch { /* invalid param, ignore */ }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoQuery]);
+
+  const handleSearch = useCallback(async (gggQuery: object) => {
     if (!bridgeActive) return;
+    setLastGGGQuery(gggQuery);
     setLoading(true);
     setError(null);
     setListings([]);
@@ -47,7 +72,7 @@ export default function TradePage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [bridgeActive]);
 
   async function loadMore() {
     if (!queryId || loadingMore || !bridgeActive) return;
@@ -56,11 +81,23 @@ export default function TradePage() {
     try {
       const { result: items } = await bridgeFetch(nextIds, queryId) as { result: ListingRaw[] };
       setListings(prev => [...prev, ...items]);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoadingMore(false);
-    }
+    } catch (e) { console.error(e); }
+    finally { setLoadingMore(false); }
+  }
+
+  async function saveQuery() {
+    if (!lastGGGQuery || !saveName.trim()) return;
+    setSaving(true);
+    await fetch("/api/queries", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: saveName.trim(), gggQuery: lastGGGQuery }),
+    });
+    setSaving(false);
+    setSaveOpen(false);
+    setSaveName("");
+    setSavedMsg("Query saved!");
+    setTimeout(() => setSavedMsg(""), 3000);
   }
 
   async function handleBookmark(listing: ListingRaw) {
@@ -85,28 +122,83 @@ export default function TradePage() {
 
   return (
     <div className="flex gap-5 h-full" style={{ color: "var(--text-primary)" }}>
+
+      {/* Save query modal */}
+      {saveOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          style={{ background: "rgba(0,0,0,0.6)" }}
+          onClick={e => e.target === e.currentTarget && setSaveOpen(false)}
+        >
+          <div className="rounded-xl border p-6 w-80 flex flex-col gap-4"
+            style={{ background: "var(--bg-elevated)", borderColor: "var(--border)" }}>
+            <h3 className="font-semibold" style={{ color: "var(--text-primary)" }}>Save Query</h3>
+            <input
+              autoFocus
+              type="text"
+              placeholder="e.g. T1 Life Rings"
+              value={saveName}
+              onChange={e => setSaveName(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && saveQuery()}
+              style={{
+                background: "var(--bg-base)", border: "1px solid var(--border)",
+                color: "var(--text-primary)", borderRadius: 6, padding: "8px 12px",
+                fontSize: 14, outline: "none", width: "100%", boxSizing: "border-box",
+              }}
+            />
+            <div className="flex gap-2 justify-end">
+              <button onClick={() => setSaveOpen(false)}
+                className="text-sm px-4 py-2 rounded cursor-pointer"
+                style={{ color: "var(--text-secondary)", background: "var(--bg-base)", border: "1px solid var(--border)" }}>
+                Cancel
+              </button>
+              <button onClick={saveQuery} disabled={saving || !saveName.trim()}
+                className="text-sm px-4 py-2 rounded cursor-pointer font-semibold disabled:opacity-50"
+                style={{ background: "var(--accent)", color: "#fff", border: "none" }}>
+                {saving ? "Saving…" : "Save"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Left: Query builder */}
       <aside
         className="w-72 shrink-0 rounded-lg p-4 border self-start sticky top-0 max-h-[calc(100vh-80px)] overflow-y-auto"
         style={{ background: "var(--bg-surface)", borderColor: "var(--border)" }}
       >
-        <div className="flex items-center gap-1.5 mb-4 text-xs"
-          style={{ color: bridgeActive ? "var(--status-positive)" : "var(--status-warning)" }}>
-          <span>{bridgeActive ? "●" : "○"}</span>
-          {bridgeActive
-            ? "Browser bridge active"
-            : <span>Bridge not detected — <a href="/settings" style={{ color: "var(--accent)" }}>install in Settings</a></span>
-          }
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-1.5 text-xs"
+            style={{ color: bridgeActive ? "var(--status-positive)" : "var(--status-warning)" }}>
+            <span>{bridgeActive ? "●" : "○"}</span>
+            {bridgeActive
+              ? "Bridge active"
+              : <span>Bridge off — <a href="/settings" style={{ color: "var(--accent)" }}>install</a></span>
+            }
+          </div>
+          {lastGGGQuery && bridgeActive && (
+            <button
+              onClick={() => setSaveOpen(true)}
+              className="text-xs px-2 py-1 rounded cursor-pointer"
+              style={{ color: "var(--accent)", background: "transparent", border: "1px solid var(--accent)" }}
+            >
+              Save query
+            </button>
+          )}
         </div>
+        {savedMsg && (
+          <p className="text-xs mb-3 text-center" style={{ color: "var(--status-positive)" }}>{savedMsg}</p>
+        )}
         <QueryBuilder onSearch={handleSearch} loading={loading} />
       </aside>
 
+      {/* Right: Results */}
       <div className="flex-1 min-w-0">
         {!bridgeActive && (
           <div className="rounded-lg p-4 text-sm" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
             <p className="font-semibold mb-1" style={{ color: "var(--text-primary)" }}>Browser bridge required</p>
             <p style={{ color: "var(--text-secondary)" }}>
-              Trade searches run through a Tampermonkey script in your browser.{" "}
-              <a href="/settings" style={{ color: "var(--accent)" }}>Go to Settings</a> to install it.
+              <a href="/settings" style={{ color: "var(--accent)" }}>Go to Settings</a> to install the Tampermonkey script.
             </p>
           </div>
         )}
@@ -144,23 +236,16 @@ export default function TradePage() {
           <>
             <div className="grid grid-cols-2 gap-3 xl:grid-cols-3">
               {listings.map(listing => (
-                <ItemCard
-                  key={listing.id}
-                  listing={listing}
+                <ItemCard key={listing.id} listing={listing}
                   bookmarked={!!bookmarks[listing.id]}
-                  onBookmark={handleBookmark}
-                  onUnbookmark={handleUnbookmark}
-                />
+                  onBookmark={handleBookmark} onUnbookmark={handleUnbookmark} />
               ))}
             </div>
             {hasMore && (
               <div className="mt-4 text-center">
-                <button
-                  onClick={loadMore}
-                  disabled={loadingMore}
+                <button onClick={loadMore} disabled={loadingMore}
                   className="px-6 py-2 rounded text-sm font-semibold cursor-pointer disabled:opacity-50"
-                  style={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", color: "var(--text-primary)" }}
-                >
+                  style={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", color: "var(--text-primary)" }}>
                   {loadingMore ? "Loading…" : `Load more (${allIds.length - listings.length} remaining)`}
                 </button>
               </div>
