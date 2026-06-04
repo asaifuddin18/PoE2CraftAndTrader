@@ -1,0 +1,38 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(npm install *)",
+      "Bash(mkdir -p /Users/aziz/workplace/PoE2CraftAndTrader/web/src/app/api/auth/\\\\[...nextauth\\\\])",
+      "Bash(npm run *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000)",
+      "WebSearch",
+      "WebFetch(domain:maxroll.gg)",
+      "WebFetch(domain:boostmatch.gg)",
+      "WebFetch(domain:pathofexile2.wiki.fextralife.com)",
+      "WebFetch(domain:game8.co)",
+      "mcp__Claude_in_Chrome__tabs_context_mcp",
+      "WebFetch(domain:poe2db.tw)",
+      "WebFetch(domain:repoe-fork.github.io)",
+      "Bash(curl -s \"https://api.github.com/repos/repoe-fork/repoe-fork.github.io/contents/poe2\")",
+      "Bash(python3 -c \"import sys,json; [print\\(f['name'], f['size']\\) for f in json.load\\(sys.stdin\\) if isinstance\\(f, dict\\)]\")",
+      "mcp__Claude_in_Chrome__read_network_requests",
+      "mcp__Claude_in_Chrome__navigate",
+      "WebFetch(domain:www.craftofexile.com)",
+      "Bash(curl -s -L \"https://www.craftofexile.com/?game=poe2\" -H \"User-Agent: Mozilla/5.0\")",
+      "Bash(curl -s -I \"https://www.craftofexile.com/json/poe2/main/poec_data.json\" -H \"User-Agent: Mozilla/5.0\")",
+      "Bash(curl -s \"https://www.craftofexile.com/json/poe2/main/poec_data.json\" -H \"User-Agent: Mozilla/5.0\" -o /Users/aziz/workplace/PoE2CraftAndTrader/data/raw/craftofexile/poec_data.json)",
+      "Bash(curl -s \"https://www.craftofexile.com/json/poe2/poec_common.json\" -H \"User-Agent: Mozilla/5.0\" -o /Users/aziz/workplace/PoE2CraftAndTrader/data/raw/craftofexile/poec_common.json)",
+      "WebFetch(domain:mobalytics.gg)",
+      "WebFetch(domain:www.poecurrency.com)",
+      "Bash(AWS_DEFAULT_REGION=us-east-1 aws sts get-caller-identity)",
+      "Read(//Users/aziz/.aws/**)",
+      "Bash(mkdir -p /Users/aziz/workplace/PoE2CraftAndTrader/cdk/bin)",
+      "Bash(mkdir -p /Users/aziz/workplace/PoE2CraftAndTrader/cdk/stacks)",
+      "Bash(npm init *)",
+      "Bash(npx tsc *)"
+    ]
+  }
+}

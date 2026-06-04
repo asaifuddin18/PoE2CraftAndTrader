@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { ddb, TABLE, userPK, bookmarkSK, dbQuery, dbPut, dbDelete } from "@/lib/db";
-import { QueryCommand } from "@aws-sdk/lib-dynamodb";
+import { userPK, bookmarkSK, dbQuery, dbPut, dbDelete } from "@/lib/db";
 
 async function getSession() {
   const session = await auth();
