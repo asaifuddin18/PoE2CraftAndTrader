@@ -51,11 +51,12 @@ async function buildEconomyData(league: string): Promise<EconomyData> {
   const rawItems = [...(page1.Items ?? []), ...(page2.Items ?? [])];
 
   const currencies: CurrencyEntry[] = rawItems
-    .filter(item => item.CurrentPrice != null)
+    .filter(item => item.CurrentPrice != null && item.ApiId !== "exalted") // exalted = 1x always, skip
     .map(item => {
-      const exaltValue   = item.CurrentPrice as number;
-      const divineValue  = exaltValue / divineInExalt;
-      const useDiv       = exaltValue >= divineInExalt;
+      const exaltValue  = item.CurrentPrice as number;
+      const divineValue = exaltValue / divineInExalt;
+      // Divine Orb itself would show "1 div" which is circular — always show in exalts
+      const useDiv      = exaltValue >= divineInExalt && item.ApiId !== "divine";
       return {
         apiId:           item.ApiId ?? "",
         name:            item.Text ?? "",
@@ -64,7 +65,7 @@ async function buildEconomyData(league: string): Promise<EconomyData> {
         divineValue,
         displayValue:    useDiv ? divineValue : exaltValue,
         displayCurrency: (useDiv ? "divine" : "exalt") as "exalt" | "divine",
-        chaosValue:      null, // poe2scout uses exalt as base, not chaos
+        chaosValue:      null,
         category:        item.CategoryApiId ?? "currency",
       };
     })
