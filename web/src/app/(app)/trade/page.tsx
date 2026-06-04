@@ -1,9 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { QueryBuilder } from "@/components/trade/query-builder";
 import { ItemCard } from "@/components/trade/item-card";
+import { isBridgeReady, bridgeSearch, bridgeFetch } from "@/lib/trade-bridge";
 import type { ListingRaw } from "@/lib/trade-api";
+
+const DEFAULT_LEAGUE = "Runes of Aldur";
 
 export default function TradePage() {
   const [loading, setLoading] = useState(false);
@@ -14,6 +17,47 @@ export default function TradePage() {
   const [allIds, setAllIds] = useState<string[]>([]);
   const [bookmarks, setBookmarks] = useState<Record<string, ListingRaw>>({});
   const [loadingMore, setLoadingMore] = useState(false);
+  const [bridgeActive, setBridgeActive] = useState(false);
+
+  useEffect(() => {
+    // Check immediately and on bridge-ready event
+    if (isBridgeReady()) setBridgeActive(true);
+    const handler = () => setBridgeActive(true);
+    window.addEventListener("poe2:bridge-ready", handler);
+    return () => window.removeEventListener("poe2:bridge-ready", handler);
+  }, []);
+
+  async function doSearch(gggQuery: object): Promise<{ id: string; result: string[] }> {
+    if (bridgeActive) {
+      // Use Tampermonkey bridge — request goes from user's browser with their IP + cookies
+      const league = DEFAULT_LEAGUE; // TODO: read from user settings
+      return bridgeSearch(gggQuery, league) as Promise<{ id: string; result: string[] }>;
+    }
+    // Fallback: server proxy
+    const res = await fetch("/api/trade/search", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(gggQuery),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: res.statusText }));
+      throw new Error(err.error ?? res.statusText);
+    }
+    return res.json();
+  }
+
+  async function doFetch(ids: string[], qId: string): Promise<{ result: ListingRaw[] }> {
+    if (bridgeActive) {
+      return bridgeFetch(ids, qId) as Promise<{ result: ListingRaw[] }>;
+    }
+    const res = await fetch("/api/trade/fetch", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids, queryId: qId }),
+    });
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  }
 
   async function handleSearch(gggQuery: object) {
     setLoading(true);
@@ -22,28 +66,13 @@ export default function TradePage() {
     setTotalResults(null);
 
     try {
-      const searchRes = await fetch("/api/trade/search", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(gggQuery),
-      });
-      if (!searchRes.ok) {
-        const err = await searchRes.json().catch(() => ({ error: searchRes.statusText }));
-        throw new Error(err.error ?? searchRes.statusText);
-      }
-      const { id, result } = await searchRes.json();
+      const { id, result } = await doSearch(gggQuery);
       setQueryId(id);
       setAllIds(result);
       setTotalResults(result.length);
       if (result.length === 0) return;
 
-      const fetchRes = await fetch("/api/trade/fetch", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ids: result.slice(0, 10), queryId: id }),
-      });
-      if (!fetchRes.ok) throw new Error(await fetchRes.text());
-      const { result: items } = await fetchRes.json();
+      const { result: items } = await doFetch(result.slice(0, 10), id);
       setListings(items);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -57,12 +86,7 @@ export default function TradePage() {
     setLoadingMore(true);
     const nextIds = allIds.slice(listings.length, listings.length + 10);
     try {
-      const fetchRes = await fetch("/api/trade/fetch", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ids: nextIds, queryId }),
-      });
-      const { result: items } = await fetchRes.json();
+      const { result: items } = await doFetch(nextIds, queryId);
       setListings(prev => [...prev, ...items]);
     } catch (e) {
       console.error(e);
@@ -93,15 +117,21 @@ export default function TradePage() {
 
   return (
     <div className="flex gap-5 h-full" style={{ color: "var(--text-primary)" }}>
-      {/* Left: Query builder */}
       <aside
         className="w-72 shrink-0 rounded-lg p-4 border self-start sticky top-0 max-h-[calc(100vh-80px)] overflow-y-auto"
         style={{ background: "var(--bg-surface)", borderColor: "var(--border)" }}
       >
+        {/* Bridge status indicator */}
+        <div className="flex items-center gap-1.5 mb-4 text-xs" style={{ color: bridgeActive ? "var(--status-positive)" : "var(--text-disabled)" }}>
+          <span>{bridgeActive ? "●" : "○"}</span>
+          {bridgeActive
+            ? "Browser bridge active"
+            : <a href="/poe2-bridge.user.js" target="_blank" style={{ color: "var(--accent)" }}>Install bridge script ↗</a>
+          }
+        </div>
         <QueryBuilder onSearch={handleSearch} loading={loading} />
       </aside>
 
-      {/* Right: Results */}
       <div className="flex-1 min-w-0">
         {totalResults !== null && (
           <div className="flex items-center justify-between mb-4">
@@ -119,6 +149,11 @@ export default function TradePage() {
         {error && (
           <div className="rounded-lg p-3 mb-4 text-sm" style={{ background: "#3a1a1a", border: "1px solid var(--status-negative)", color: "var(--status-negative)" }}>
             {error}
+            {!bridgeActive && error.includes("403") && (
+              <p className="mt-1 text-xs" style={{ color: "var(--text-secondary)" }}>
+                Install the <a href="/poe2-bridge.user.js" target="_blank" style={{ color: "var(--accent)" }}>browser bridge script</a> to route requests through your browser instead.
+              </p>
+            )}
           </div>
         )}
 
