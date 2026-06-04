@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -39,14 +40,14 @@ interface ItemData {
 }
 
 export interface TargetMod {
-  statId:     string | null;
-  modId:      string;
-  label:      string;
-  affix:      "prefix" | "suffix";
-  minRoll:    number | "";
-  targetRoll: number | "";
-  tierRange:  [number, number] | null; // [min, max] for the best eligible tier
-  required:   boolean;
+  statId:    string | null;
+  modId:     string;
+  label:     string;
+  affix:     "prefix" | "suffix";
+  tier:      number;        // selected tier (1 = best)
+  tierRange: [number, number] | null; // value range for selected tier
+  minRoll:   number | "";   // optional: minimum within the tier range
+  required:  boolean;
 }
 
 export interface IdealItem {
@@ -80,24 +81,68 @@ function tierLabel(tier: ModTier): string {
   return `T${tier.tier}  ilvl ${tier.ilvl}+  [${vals}]  w=${tier.weight}`;
 }
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function getTierRange(tier: ModTier): [number, number] | null {
+  const v = tier.values[0];
+  if (v == null) return null;
+  return Array.isArray(v) ? [v[0] as number, v[1] as number] : [v as number, v as number];
+}
+
+function eligibleTiers(mod: ModDef, ilvl: number) {
+  return mod.tiers.filter(t => t.ilvl <= ilvl && t.weight > 0);
+}
+
+// ── Portal dropdown ───────────────────────────────────────────────────────────
+// Renders outside the modal DOM to avoid clipping by overflow:hidden/auto.
+
+function PortalDropdown({ anchorRef, open, children }: {
+  anchorRef: React.RefObject<HTMLElement | null>;
+  open:      boolean;
+  children:  React.ReactNode;
+}) {
+  const [pos, setPos] = useState({ top: 0, left: 0, width: 0 });
+
+  useEffect(() => {
+    if (!open || !anchorRef.current) return;
+    const rect = anchorRef.current.getBoundingClientRect();
+    setPos({ top: rect.bottom + 4, left: rect.left, width: rect.width });
+  }, [open, anchorRef]);
+
+  if (!open) return null;
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
+    <div style={{
+      position: "fixed",
+      top: pos.top, left: pos.left, width: pos.width,
+      background: "var(--bg-elevated)", border: "1px solid var(--border)",
+      borderRadius: 4, maxHeight: 220, overflowY: "auto", zIndex: 9999,
+      boxShadow: "0 4px 16px rgba(0,0,0,0.4)",
+    }}>
+      {children}
+    </div>,
+    document.body
+  );
+}
+
 // ── Mod search dropdown ───────────────────────────────────────────────────────
 
 function ModDropdown({ baseId, ilvl, selected, onSelect }: {
-  baseId: string;
-  ilvl:   number;
+  baseId:   string;
+  ilvl:     number;
   selected: TargetMod | null;
   onSelect: (mod: TargetMod) => void;
 }) {
-  const [q, setQ]         = useState("");
-  const [mods, setMods]   = useState<ModDef[]>([]);
-  const [open, setOpen]   = useState(false);
-  const ref               = useRef<HTMLDivElement>(null);
+  const [q, setQ]       = useState("");
+  const [mods, setMods] = useState<ModDef[]>([]);
+  const [open, setOpen] = useState(false);
+  const wrapRef         = useRef<HTMLDivElement>(null);
+  const inputRef        = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     loadItemData().then(d => {
-      const available = (d.mods[baseId] ?? [])
-        .filter(m => m.tiers.some(t => t.ilvl <= ilvl && t.weight > 0));
-      setMods(available);
+      setMods((d.mods[baseId] ?? []).filter(m => eligibleTiers(m, ilvl).length > 0));
     });
   }, [baseId, ilvl]);
 
@@ -107,31 +152,28 @@ function ModDropdown({ baseId, ilvl, selected, onSelect }: {
 
   useEffect(() => {
     function h(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      const target = e.target as Node;
+      // Close if clicking outside both the wrapper and the portal dropdown
+      if (wrapRef.current && !wrapRef.current.contains(target)) {
+        setOpen(false);
+      }
     }
     document.addEventListener("mousedown", h);
     return () => document.removeEventListener("mousedown", h);
   }, []);
 
   function pickMod(mod: ModDef) {
-    // Best eligible tier at this ilvl
-    const eligibleTiers = mod.tiers.filter(t => t.ilvl <= ilvl && t.weight > 0);
-    const bestTier      = eligibleTiers[0]; // tiers sorted best first
-    const tierRange: [number, number] | null = bestTier?.values[0]
-      ? Array.isArray(bestTier.values[0])
-        ? [bestTier.values[0][0] as number, bestTier.values[0][1] as number]
-        : [bestTier.values[0] as number, bestTier.values[0] as number]
-      : null;
-
+    const tiers = eligibleTiers(mod, ilvl);
+    const best  = tiers[0];
     onSelect({
-      statId:     mod.statId,
-      modId:      mod.modId,
-      label:      mod.name,
-      affix:      mod.affix,
-      minRoll:    "",
-      targetRoll: "",
-      tierRange,
-      required:   true,
+      statId:    mod.statId,
+      modId:     mod.modId,
+      label:     mod.name,
+      affix:     mod.affix,
+      tier:      1,
+      tierRange: best ? getTierRange(best) : null,
+      minRoll:   "",
+      required:  true,
     });
     setQ("");
     setOpen(false);
@@ -144,40 +186,110 @@ function ModDropdown({ baseId, ilvl, selected, onSelect }: {
   };
 
   return (
-    <div ref={ref} style={{ position: "relative", flex: 1 }}>
+    <div ref={wrapRef} style={{ flex: 1 }}>
       <input
+        ref={inputRef as React.RefObject<HTMLInputElement>}
         type="text"
-        placeholder={selected ? selected.label : "Search mods…"}
+        placeholder={selected?.label ?? "Search mods…"}
         value={q}
         onFocus={() => setOpen(true)}
         onChange={e => { setQ(e.target.value); setOpen(true); }}
         style={{ ...inp, color: selected && !q ? "var(--text-secondary)" : "var(--text-primary)" }}
       />
-      {open && filtered.length > 0 && (
-        <div style={{
-          position: "absolute", zIndex: 100, top: "calc(100% + 2px)", left: 0, right: 0,
-          background: "var(--bg-elevated)", border: "1px solid var(--border)",
-          borderRadius: 4, maxHeight: 220, overflowY: "auto",
-        }}>
-          {filtered.map(m => {
-            const eligible = m.tiers.filter(t => t.ilvl <= ilvl && t.weight > 0);
-            const best     = eligible[0];
-            const bestVal  = best?.values[0];
-            const valStr   = bestVal != null ? ` [${fmtVal(bestVal)}]` : "";
-            return (
-              <button key={m.modId} onClick={() => pickMod(m)}
-                className="w-full text-left px-2 py-1.5 cursor-pointer"
-                style={{ display: "block", background: "none", border: "none", borderBottom: "1px solid var(--border)" }}>
-                <span style={{ fontSize: 11, color: "var(--text-primary)" }}>{m.name}</span>
-                <span style={{ fontSize: 10, color: "var(--text-disabled)", marginLeft: 6 }}>
-                  {m.affix === "prefix" ? "P" : "S"}{valStr}
-                  {eligible.length > 1 && ` · T1–T${eligible.length}`}
-                </span>
-              </button>
-            );
-          })}
+      <PortalDropdown anchorRef={inputRef as React.RefObject<HTMLElement>} open={open && filtered.length > 0}>
+        {filtered.map(m => {
+          const tiers  = eligibleTiers(m, ilvl);
+          const best   = tiers[0];
+          const range  = best ? getTierRange(best) : null;
+          const rangeStr = range ? ` [${fmtVal(range)}]` : "";
+          return (
+            <button key={m.modId} onMouseDown={e => { e.preventDefault(); pickMod(m); }}
+              className="w-full text-left px-2 py-1.5 cursor-pointer"
+              style={{ display: "block", background: "none", border: "none", borderBottom: "1px solid var(--border)" }}>
+              <span style={{ fontSize: 11, color: "var(--text-primary)" }}>{m.name}</span>
+              <span style={{ fontSize: 10, color: "var(--text-disabled)", marginLeft: 6 }}>
+                {m.affix === "prefix" ? "P" : "S"}{rangeStr}
+                {tiers.length > 1 && ` · T1–T${tiers.length}`}
+              </span>
+            </button>
+          );
+        })}
+      </PortalDropdown>
+    </div>
+  );
+}
+
+// ── Tier selector ─────────────────────────────────────────────────────────────
+
+function TierSelector({ mod, baseId, ilvl, onChangeTier, onChangeMinRoll, onChangeRequired }: {
+  mod:              TargetMod;
+  baseId:           string;
+  ilvl:             number;
+  onChangeTier:     (tier: number, range: [number, number] | null) => void;
+  onChangeMinRoll:  (v: number | "") => void;
+  onChangeRequired: (v: boolean) => void;
+}) {
+  const [tiers, setTiers] = useState<ModTier[]>([]);
+
+  useEffect(() => {
+    loadItemData().then(d => {
+      const modDef = (d.mods[baseId] ?? []).find(m => m.modId === mod.modId);
+      if (modDef) setTiers(eligibleTiers(modDef, ilvl));
+    });
+  }, [baseId, ilvl, mod.modId]);
+
+  const lbl: React.CSSProperties = { fontSize: 10, color: "var(--text-secondary)", display: "block", marginBottom: 2 };
+  const sel: React.CSSProperties = {
+    background: "var(--bg-base)", border: "1px solid var(--border)",
+    color: "var(--text-primary)", borderRadius: 4, fontSize: 11,
+    padding: "4px 6px", outline: "none",
+  };
+
+  return (
+    <div className="flex items-center gap-3 flex-wrap">
+      {/* Tier dropdown */}
+      <div>
+        <label style={lbl}>Tier</label>
+        <select value={mod.tier}
+          onChange={e => {
+            const t = parseInt(e.target.value);
+            const tierDef = tiers.find(x => x.tier === t);
+            onChangeTier(t, tierDef ? getTierRange(tierDef) : null);
+          }}
+          style={sel}>
+          {tiers.map(t => (
+            <option key={t.tier} value={t.tier}>
+              T{t.tier} — {fmtVal(getTierRange(t) ?? t.values[0] as number)} (ilvl {t.ilvl}+)
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Selected tier range info */}
+      {mod.tierRange && (
+        <div style={{ marginTop: 14 }}>
+          <span className="text-xs px-1.5 py-0.5 rounded"
+            style={{ background: "var(--bg-base)", color: "var(--text-secondary)", fontSize: 11 }}>
+            {fmtVal(mod.tierRange)}
+          </span>
         </div>
       )}
+
+      {/* Optional min roll within tier */}
+      <div>
+        <label style={lbl}>Min roll (optional)</label>
+        <input type="number" placeholder="any" value={mod.minRoll}
+          onChange={e => onChangeMinRoll(e.target.value === "" ? "" : Number(e.target.value))}
+          style={{ ...sel, width: 70, textAlign: "center" as const }} />
+      </div>
+
+      {/* Required toggle */}
+      <label className="flex items-center gap-1.5 cursor-pointer" style={{ marginTop: 14 }}>
+        <input type="checkbox" checked={mod.required}
+          onChange={e => onChangeRequired(e.target.checked)}
+          style={{ accentColor: "var(--accent)" }} />
+        <span style={{ fontSize: 11, color: "var(--text-secondary)" }}>Required</span>
+      </label>
     </div>
   );
 }
@@ -229,11 +341,14 @@ function EditorModal({ initial, onSave, onClose }: {
     }));
   }
 
+  const prefixCount = form.targetMods.filter(m => m.affix === "prefix").length;
+  const suffixCount = form.targetMods.filter(m => m.affix === "suffix").length;
+
   function addMod() {
     if (form.targetMods.length >= 6) return;
     setForm(f => ({
       ...f,
-      targetMods: [...f.targetMods, { statId: null, modId: "", label: "", affix: "prefix", minRoll: "", targetRoll: "", tierRange: null, required: true }],
+      targetMods: [...f.targetMods, { statId: null, modId: "", label: "", affix: "prefix", tier: 1, tierRange: null, minRoll: "", required: true }],
     }));
   }
 
@@ -314,7 +429,15 @@ function EditorModal({ initial, onSave, onClose }: {
           {/* Target mods */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label style={{ ...lbl, marginBottom: 0 }}>Target Mods ({form.targetMods.length}/6)</label>
+              <div className="flex items-center gap-3">
+                <label style={{ ...lbl, marginBottom: 0 }}>Target Mods ({form.targetMods.length}/6)</label>
+                <span className="text-xs" style={{ color: prefixCount >= 3 ? "var(--status-warning)" : "var(--text-disabled)" }}>
+                  P: {prefixCount}/3
+                </span>
+                <span className="text-xs" style={{ color: suffixCount >= 3 ? "var(--status-warning)" : "var(--text-disabled)" }}>
+                  S: {suffixCount}/3
+                </span>
+              </div>
               <button onClick={addMod} disabled={form.targetMods.length >= 6}
                 className="text-xs px-2 py-1 rounded cursor-pointer disabled:opacity-40"
                 style={{ color: "var(--accent)", background: "none", border: "1px solid var(--accent)" }}>
@@ -337,6 +460,13 @@ function EditorModal({ initial, onSave, onClose }: {
                       ilvl={form.ilvl}
                       selected={mod.modId ? mod : null}
                       onSelect={selected => {
+                        // Check prefix/suffix limits before accepting
+                        const currentAffix = mod.modId ? mod.affix : null;
+                        const newAffix = selected.affix;
+                        if (currentAffix !== newAffix) {
+                          const count = form.targetMods.filter((m, idx) => idx !== i && m.affix === newAffix).length;
+                          if (count >= 3) return; // would exceed limit
+                        }
                         const mods = [...form.targetMods];
                         mods[i] = { ...selected, required: mod.required };
                         setForm(f => ({ ...f, targetMods: mods }));
@@ -349,35 +479,17 @@ function EditorModal({ initial, onSave, onClose }: {
                   </div>
 
                   {mod.modId && (
-                    <>
-                      {/* Tier range info */}
-                      {mod.tierRange && (
-                        <p className="text-xs mb-2" style={{ color: "var(--text-disabled)" }}>
-                          Best tier at ilvl {form.ilvl}: {fmtVal(mod.tierRange)}
-                          {" · "}{mod.affix === "prefix" ? "Prefix" : "Suffix"}
-                        </p>
-                      )}
-                      <div className="flex items-center gap-3 flex-wrap">
-                        <div>
-                          <label style={{ ...lbl, marginBottom: 2, fontSize: 10 }}>Min acceptable roll</label>
-                          <input type="number" placeholder="e.g. 80" value={mod.minRoll}
-                            onChange={e => updMod(i, "minRoll", e.target.value === "" ? "" : Number(e.target.value))}
-                            style={numIn} />
-                        </div>
-                        <div>
-                          <label style={{ ...lbl, marginBottom: 2, fontSize: 10 }}>Target roll</label>
-                          <input type="number" placeholder="e.g. 100" value={mod.targetRoll}
-                            onChange={e => updMod(i, "targetRoll", e.target.value === "" ? "" : Number(e.target.value))}
-                            style={numIn} />
-                        </div>
-                        <label className="flex items-center gap-1.5 cursor-pointer" style={{ marginTop: 16 }}>
-                          <input type="checkbox" checked={mod.required}
-                            onChange={e => updMod(i, "required", e.target.checked)}
-                            style={{ accentColor: "var(--accent)" }} />
-                          <span className="text-xs" style={{ color: "var(--text-secondary)" }}>Required</span>
-                        </label>
-                      </div>
-                    </>
+                    <TierSelector
+                      mod={mod}
+                      baseId={cls?.baseIds[0] ?? form.baseId}
+                      ilvl={form.ilvl}
+                      onChangeTier={(tier, tierRange) => {
+                        updMod(i, "tier", tier);
+                        updMod(i, "tierRange", tierRange);
+                      }}
+                      onChangeMinRoll={v => updMod(i, "minRoll", v)}
+                      onChangeRequired={v => updMod(i, "required", v)}
+                    />
                   )}
                 </div>
               ))}
@@ -440,9 +552,9 @@ function IdealItemCard({ item, onEdit, onDelete }: {
                   </p>
                 </div>
                 <p className="text-xs shrink-0" style={{ color: "var(--text-secondary)" }}>
-                  {mod.minRoll !== "" && `≥${mod.minRoll}`}
-                  {mod.minRoll !== "" && mod.targetRoll !== "" && " → "}
-                  {mod.targetRoll !== "" && `${mod.targetRoll}`}
+                  T{mod.tier}
+                  {mod.tierRange && ` [${fmtVal(mod.tierRange)}]`}
+                  {mod.minRoll !== "" && ` ≥${mod.minRoll}`}
                 </p>
               </div>
             ))}
