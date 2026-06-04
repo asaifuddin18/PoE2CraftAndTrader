@@ -128,12 +128,13 @@ function PortalDropdown({ anchorRef, open, children }: {
 
 // ── Mod search dropdown ───────────────────────────────────────────────────────
 
-function ModDropdown({ baseId, ilvl, selected, onSelect, disabledAffixes }: {
+function ModDropdown({ baseId, ilvl, selected, onSelect, disabledAffixes, selectedModIds }: {
   baseId:          string;
   ilvl:            number;
   selected:        TargetMod | null;
   onSelect:        (mod: TargetMod) => void;
   disabledAffixes: Set<"prefix" | "suffix">; // affixes at limit — hide from results
+  selectedModIds:  Set<string>;              // already-chosen mod IDs — hide from results
 }) {
   const [q, setQ]       = useState("");
   const [mods, setMods] = useState<ModDef[]>([]);
@@ -147,9 +148,11 @@ function ModDropdown({ baseId, ilvl, selected, onSelect, disabledAffixes }: {
     });
   }, [baseId, ilvl]);
 
-  // Hide mods whose affix type is at the limit (unless it's the currently selected mod)
+  // Hide mods that: are at the affix limit, or already selected elsewhere, or duplicates
+  // Always keep the currently-selected mod visible so the user can change their mind
   const available = mods.filter(m =>
-    m.modId === selected?.modId || !disabledAffixes.has(m.affix as "prefix" | "suffix")
+    m.modId === selected?.modId ||
+    (!disabledAffixes.has(m.affix as "prefix" | "suffix") && !selectedModIds.has(m.modId))
   );
   const filtered = q.length >= 1
     ? available.filter(m => m.name.toLowerCase().includes(q.toLowerCase())).slice(0, 20)
@@ -365,8 +368,10 @@ function EditorModal({ initial, onSave, onClose }: {
     }));
   }
 
-  const prefixCount = form.targetMods.filter(m => m.affix === "prefix").length;
-  const suffixCount = form.targetMods.filter(m => m.affix === "suffix").length;
+  // Only count rows where a mod has actually been selected — blank rows don't count
+  const prefixCount = form.targetMods.filter(m => m.modId && m.affix === "prefix").length;
+  const suffixCount = form.targetMods.filter(m => m.modId && m.affix === "suffix").length;
+  const selectedModIds = new Set(form.targetMods.filter(m => m.modId).map(m => m.modId));
 
   function addMod() {
     if (form.targetMods.length >= 6) return;
@@ -487,6 +492,7 @@ function EditorModal({ initial, onSave, onClose }: {
                         ...(prefixCount >= 3 ? ["prefix" as const] : []),
                         ...(suffixCount >= 3 ? ["suffix" as const] : []),
                       ])}
+                      selectedModIds={new Set([...selectedModIds].filter(id => id !== mod.modId))}
                       onSelect={selected => {
                         const mods = [...form.targetMods];
                         mods[i] = { ...selected, required: mod.required };
