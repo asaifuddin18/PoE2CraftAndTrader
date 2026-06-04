@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { signOut } from "next-auth/react";
+import { isBridgeReady } from "@/lib/trade-bridge";
 
 const LEAGUES = ["Runes of Aldur", "HC Runes of Aldur", "Standard", "Hardcore"];
 
@@ -25,6 +26,14 @@ export default function SettingsPage() {
   const [saved, setSaved] = useState(false);
   const [showSessionInput, setShowSessionInput] = useState(false);
   const [showCfInput, setShowCfInput] = useState(false);
+  const [bridgeActive, setBridgeActive] = useState(false);
+
+  useEffect(() => {
+    if (isBridgeReady()) setBridgeActive(true);
+    const handler = () => setBridgeActive(true);
+    window.addEventListener("poe2:bridge-ready", handler);
+    return () => window.removeEventListener("poe2:bridge-ready", handler);
+  }, []);
 
   useEffect(() => {
     fetch("/api/settings")
@@ -75,60 +84,31 @@ export default function SettingsPage() {
     padding: "20px 24px",
     marginBottom: 16,
   };
-
   const label: React.CSSProperties = {
-    fontSize: 12,
-    color: "var(--text-secondary)",
-    display: "block",
-    marginBottom: 6,
+    fontSize: 12, color: "var(--text-secondary)", display: "block", marginBottom: 6,
   };
-
   const inputStyle: React.CSSProperties = {
-    background: "var(--bg-elevated)",
-    border: "1px solid var(--border)",
-    color: "var(--text-primary)",
-    borderRadius: 6,
-    fontSize: 14,
-    padding: "8px 12px",
-    width: "100%",
-    outline: "none",
-    boxSizing: "border-box",
+    background: "var(--bg-elevated)", border: "1px solid var(--border)",
+    color: "var(--text-primary)", borderRadius: 6, fontSize: 14,
+    padding: "8px 12px", width: "100%", outline: "none", boxSizing: "border-box",
   };
-
   const monoDisplay: React.CSSProperties = {
-    background: "var(--bg-elevated)",
-    border: "1px solid var(--border)",
-    borderRadius: 6,
-    padding: "8px 12px",
-    fontFamily: "var(--font-mono, monospace)",
-    fontSize: 13,
-    color: "var(--text-secondary)",
-    flex: 1,
-    display: "flex",
-    alignItems: "center",
-    gap: 8,
+    background: "var(--bg-elevated)", border: "1px solid var(--border)",
+    borderRadius: 6, padding: "8px 12px",
+    fontFamily: "var(--font-mono, monospace)", fontSize: 13,
+    color: "var(--text-secondary)", flex: 1, display: "flex", alignItems: "center", gap: 8,
+  };
+  const btnSecondary: React.CSSProperties = {
+    border: "1px solid var(--border)", color: "var(--text-secondary)",
+    background: "transparent", borderRadius: 6, padding: "7px 12px",
+    fontSize: 13, cursor: "pointer", whiteSpace: "nowrap",
   };
 
-  function CookieRow({
-    label: lbl,
-    hasValue,
-    masked,
-    showInput,
-    setShowInput,
-    inputValue,
-    setInputValue,
-    placeholder,
-    hint,
-  }: {
-    label: string;
-    hasValue: boolean;
-    masked?: string | null;
-    showInput: boolean;
-    setShowInput: (v: boolean) => void;
-    inputValue: string;
-    setInputValue: (v: string) => void;
-    placeholder: string;
-    hint: string;
+  function CookieRow({ lbl, hasValue, masked, showInput, setShowInput, inputValue, setInputValue, placeholder, hint }: {
+    lbl: string; hasValue: boolean; masked?: string | null;
+    showInput: boolean; setShowInput: (v: boolean) => void;
+    inputValue: string; setInputValue: (v: string) => void;
+    placeholder: string; hint: string;
   }) {
     return (
       <div className="mb-4">
@@ -139,25 +119,16 @@ export default function SettingsPage() {
               <span style={{ color: "var(--status-positive)", fontSize: 11 }}>●</span>
               {masked ?? "Configured"}
             </div>
-            <button onClick={() => setShowInput(true)} className="text-sm px-3 py-2 rounded cursor-pointer whitespace-nowrap" style={{ border: "1px solid var(--border)", color: "var(--text-secondary)", background: "transparent" }}>
-              Update
-            </button>
+            <button onClick={() => setShowInput(true)} style={btnSecondary}>Update</button>
           </div>
         ) : (
           <div>
-            <input
-              type="password"
-              placeholder={placeholder}
-              value={inputValue}
-              onChange={e => setInputValue(e.target.value)}
-              style={inputStyle}
-              autoComplete="off"
-            />
+            <input type="password" placeholder={placeholder} value={inputValue}
+              onChange={e => setInputValue(e.target.value)} style={inputStyle} autoComplete="off" />
             <p className="mt-1.5 text-xs" style={{ color: "var(--text-disabled)" }}>{hint}</p>
             {showInput && (
-              <button onClick={() => setShowInput(false)} className="mt-1 text-xs cursor-pointer" style={{ color: "var(--text-disabled)", background: "none", border: "none" }}>
-                Cancel
-              </button>
+              <button onClick={() => setShowInput(false)} className="mt-1 text-xs cursor-pointer"
+                style={{ color: "var(--text-disabled)", background: "none", border: "none" }}>Cancel</button>
             )}
           </div>
         )}
@@ -179,7 +150,8 @@ export default function SettingsPage() {
           {profile.avatarUrl ? (
             <Image src={profile.avatarUrl} alt="avatar" width={48} height={48} className="rounded-full" />
           ) : (
-            <div className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-semibold" style={{ background: "var(--bg-elevated)" }}>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-semibold"
+              style={{ background: "var(--bg-elevated)" }}>
               {(profile.displayName ?? profile.email ?? "?")[0].toUpperCase()}
             </div>
           )}
@@ -187,24 +159,79 @@ export default function SettingsPage() {
             <p className="font-semibold">{profile.displayName}</p>
             <p className="text-sm" style={{ color: "var(--text-secondary)" }}>{profile.email}</p>
           </div>
-          <button
-            onClick={() => signOut({ callbackUrl: "/" })}
-            className="ml-auto text-sm px-3 py-1.5 rounded cursor-pointer"
-            style={{ border: "1px solid var(--border)", color: "var(--text-secondary)", background: "transparent" }}
-          >
+          <button onClick={() => signOut({ callbackUrl: "/" })} style={{ ...btnSecondary, marginLeft: "auto" }}>
             Sign out
           </button>
         </div>
       </div>
 
-      {/* PoE Account */}
+      {/* Browser Bridge */}
       <div style={card}>
-        <h2 className="text-sm font-semibold mb-1" style={{ color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.06em" }}>Path of Exile Account</h2>
-        <p className="text-xs mb-4" style={{ color: "var(--text-disabled)" }}>
-          Find both cookies in Chrome: DevTools (F12) → Application → Cookies → www.pathofexile.com
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-semibold" style={{ color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+            Browser Bridge
+          </h2>
+          <span className="text-xs flex items-center gap-1.5" style={{ color: bridgeActive ? "var(--status-positive)" : "var(--status-warning)" }}>
+            <span>{bridgeActive ? "●" : "○"}</span>
+            {bridgeActive ? "Active" : "Not detected"}
+          </span>
+        </div>
+
+        <p className="text-sm mb-4" style={{ color: "var(--text-secondary)" }}>
+          Trade searches run directly through your browser using a Tampermonkey userscript.
+          This routes requests from your own IP with your GGG session — bypassing Cloudflare restrictions that block server-side requests.
         </p>
 
-        {/* League */}
+        {!bridgeActive && (
+          <div className="rounded-md p-3 mb-4 text-sm" style={{ background: "var(--bg-elevated)", border: "1px solid var(--border)" }}>
+            <p className="font-semibold mb-2" style={{ color: "var(--text-primary)" }}>Setup (one time)</p>
+            <ol className="space-y-2" style={{ color: "var(--text-secondary)", paddingLeft: 16, listStyle: "decimal" }}>
+              <li>Install the Tampermonkey browser extension</li>
+              <li>Click <strong style={{ color: "var(--text-primary)" }}>Install bridge script</strong> below — Tampermonkey will prompt you to confirm</li>
+              <li>Reload this page</li>
+            </ol>
+          </div>
+        )}
+
+        <div className="flex gap-2 flex-wrap">
+          <a
+            href="https://www.tampermonkey.net/"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ ...btnSecondary, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 6 }}
+          >
+            Tampermonkey ↗
+          </a>
+          <a
+            href="/poe2-bridge.user.js"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              ...btnSecondary,
+              textDecoration: "none",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              background: bridgeActive ? "transparent" : "var(--accent)",
+              borderColor: bridgeActive ? "var(--border)" : "var(--accent)",
+              color: bridgeActive ? "var(--text-secondary)" : "#fff",
+            }}
+          >
+            {bridgeActive ? "Reinstall bridge script" : "Install bridge script"} ↗
+          </a>
+        </div>
+      </div>
+
+      {/* PoE Account */}
+      <div style={card}>
+        <h2 className="text-sm font-semibold mb-1" style={{ color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+          Path of Exile Account
+        </h2>
+        <p className="text-xs mb-4" style={{ color: "var(--text-disabled)" }}>
+          Optional — used as fallback if the browser bridge is unavailable.
+          Find both in Chrome: DevTools → Application → Cookies → www.pathofexile.com
+        </p>
+
         <div className="mb-4">
           <label style={label}>Active League</label>
           <select value={league} onChange={e => setLeague(e.target.value)} style={inputStyle}>
@@ -213,7 +240,7 @@ export default function SettingsPage() {
         </div>
 
         <CookieRow
-          label="POESESSID"
+          lbl="POESESSID"
           hasValue={profile.hasPoeSession}
           masked={profile.maskedPoeSession}
           showInput={showSessionInput}
@@ -221,11 +248,10 @@ export default function SettingsPage() {
           inputValue={poeSessionInput}
           setInputValue={setPoeSessionInput}
           placeholder="Paste POESESSID value…"
-          hint="Your GGG session token — keep this private."
+          hint="Your GGG session token."
         />
-
         <CookieRow
-          label="cf_clearance (required for server-side requests)"
+          lbl="cf_clearance"
           hasValue={profile.hasCfClearance}
           masked={profile.maskedCfClearance}
           showInput={showCfInput}
@@ -233,17 +259,16 @@ export default function SettingsPage() {
           inputValue={cfClearanceInput}
           setInputValue={setCfClearanceInput}
           placeholder="Paste cf_clearance value…"
-          hint="Cloudflare session cookie from pathofexile.com — refresh periodically if searches stop working."
+          hint="Cloudflare session cookie from pathofexile.com."
         />
-
         {(profile.hasPoeSession || profile.hasCfClearance) && (
-          <button onClick={clearSession} className="text-xs cursor-pointer mt-1" style={{ color: "var(--status-negative)", background: "none", border: "none" }}>
+          <button onClick={clearSession} className="text-xs cursor-pointer mt-1"
+            style={{ color: "var(--status-negative)", background: "none", border: "none" }}>
             Clear all session cookies
           </button>
         )}
       </div>
 
-      {/* Save */}
       <button
         onClick={save}
         disabled={saving}

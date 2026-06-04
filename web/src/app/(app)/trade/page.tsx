@@ -20,59 +20,27 @@ export default function TradePage() {
   const [bridgeActive, setBridgeActive] = useState(false);
 
   useEffect(() => {
-    // Check immediately and on bridge-ready event
     if (isBridgeReady()) setBridgeActive(true);
     const handler = () => setBridgeActive(true);
     window.addEventListener("poe2:bridge-ready", handler);
     return () => window.removeEventListener("poe2:bridge-ready", handler);
   }, []);
 
-  async function doSearch(gggQuery: object): Promise<{ id: string; result: string[] }> {
-    if (bridgeActive) {
-      // Use Tampermonkey bridge — request goes from user's browser with their IP + cookies
-      const league = DEFAULT_LEAGUE; // TODO: read from user settings
-      return bridgeSearch(gggQuery, league) as Promise<{ id: string; result: string[] }>;
-    }
-    // Fallback: server proxy
-    const res = await fetch("/api/trade/search", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(gggQuery),
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ error: res.statusText }));
-      throw new Error(err.error ?? res.statusText);
-    }
-    return res.json();
-  }
-
-  async function doFetch(ids: string[], qId: string): Promise<{ result: ListingRaw[] }> {
-    if (bridgeActive) {
-      return bridgeFetch(ids, qId) as Promise<{ result: ListingRaw[] }>;
-    }
-    const res = await fetch("/api/trade/fetch", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ids, queryId: qId }),
-    });
-    if (!res.ok) throw new Error(await res.text());
-    return res.json();
-  }
-
   async function handleSearch(gggQuery: object) {
+    if (!bridgeActive) return;
     setLoading(true);
     setError(null);
     setListings([]);
     setTotalResults(null);
 
     try {
-      const { id, result } = await doSearch(gggQuery);
+      const { id, result } = await bridgeSearch(gggQuery, DEFAULT_LEAGUE) as { id: string; result: string[] };
       setQueryId(id);
       setAllIds(result);
       setTotalResults(result.length);
       if (result.length === 0) return;
 
-      const { result: items } = await doFetch(result.slice(0, 10), id);
+      const { result: items } = await bridgeFetch(result.slice(0, 10), id) as { result: ListingRaw[] };
       setListings(items);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -82,11 +50,11 @@ export default function TradePage() {
   }
 
   async function loadMore() {
-    if (!queryId || loadingMore) return;
+    if (!queryId || loadingMore || !bridgeActive) return;
     setLoadingMore(true);
     const nextIds = allIds.slice(listings.length, listings.length + 10);
     try {
-      const { result: items } = await doFetch(nextIds, queryId);
+      const { result: items } = await bridgeFetch(nextIds, queryId) as { result: ListingRaw[] };
       setListings(prev => [...prev, ...items]);
     } catch (e) {
       console.error(e);
@@ -121,18 +89,28 @@ export default function TradePage() {
         className="w-72 shrink-0 rounded-lg p-4 border self-start sticky top-0 max-h-[calc(100vh-80px)] overflow-y-auto"
         style={{ background: "var(--bg-surface)", borderColor: "var(--border)" }}
       >
-        {/* Bridge status indicator */}
-        <div className="flex items-center gap-1.5 mb-4 text-xs" style={{ color: bridgeActive ? "var(--status-positive)" : "var(--text-disabled)" }}>
+        <div className="flex items-center gap-1.5 mb-4 text-xs"
+          style={{ color: bridgeActive ? "var(--status-positive)" : "var(--status-warning)" }}>
           <span>{bridgeActive ? "●" : "○"}</span>
           {bridgeActive
             ? "Browser bridge active"
-            : <a href="/poe2-bridge.user.js" target="_blank" style={{ color: "var(--accent)" }}>Install bridge script ↗</a>
+            : <span>Bridge not detected — <a href="/settings" style={{ color: "var(--accent)" }}>install in Settings</a></span>
           }
         </div>
         <QueryBuilder onSearch={handleSearch} loading={loading} />
       </aside>
 
       <div className="flex-1 min-w-0">
+        {!bridgeActive && (
+          <div className="rounded-lg p-4 text-sm" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+            <p className="font-semibold mb-1" style={{ color: "var(--text-primary)" }}>Browser bridge required</p>
+            <p style={{ color: "var(--text-secondary)" }}>
+              Trade searches run through a Tampermonkey script in your browser.{" "}
+              <a href="/settings" style={{ color: "var(--accent)" }}>Go to Settings</a> to install it.
+            </p>
+          </div>
+        )}
+
         {totalResults !== null && (
           <div className="flex items-center justify-between mb-4">
             <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
@@ -147,20 +125,17 @@ export default function TradePage() {
         )}
 
         {error && (
-          <div className="rounded-lg p-3 mb-4 text-sm" style={{ background: "#3a1a1a", border: "1px solid var(--status-negative)", color: "var(--status-negative)" }}>
+          <div className="rounded-lg p-3 mb-4 text-sm"
+            style={{ background: "#3a1a1a", border: "1px solid var(--status-negative)", color: "var(--status-negative)" }}>
             {error}
-            {!bridgeActive && error.includes("403") && (
-              <p className="mt-1 text-xs" style={{ color: "var(--text-secondary)" }}>
-                Install the <a href="/poe2-bridge.user.js" target="_blank" style={{ color: "var(--accent)" }}>browser bridge script</a> to route requests through your browser instead.
-              </p>
-            )}
           </div>
         )}
 
         {loading && (
           <div className="grid grid-cols-2 gap-3 xl:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="rounded-lg border h-52 animate-pulse" style={{ background: "var(--bg-elevated)", borderColor: "var(--border)" }} />
+              <div key={i} className="rounded-lg border h-52 animate-pulse"
+                style={{ background: "var(--bg-elevated)", borderColor: "var(--border)" }} />
             ))}
           </div>
         )}
@@ -193,13 +168,13 @@ export default function TradePage() {
           </>
         )}
 
-        {!loading && listings.length === 0 && totalResults === 0 && (
+        {bridgeActive && !loading && listings.length === 0 && totalResults === 0 && (
           <div className="text-center py-16">
             <p className="text-sm" style={{ color: "var(--text-secondary)" }}>No results found.</p>
           </div>
         )}
 
-        {!loading && totalResults === null && (
+        {bridgeActive && !loading && totalResults === null && (
           <div className="text-center py-16">
             <p className="text-sm" style={{ color: "var(--text-disabled)" }}>Set your filters and hit Search.</p>
           </div>
