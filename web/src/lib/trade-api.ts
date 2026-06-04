@@ -59,6 +59,7 @@ export interface ListingRaw {
     icon: string;
     w: number;
     h: number;
+    properties?: { name: string; values: [string, number][]; displayMode: number }[];
     implicitMods?: string[];
     explicitMods?: string[];
     fracturedMods?: string[];

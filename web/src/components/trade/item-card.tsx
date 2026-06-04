@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { parseMod, type ListingRaw } from "@/lib/trade-api";
+import { parseMod, type ListingRaw, type ModDetail } from "@/lib/trade-api";
 
 const RARITY_COLOR: Record<string, string> = {
   Normal:  "#c8c8c8",
@@ -12,13 +12,65 @@ const RARITY_COLOR: Record<string, string> = {
 };
 
 const CURRENCY_ABBREV: Record<string, string> = {
-  regal:           "regal",
-  chaos:           "chaos",
-  exalted:         "exalt",
-  divine:          "divine",
-  "orb-of-alchemy":"alch",
-  vaal:            "vaal",
+  regal: "regal", chaos: "chaos", exalted: "exalt",
+  divine: "divine", "orb-of-alchemy": "alch", vaal: "vaal",
 };
+
+// Parse a property value like "10-20" or "150" into a number range
+function parsePropValue(val: string): { min: number; max: number } | null {
+  const m = val.match(/^([\d.]+)(?:-([\d.]+))?$/);
+  if (!m) return null;
+  const min = parseFloat(m[1]);
+  const max = m[2] ? parseFloat(m[2]) : min;
+  return { min, max };
+}
+
+interface DPS { phys: number; elem: number; total: number }
+
+function calcDPS(properties: ListingRaw["item"]["properties"]): DPS | null {
+  if (!properties?.length) return null;
+
+  const get = (name: string) =>
+    properties.find(p => p.name === name)?.values?.[0]?.[0] as string | undefined;
+
+  const physStr = get("Physical Damage");
+  const apsStr  = get("Attacks per Second");
+  if (!physStr || !apsStr) return null;
+
+  const phys = parsePropValue(physStr);
+  const aps  = parsePropValue(apsStr);
+  if (!phys || !aps) return null;
+
+  const apsVal = (aps.min + aps.max) / 2;
+  const physDps = ((phys.min + phys.max) / 2) * apsVal;
+
+  const ELEM_NAMES = ["Fire Damage", "Cold Damage", "Lightning Damage", "Chaos Damage"];
+  let elemDps = 0;
+  for (const name of ELEM_NAMES) {
+    const str = get(name);
+    if (!str) continue;
+    const range = parsePropValue(str);
+    if (range) elemDps += ((range.min + range.max) / 2) * apsVal;
+  }
+
+  return {
+    phys:  Math.round(physDps * 10) / 10,
+    elem:  Math.round(elemDps * 10) / 10,
+    total: Math.round((physDps + elemDps) * 10) / 10,
+  };
+}
+
+// Parse tier string: "S4" → { type: "Suffix", tier: 4 }, "P2" → { type: "Prefix", tier: 2 }
+function parseTier(tierStr: string): { type: "Prefix" | "Suffix"; tier: number } | null {
+  const m = tierStr.match(/^([SP])(\d+)$/);
+  if (!m) return null;
+  return { type: m[1] === "P" ? "Prefix" : "Suffix", tier: parseInt(m[2]) };
+}
+
+function fmt(n: number | string): string {
+  const v = typeof n === "string" ? parseFloat(n) : n;
+  return Number.isInteger(v) ? String(v) : v.toFixed(1);
+}
 
 interface Props {
   listing: ListingRaw;
@@ -35,141 +87,138 @@ export function ItemCard({ listing, bookmarked, onBookmark, onUnbookmark }: Prop
   const rarityColor = RARITY_COLOR[item.rarity] ?? "#c8c8c8";
   const price = info.price;
   const currency = CURRENCY_ABBREV[price.currency] ?? price.currency;
+  const dps = calcDPS(item.properties);
 
-  const allMods = [
-    ...(item.implicitMods ?? []).map(m => ({ text: m, type: "implicit" })),
-    ...(item.explicitMods ?? []).map(m => ({ text: m, type: "explicit" })),
-    ...(item.fracturedMods ?? []).map(m => ({ text: m, type: "fractured" })),
-    ...(item.enchantMods ?? []).map(m => ({ text: m, type: "enchant" })),
+  // Build a map from mod text → extended detail for tier/range lookup
+  const extMods: ModDetail[] = [
+    ...(item.extended?.mods?.explicit ?? []),
+    ...(item.extended?.mods?.implicit ?? []),
   ];
+
+  const implicitMods  = item.implicitMods  ?? [];
+  const explicitMods  = item.explicitMods  ?? [];
+  const fracturedMods = item.fracturedMods ?? [];
+  const enchantMods   = item.enchantMods   ?? [];
 
   function copyWhisper() {
     navigator.clipboard.writeText(info.whisper);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }
-
   function copyHideout() {
-    // Sends the seller a whisper to visit their hideout
-    const charName = info.account.lastCharacterName;
-    navigator.clipboard.writeText(`@${charName} /hideout`);
+    navigator.clipboard.writeText(`@${info.account.lastCharacterName} /hideout`);
     setCopiedHideout(true);
     setTimeout(() => setCopiedHideout(false), 2000);
   }
-
   function toggleBookmark() {
-    if (bookmarked) {
-      onUnbookmark(listing.id);
-    } else {
-      onBookmark(listing);
-    }
+    bookmarked ? onUnbookmark(listing.id) : onBookmark(listing);
+  }
+
+  function ModLine({ text, modType, extIndex }: { text: string; modType: string; extIndex?: number }) {
+    const ext = extIndex !== undefined ? extMods[extIndex] : undefined;
+    const tierInfo = ext ? parseTier(ext.tier) : null;
+
+    const modColor =
+      modType === "implicit"  ? "var(--text-secondary)" :
+      modType === "fractured" ? "#a29162" :
+      modType === "enchant"   ? "#b4b4ff" :
+      "var(--status-info)";
+
+    const tagColor = "var(--text-disabled)";
+
+    return (
+      <div className="flex items-start justify-between gap-2 py-0.5">
+        <p className="text-xs leading-relaxed flex-1" style={{ color: modColor }}>
+          {parseMod(text)}
+          {/* Roll range for this tier */}
+          {ext?.magnitudes?.[0] && (
+            <span className="ml-1" style={{ color: "var(--text-disabled)", fontSize: 10 }}>
+              ({fmt(ext.magnitudes[0].min)}–{fmt(ext.magnitudes[0].max)})
+            </span>
+          )}
+        </p>
+        {tierInfo && (
+          <span
+            className="text-xs shrink-0 px-1 py-0.5 rounded"
+            style={{
+              color: tagColor,
+              background: "var(--bg-elevated)",
+              fontSize: 10,
+              lineHeight: 1.2,
+              whiteSpace: "nowrap",
+            }}
+            title={`${tierInfo.type} Tier ${tierInfo.tier}`}
+          >
+            {tierInfo.type === "Prefix" ? "P" : "S"}·T{tierInfo.tier}
+          </span>
+        )}
+      </div>
+    );
   }
 
   return (
-    <div
-      className="rounded-lg border flex flex-col"
-      style={{ background: "var(--bg-surface)", borderColor: "var(--border)" }}
-    >
+    <div className="rounded-lg border flex flex-col" style={{ background: "var(--bg-surface)", borderColor: "var(--border)" }}>
       {/* Header */}
       <div
         className="flex items-center gap-3 px-3 py-2 border-b rounded-t-lg"
         style={{ borderColor: "var(--border)", borderBottom: `2px solid ${rarityColor}33` }}
       >
-        {/* Item icon */}
         <div className="relative shrink-0 w-10 h-10 flex items-center justify-center">
-          <Image
-            src={item.icon}
-            alt={item.typeLine}
-            width={40}
-            height={40}
-            className="object-contain"
-            unoptimized
-          />
+          <Image src={item.icon} alt={item.typeLine} width={40} height={40} className="object-contain" unoptimized />
         </div>
-
         <div className="flex-1 min-w-0">
           {item.name && (
-            <p className="text-xs font-semibold truncate" style={{ color: rarityColor }}>
-              {item.name}
-            </p>
+            <p className="text-xs font-semibold truncate" style={{ color: rarityColor }}>{item.name}</p>
           )}
           <p className="text-xs truncate" style={{ color: item.name ? "var(--text-secondary)" : rarityColor }}>
             {item.typeLine}
           </p>
         </div>
-
         <div className="text-right shrink-0">
-          <p className="text-xs font-semibold" style={{ color: "var(--status-positive)" }}>
-            {price.amount} {currency}
-          </p>
-          <p className="text-xs" style={{ color: "var(--text-disabled)" }}>
-            ilvl {item.ilvl}
-          </p>
+          <p className="text-xs font-semibold" style={{ color: "var(--status-positive)" }}>{price.amount} {currency}</p>
+          <p className="text-xs" style={{ color: "var(--text-disabled)" }}>ilvl {item.ilvl}</p>
         </div>
       </div>
 
+      {/* DPS (weapons only) */}
+      {dps && (
+        <div
+          className="px-3 py-1.5 flex gap-3 text-xs border-b"
+          style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
+        >
+          <span><span style={{ color: "var(--text-disabled)" }}>Total </span><span style={{ color: "var(--text-primary)", fontWeight: 600 }}>{dps.total}</span></span>
+          <span><span style={{ color: "var(--text-disabled)" }}>Phys </span>{dps.phys}</span>
+          {dps.elem > 0 && <span><span style={{ color: "var(--text-disabled)" }}>Elem </span>{dps.elem}</span>}
+        </div>
+      )}
+
       {/* Mods */}
-      <div className="px-3 py-2 flex-1 space-y-0.5">
-        {allMods.map((mod, i) => (
-          <p
-            key={i}
-            className="text-xs leading-relaxed"
-            style={{
-              color:
-                mod.type === "implicit"  ? "var(--text-secondary)" :
-                mod.type === "fractured" ? "#a29162" :
-                mod.type === "enchant"   ? "#b4b4ff" :
-                "var(--status-info)",
-            }}
-          >
-            {parseMod(mod.text)}
-          </p>
-        ))}
+      <div className="px-3 py-2 flex-1">
+        {implicitMods.map((t, i) => <ModLine key={`imp-${i}`} text={t} modType="implicit" />)}
+        {implicitMods.length > 0 && explicitMods.length > 0 && (
+          <div className="my-1 border-t" style={{ borderColor: "var(--border)" }} />
+        )}
+        {enchantMods.map((t, i) => <ModLine key={`enc-${i}`} text={t} modType="enchant" />)}
+        {explicitMods.map((t, i) => <ModLine key={`exp-${i}`} text={t} modType="explicit" extIndex={i} />)}
+        {fracturedMods.map((t, i) => <ModLine key={`frac-${i}`} text={t} modType="fractured" extIndex={explicitMods.length + i} />)}
       </div>
 
       {/* Footer */}
-      <div
-        className="flex items-center justify-between px-3 py-2 border-t gap-2"
-        style={{ borderColor: "var(--border)" }}
-      >
-        <p className="text-xs truncate" style={{ color: "var(--text-disabled)" }}>
-          {info.account.lastCharacterName}
-        </p>
+      <div className="flex items-center justify-between px-3 py-2 border-t gap-2" style={{ borderColor: "var(--border)" }}>
+        <p className="text-xs truncate" style={{ color: "var(--text-disabled)" }}>{info.account.lastCharacterName}</p>
         <div className="flex gap-1 shrink-0">
-          <button
-            onClick={copyHideout}
-            className="text-xs px-2 py-1 rounded border cursor-pointer transition-colors"
-            style={{
-              color: copiedHideout ? "var(--status-positive)" : "var(--text-secondary)",
-              borderColor: "var(--border)",
-              background: "transparent",
-            }}
-            title="Copy hideout whisper — paste in game to visit seller's hideout"
-          >
+          <button onClick={copyHideout} className="text-xs px-2 py-1 rounded border cursor-pointer"
+            style={{ color: copiedHideout ? "var(--status-positive)" : "var(--text-secondary)", borderColor: "var(--border)", background: "transparent" }}
+            title="Copy hideout whisper">
             {copiedHideout ? "✓" : "🏠"}
           </button>
-          <button
-            onClick={copyWhisper}
-            className="text-xs px-2 py-1 rounded border cursor-pointer transition-colors"
-            style={{
-              color: copied ? "var(--status-positive)" : "var(--text-secondary)",
-              borderColor: "var(--border)",
-              background: "transparent",
-            }}
-            title="Copy trade whisper"
-          >
+          <button onClick={copyWhisper} className="text-xs px-2 py-1 rounded border cursor-pointer"
+            style={{ color: copied ? "var(--status-positive)" : "var(--text-secondary)", borderColor: "var(--border)", background: "transparent" }}
+            title="Copy trade whisper">
             {copied ? "✓" : "💬"}
           </button>
-          <button
-            onClick={toggleBookmark}
-            className="text-xs px-2 py-1 rounded border cursor-pointer transition-colors"
-            style={{
-              color: bookmarked ? "var(--status-warning)" : "var(--text-secondary)",
-              borderColor: bookmarked ? "var(--status-warning)" : "var(--border)",
-              background: "transparent",
-            }}
-            title={bookmarked ? "Remove bookmark" : "Bookmark"}
-          >
+          <button onClick={toggleBookmark} className="text-xs px-2 py-1 rounded border cursor-pointer"
+            style={{ color: bookmarked ? "var(--status-warning)" : "var(--text-secondary)", borderColor: bookmarked ? "var(--status-warning)" : "var(--border)", background: "transparent" }}>
             {bookmarked ? "★" : "☆"}
           </button>
         </div>

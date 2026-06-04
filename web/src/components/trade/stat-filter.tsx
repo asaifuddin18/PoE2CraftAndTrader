@@ -22,6 +22,15 @@ interface StatOption {
   group: string;
 }
 
+// Load stats once and cache in module scope
+let statsCache: StatOption[] | null = null;
+async function loadStats(): Promise<StatOption[]> {
+  if (statsCache) return statsCache;
+  const res = await fetch("/trade-stats.json");
+  statsCache = await res.json();
+  return statsCache!;
+}
+
 function StatSearch({ value, onChange }: { value: string; onChange: (id: string, text: string) => void }) {
   const [q, setQ] = useState(value ? "" : "");
   const [displayText, setDisplayText] = useState(value ? "" : "");
@@ -32,11 +41,12 @@ function StatSearch({ value, onChange }: { value: string; onChange: (id: string,
   useEffect(() => {
     if (!q || q.length < 2) { setResults([]); return; }
     const t = setTimeout(async () => {
-      const res = await fetch(`/api/trade/stats?q=${encodeURIComponent(q)}&limit=15`);
-      const data = await res.json();
-      setResults(data.result ?? []);
+      const stats = await loadStats();
+      const lower = q.toLowerCase();
+      const matches = stats.filter(s => s.text.toLowerCase().includes(lower)).slice(0, 15);
+      setResults(matches);
       setOpen(true);
-    }, 200);
+    }, 150);
     return () => clearTimeout(t);
   }, [q]);
 
