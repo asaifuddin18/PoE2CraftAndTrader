@@ -3,6 +3,7 @@ import "source-map-support/register";
 import * as cdk from "aws-cdk-lib";
 import { StorageStack } from "../stacks/storage-stack";
 import { IamStack } from "../stacks/iam-stack";
+import { ApiStack } from "../stacks/api-stack";
 
 const app = new cdk.App();
 
@@ -11,6 +12,7 @@ const githubOrg        = (app.node.tryGetContext("githubOrg")         as string)
 const githubRepo       = (app.node.tryGetContext("githubRepo")        as string) ?? "PoE2CraftAndTrader";
 const vercelTeamSlug   = (app.node.tryGetContext("vercelTeamSlug")    as string) ?? "asaifuddin18s-projects";
 const vercelProjectName= (app.node.tryGetContext("vercelProjectName") as string) ?? "po-e2-craft-and-trader";
+const corsOrigin       = (app.node.tryGetContext("corsOrigin")        as string) ?? "*";
 
 const awsEnv = {
   account: process.env.CDK_DEFAULT_ACCOUNT,
@@ -35,6 +37,15 @@ new IamStack(app, `Poe2Iam-${envName}`, {
   vercelProjectName,
   env: awsEnv,
   description: `PoE2 Craft & Trade — IAM / OIDC (${envName})`,
+  tags,
+});
+
+new ApiStack(app, `Poe2Api-${envName}`, {
+  env_name: envName,
+  storageStack,
+  corsOrigin,
+  env: awsEnv,
+  description: `PoE2 Craft & Trade — craft solver API (${envName})`,
   tags,
 });
 

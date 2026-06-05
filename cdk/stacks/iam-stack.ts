@@ -71,6 +71,17 @@ export class IamStack extends cdk.Stack {
       resources: ["*"],
     }));
 
+    // Allow the deploy workflow's post-deploy step to populate the craft auth
+    // secret (kept out of the CFN template). Scoped to this app's secret name.
+    githubDeployRole.addToPolicy(new iam.PolicyStatement({
+      sid: "PutCraftAuthSecret",
+      effect: iam.Effect.ALLOW,
+      actions: ["secretsmanager:PutSecretValue"],
+      resources: [
+        `arn:aws:secretsmanager:${region}:${account}:secret:poe2-craft-auth-${env_name}-*`,
+      ],
+    }));
+
     // ── Vercel OIDC ──────────────────────────────────────────────────────────
     // Vercel uses team-scoped OIDC: https://oidc.vercel.com/{teamSlug}
     // Thumbprint: SHA-1 of oidc.vercel.com's leaf certificate

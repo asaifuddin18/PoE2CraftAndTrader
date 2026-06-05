@@ -23,6 +23,9 @@ jobs:
   deploy:
     name: CDK Deploy (${{ github.event.inputs.env || 'dev' }})
     runs-on: ubuntu-latest
+    env:
+      AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+      ENV_NAME: ${{ github.event.inputs.env || 'dev' }}
 
     steps:
       - uses: actions/checkout@v4
@@ -46,3 +49,14 @@ jobs:
       - name: CDK Deploy
         working-directory: cdk
         run: npx cdk deploy --all --require-approval never --context env=${{ github.event.inputs.env || 'dev' }}
+
+      # Push the shared HS256 signing secret into Secrets Manager so the craft
+      # authorizer verifies the same value the Next.js app signs with. Kept out
+      # of the CloudFormation template; sourced from the GitHub `AUTH_SECRET`.
+      - name: Sync auth secret
+        if: ${{ env.AUTH_SECRET != '' }}
+        run: |
+          aws secretsmanager put-secret-value \
+            --secret-id "poe2-craft-auth-${ENV_NAME}" \
+            --secret-string "${AUTH_SECRET}" \
+            --region us-east-1

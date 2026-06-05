@@ -5,7 +5,7 @@ import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis,
   CartesianGrid, Tooltip,
 } from "recharts";
-import type { SolverOutput, PatternResult, CostSummary } from "@/lib/craft-engine";
+import type { SolverOutput, PatternResult, CostSummary, CraftStep } from "@/lib/craft-types";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -17,16 +17,8 @@ interface IdealItem {
   idealId: string; name: string; classId: string;
   baseId: string; itemBase: string; ilvl: number; targetMods: TargetMod[];
 }
-interface ModTier  { tier: number; ilvl: number; weight: number; }
-interface ModDef   { modId: string; name: string; affix: string; modgroups: string[]; tiers: ModTier[]; }
-interface ItemData { mods: Record<string, ModDef[]> }
 
-let itemDataCache: ItemData | null = null;
-async function loadItemData(): Promise<ItemData> {
-  if (itemDataCache) return itemDataCache;
-  itemDataCache = await fetch("/ideal-item-data.json").then(r => r.json());
-  return itemDataCache!;
-}
+const CRAFT_API_URL = process.env.NEXT_PUBLIC_CRAFT_API_URL ?? "";
 
 // ── Formatting ────────────────────────────────────────────────────────────────
 
@@ -101,7 +93,7 @@ function PatternCard({ pattern, div, selected, onClick }: {
 
 // ── Steps display ─────────────────────────────────────────────────────────────
 
-function StepsList({ steps }: { steps: string[] }) {
+function StepsList({ steps, div }: { steps: CraftStep[]; div: number }) {
   return (
     <ol className="flex flex-col gap-1.5">
       {steps.map((step, i) => (
@@ -110,10 +102,52 @@ function StepsList({ steps }: { steps: string[] }) {
             style={{ background: "var(--bg-elevated)", color: "var(--text-secondary)", fontSize: 10 }}>
             {i + 1}
           </span>
-          <p style={{ color: "var(--text-secondary)" }}>{step}</p>
+          <div className="flex-1 min-w-0">
+            <p style={{ color: "var(--text-secondary)" }}>{step.action}</p>
+            <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-0.5" style={{ color: "var(--text-disabled)", fontSize: 10 }}>
+              {step.currency && <span>{step.currency.replace(/_/g, " ")}</span>}
+              {step.probability > 0 && step.probability < 1 && (
+                <span style={{ color: "var(--status-info)" }}>{(step.probability * 100).toFixed(1)}% / attempt</span>
+              )}
+              {step.expectedCost > 0 && <span>~{fmtEx(step.expectedCost, div)}</span>}
+              {step.branchCondition && <span style={{ color: "var(--text-disabled)" }}>· {step.branchCondition}</span>}
+            </div>
+          </div>
         </li>
       ))}
     </ol>
+  );
+}
+
+// ── Cost-vs-success curve (cumulative CDF) ──────────────────────────────────────
+
+function CostCurve({ cost, div }: { cost: CostSummary; div: number }) {
+  if (!cost.costCdf?.length) return null;
+  const data = cost.costCdf.map(p => ({ cost: p.cost, prob: Math.round(p.cumProb * 100) }));
+  return (
+    <div style={{ width: "100%", height: 180 }}>
+      <ResponsiveContainer>
+        <AreaChart data={data} margin={{ top: 8, right: 12, bottom: 4, left: 0 }}>
+          <defs>
+            <linearGradient id="curveFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%"   stopColor="var(--accent)" stopOpacity={0.4} />
+              <stop offset="100%" stopColor="var(--accent)" stopOpacity={0.02} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" />
+          <XAxis dataKey="cost" tickFormatter={(v) => fmtEx(v, div)} tick={{ fill: "var(--text-disabled)", fontSize: 10 }}
+            stroke="var(--border)" />
+          <YAxis domain={[0, 100]} tickFormatter={(v) => `${v}%`} tick={{ fill: "var(--text-disabled)", fontSize: 10 }}
+            stroke="var(--border)" width={36} />
+          <Tooltip
+            contentStyle={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 6, fontSize: 12 }}
+            labelStyle={{ color: "var(--text-secondary)" }}
+            formatter={(v) => [`${Number(v)}% chance done`, "P(success)"]}
+            labelFormatter={(v) => `≤ ${fmtEx(Number(v), div)}`} />
+          <Area type="monotone" dataKey="prob" stroke="var(--accent)" fill="url(#curveFill)" strokeWidth={2} />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
   );
 }
 
@@ -146,14 +180,7 @@ export default function CraftPage() {
     setSolving(true); setError(null); setResult(null); setSelectedId(null);
 
     try {
-      const itemData = await loadItemData();
-      const baseMods = (itemData.mods[selected.baseId] ?? []) as ModDef[];
-      if (!baseMods.length) throw new Error(`No mod pool for "${selected.itemBase}" (id: ${selected.baseId})`);
-
-      const ilvl = selected.ilvl;
-      const eligibleMods = baseMods
-        .map(m => ({ ...m, tiers: m.tiers.filter(t => t.ilvl <= ilvl && t.weight > 0) }))
-        .filter(m => m.tiers.length > 0);
+      if (!CRAFT_API_URL) throw new Error("NEXT_PUBLIC_CRAFT_API_URL is not configured");
 
       const targetMods = selected.targetMods.filter(m => m.modId).map(m => ({
         modId:   m.modId,
@@ -161,14 +188,20 @@ export default function CraftPage() {
         affix:   m.affix,
         tier:    Number(m.tier)    || 1,
         minTier: Number(m.minTier) || Number(m.tier) || 1,
-        group:   baseMods.find(b => b.modId === m.modId)?.modgroups?.[0],
       }));
 
       const k = kRequired === "all" ? targetMods.length : Number(kRequired);
 
-      const res = await fetch("/api/craft/solve", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ baseMods: eligibleMods, targetMods, ilvl, mode, k_required: k }),
+      // 1) mint a short-lived bearer token for the AWS API
+      const tokRes = await fetch("/api/craft/token");
+      const tok = await tokRes.json();
+      if (!tokRes.ok) throw new Error(tok.error ?? "Could not obtain craft token");
+
+      // 2) call API Gateway directly (mod pool is loaded server-side from DynamoDB)
+      const res = await fetch(`${CRAFT_API_URL}/solve`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${tok.token}` },
+        body: JSON.stringify({ baseId: selected.baseId, ilvl: selected.ilvl, targetMods, mode, k_required: k }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? res.statusText);
@@ -336,7 +369,14 @@ export default function CraftPage() {
             {activePattern && (
               <div className="rounded-lg p-4 border" style={{ background:"var(--bg-surface)", borderColor:"var(--border)" }}>
                 <p className="text-sm font-semibold mb-3">{activePattern.pattern_name} — Steps</p>
-                <StepsList steps={activePattern.steps} />
+                <StepsList steps={activePattern.steps} div={div} />
+
+                <div className="mt-4 pt-3 border-t" style={{ borderColor:"var(--border)" }}>
+                  <p className="text-xs font-semibold mb-2" style={{ color:"var(--text-secondary)" }}>
+                    Probability of success vs. cumulative cost
+                  </p>
+                  <CostCurve cost={activePattern.cost} div={div} />
+                </div>
 
                 <div className="mt-4 pt-3 border-t" style={{ borderColor:"var(--border)" }}>
                   <p className="text-xs font-semibold mb-2" style={{ color:"var(--text-secondary)" }}>Cost Distribution</p>
