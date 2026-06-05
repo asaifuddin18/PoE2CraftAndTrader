@@ -63,9 +63,11 @@ export class ApiStack extends cdk.Stack {
         logRetention: logs.RetentionDays.TWO_WEEKS,
       });
 
-    const prepareFn   = makeFn("PrepareFn",   "craft-prepare",   { memorySize: 1024, timeout: cdk.Duration.seconds(20) });
-    const workerFn    = makeFn("WorkerFn",    "craft-worker",    { memorySize: 1769, timeout: cdk.Duration.seconds(30) });
-    const aggregateFn = makeFn("AggregateFn", "craft-aggregate", { memorySize: 1769, timeout: cdk.Duration.seconds(30) });
+    // Async (Standard) workflow → not bound by API Gateway's 30s; give the
+    // compute-heavy Monte-Carlo Lambdas generous headroom.
+    const prepareFn   = makeFn("PrepareFn",   "craft-prepare",   { memorySize: 1024, timeout: cdk.Duration.seconds(30) });
+    const workerFn    = makeFn("WorkerFn",    "craft-worker",    { memorySize: 1769, timeout: cdk.Duration.seconds(120) });
+    const aggregateFn = makeFn("AggregateFn", "craft-aggregate", { memorySize: 1769, timeout: cdk.Duration.seconds(120) });
 
     // Grant data access
     table.grantReadData(prepareFn);

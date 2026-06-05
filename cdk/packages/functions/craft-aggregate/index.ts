@@ -11,7 +11,7 @@ import { aggregate } from "../shared/aggregate";
 import { runPolicy } from "../shared/runPolicy";
 import { readScratch, deleteScratch } from "../shared/loaders";
 
-const N_FINAL = 40_000;
+const N_FINAL = 20_000;
 
 interface AggregateInput {
   scratchKey: string;
