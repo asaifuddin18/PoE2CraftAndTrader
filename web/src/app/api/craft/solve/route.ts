@@ -80,8 +80,9 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ ...result, prices });
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    console.error("[craft/solve]", msg);
+    const msg   = err instanceof Error ? err.message  : String(err);
+    const stack = err instanceof Error ? err.stack     : "";
+    console.error("[craft/solve] ERROR:", msg, "\n", stack);
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
