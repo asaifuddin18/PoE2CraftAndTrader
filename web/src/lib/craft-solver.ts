@@ -1,287 +1,283 @@
 /**
- * Craft Solver — Monte Carlo probability engine
+ * Craft Solver — Multi-path probability engine
  *
- * Models Chaos Orb rerolling: each use draws N mods from the weighted pool
- * (3 prefixes + 3 suffixes). We simulate many iterations and count successes.
+ * Models several crafting strategies and ranks them by expected cost.
+ * All costs are in Exalted Orbs.
  *
- * Mode: "exact"  — all target mods must appear at exactly the specified tier
- * Mode: "minTier" — all target mods must appear at tier ≤ minTier (T1 is best)
+ * Supported paths:
+ *  1. Chaos Orb Spam       — reroll all mods until target appears
+ *  2. Chaos per-mod        — per-mod: how expensive is each mod individually
+ *  3. Fracture + Chaos     — lock the hardest mod first, chaos the rest
+ *  4. Annul + Exalt finish — chaos until N-1 mods hit, annul wrong mod, exalt target
  */
 
-// ── Types (shared with frontend) ─────────────────────────────────────────────
+// ── Types ─────────────────────────────────────────────────────────────────────
 
 export interface SolverMod {
-  modId:    string;   // craftofexile mod ID
-  name:     string;   // display name
+  modId:    string;
+  name:     string;
   affix:    "prefix" | "suffix";
   tier:     number;   // target tier (1 = best)
-  minTier:  number;   // max acceptable tier (inclusive, 1 = strict exact)
-}
-
-export interface SolverInput {
-  baseId:     string;       // craftofexile base ID (e.g. "1" = Ring)
-  ilvl:       number;       // item level
-  targetMods: SolverMod[];  // up to 6 mods
-  mode:       "exact" | "minTier";
-  numSims?:   number;       // default 100_000
+  minTier:  number;   // worst acceptable tier
 }
 
 export interface ChartPoint {
   attempts:    number;
   costExalt:   number;
-  probability: number;  // 0–1
+  probability: number;
 }
 
-export interface SolverResult {
-  mode:                "exact" | "minTier";
+export interface ModBreakdown {
+  modId:         string;
+  name:          string;
+  affix:         "prefix" | "suffix";
+  pPerRoll:      number;   // P(this mod appears at acceptable tier per chaos use)
+  exaltCost:     number;   // E[exalts] to add this mod to 1 open slot
+}
+
+export interface CraftPath {
+  id:                  string;
+  name:                string;
+  description:         string;
   probability:         number;
   expectedAttempts:    number | null;
   expectedCostExalt:   number | null;
   expectedCostDisplay: number | null;
   displayCurrency:     "exalt" | "divine";
-  divineInExalt:       number;
-  chaosPriceExalt:     number;
+  isAnalytical:        boolean;
   chartData:           ChartPoint[];
-  elapsed_ms?:         number;
-  isAnalytical?:       boolean; // true when Monte Carlo returned 0 and we used analytical estimate
+  isBest?:             boolean;
 }
 
-// ── Mod pool types (from ideal-item-data.json) ────────────────────────────────
-
-interface ModTier {
-  tier:   number;
-  ilvl:   number;
-  weight: number;
+export interface SolverResult {
+  mode:           "exact" | "minTier";
+  paths:          CraftPath[];
+  modBreakdown:   ModBreakdown[];
+  divineInExalt:  number;
+  chaosPriceExalt:number;
+  annulPriceExalt:number;
+  elapsed_ms?:    number;
 }
 
-interface ModDef {
-  modId:  string;
-  name:   string;
-  affix:  string;
-  tiers:  ModTier[];
-}
+// ── Pool types ─────────────────────────────────────────────────────────────────
 
-// ── Weighted random draw ──────────────────────────────────────────────────────
+interface ModTier { tier: number; ilvl: number; weight: number; }
+interface ModDef  { modId: string; name: string; affix: string; tiers: ModTier[]; }
 
-/** Precomputed pool for fast weighted sampling */
 interface Pool {
-  modIds:     string[];   // modId per tier entry
-  tiers:      number[];   // tier number per entry
-  cumWeights: number[];   // cumulative weights
+  modIds:      string[];
+  tiers:       number[];
+  cumWeights:  number[];
   totalWeight: number;
 }
 
+// ── Pool building ──────────────────────────────────────────────────────────────
+
 function buildPool(mods: ModDef[], ilvl: number): Pool {
-  const modIds: string[]     = [];
-  const tiers: number[]      = [];
-  const weights: number[]    = [];
+  const modIds: string[]  = [];
+  const tiers: number[]   = [];
+  const weights: number[] = [];
 
   for (const mod of mods) {
-    for (const tier of mod.tiers) {
-      if (tier.ilvl > ilvl || tier.weight <= 0) continue;
+    for (const t of mod.tiers) {
+      if (t.ilvl > ilvl || t.weight <= 0) continue;
       modIds.push(mod.modId);
-      tiers.push(tier.tier);
-      weights.push(tier.weight);
+      tiers.push(t.tier);
+      weights.push(t.weight);
     }
   }
 
   const cumWeights: number[] = [];
   let sum = 0;
   for (const w of weights) { sum += w; cumWeights.push(sum); }
-
   return { modIds, tiers, cumWeights, totalWeight: sum };
 }
 
-/** Draw one random mod from pool, returns index */
+// ── Weighted sampling ──────────────────────────────────────────────────────────
+
 function drawOne(pool: Pool, rng: () => number): number {
   const r = rng() * pool.totalWeight;
   let lo = 0, hi = pool.cumWeights.length - 1;
   while (lo < hi) {
     const mid = (lo + hi) >> 1;
-    if (pool.cumWeights[mid] < r) lo = mid + 1;
-    else hi = mid;
+    if (pool.cumWeights[mid] < r) lo = mid + 1; else hi = mid;
   }
   return lo;
 }
 
-/** Draw N distinct mods from pool (without replacement by modId) */
 function drawN(pool: Pool, n: number, rng: () => number): { modId: string; tier: number }[] {
   const result: { modId: string; tier: number }[] = [];
-  const usedMods = new Set<string>();
-
+  const used = new Set<string>();
   let tries = 0;
-  while (result.length < n && tries < n * 20) {
+  while (result.length < n && tries < n * 30) {
     tries++;
     const idx = drawOne(pool, rng);
     const modId = pool.modIds[idx];
-    if (!usedMods.has(modId)) {
-      usedMods.add(modId);
-      result.push({ modId, tier: pool.tiers[idx] });
-    }
+    if (!used.has(modId)) { used.add(modId); result.push({ modId, tier: pool.tiers[idx] }); }
   }
   return result;
 }
 
-// ── Analytical probability ────────────────────────────────────────────────────
-// Used as fallback when Monte Carlo returns 0 (probability too low for simulation).
-// Computes exact sequential-sampling-without-replacement probability.
+// ── Check success ──────────────────────────────────────────────────────────────
 
-/** Sum of weights for a specific mod at acceptable tiers */
+function checkSuccess(
+  drawn: { modId: string; tier: number }[],
+  targets: SolverMod[],
+  mode: "exact" | "minTier",
+): boolean {
+  for (const t of targets) {
+    const match = drawn.find(d => d.modId === t.modId);
+    if (!match) return false;
+    const worst = mode === "exact" ? t.tier : (t.minTier || t.tier);
+    if (mode === "exact" && match.tier !== t.tier) return false;
+    if (mode !== "exact" && match.tier > worst) return false;
+  }
+  return true;
+}
+
+// ── Analytical probability (fallback when Monte Carlo = 0) ────────────────────
+
+function indivWeight(pool: Pool, idx: number): number {
+  return pool.cumWeights[idx] - (idx > 0 ? pool.cumWeights[idx - 1] : 0);
+}
+
 function acceptableWeight(pool: Pool, modId: string, mode: "exact" | "minTier", target: SolverMod): number {
   let w = 0;
   for (let i = 0; i < pool.modIds.length; i++) {
     if (pool.modIds[i] !== modId) continue;
     const tier = pool.tiers[i];
     const worst = mode === "exact" ? target.tier : (target.minTier || target.tier);
-    if (mode === "exact" && tier !== target.tier) continue;
-    if (mode !== "exact" && tier > worst) continue;
-    // Individual weight = diff in cumulative weights
-    w += pool.cumWeights[i] - (i > 0 ? pool.cumWeights[i - 1] : 0);
+    if (mode === "exact" ? tier === target.tier : tier <= worst) w += indivWeight(pool, i);
   }
   return w;
 }
 
-/** Total weight for a mod across all tiers */
 function totalModWeight(pool: Pool, modId: string): number {
   let w = 0;
   for (let i = 0; i < pool.modIds.length; i++) {
-    if (pool.modIds[i] !== modId) continue;
-    w += pool.cumWeights[i] - (i > 0 ? pool.cumWeights[i - 1] : 0);
+    if (pool.modIds[i] === modId) w += indivWeight(pool, i);
   }
   return w;
 }
 
-/** P(all targets appear at acceptable tiers in nSlots draws) — exact sequential formula,
- *  summed over all permutations. Uses memoised recursion for efficiency. */
 function analyticalSetProb(
-  pool: Pool,
-  targets: SolverMod[],
-  nSlots: number,
-  mode: "exact" | "minTier",
+  pool: Pool, targets: SolverMod[], nSlots: number, mode: "exact" | "minTier",
 ): number {
   if (targets.length === 0) return 1;
   if (targets.length > nSlots) return 0;
-
-  // Precompute per-target acceptable and total weights
-  const accWeights  = targets.map(t => acceptableWeight(pool, t.modId, mode, t));
-  const totalWeights = targets.map(t => totalModWeight(pool, t.modId));
-
-  // Sum over all permutations of the targets, multiplied by nSlots*(nSlots-1)*...
-  // For small k (≤3) this is at most 6 permutations — enumerate them all.
-  let total = 0;
   const k = targets.length;
-
-  function permute(indices: number[], used: boolean[], W: number, product: number): void {
-    if (indices.length === k) {
-      // Multiply by (nSlots × (nSlots-1) × ... × (nSlots-k+1)) / (W_slot1 × W_slot2 × ...)
-      // already encoded in sequential draws; multiply by slot-selection factor
-      let slotFactor = 1;
-      for (let s = 0; s < k; s++) slotFactor *= (nSlots - s);
-      total += product * slotFactor;
-      return;
-    }
+  const accW  = targets.map(t => acceptableWeight(pool, t.modId, mode, t));
+  const totW  = targets.map(t => totalModWeight(pool, t.modId));
+  let total = 0;
+  function perm(used: boolean[], W: number, prod: number, depth: number): void {
+    if (depth === k) { total += prod; return; }
     for (let i = 0; i < k; i++) {
       if (used[i]) continue;
       used[i] = true;
-      permute(
-        [...indices, i],
-        used,
-        W - totalWeights[i],
-        product * (accWeights[i] / W),
-      );
+      perm(used, W - totW[i], prod * (accW[i] / W), depth + 1);
       used[i] = false;
     }
   }
-
-  permute([], Array(k).fill(false), pool.totalWeight, 1);
-
-  // Divide by k! because we already counted each permutation once inside and
-  // the slot factor accounts for ordering. Actually — each permutation is a
-  // distinct ordering, so the product is already the correct marginal probability.
-  // We need to divide by k! to avoid double-counting across identical orderings.
-  // Wait: permute() already enumerates each ordering once, so we sum k! terms,
-  // each representing one specific assignment. This IS the correct marginal P.
-  // But we multiplied by slotFactor inside, which over-counts — let's rethink.
-  //
-  // Correct formula: P = Σ_{permutation σ} P(σ(1) in slot 1) × P(σ(2) in slot 2|...) × ...
-  // × C(nSlots, k) — no, slots are ORDERED draws.
-  //
-  // For n draws (ordered), k specific mods each at acceptable tier:
-  // P = Σ_{k-perm of slots} Σ_{ordering of targets to those slots}
-  //   = C(n,k) × k! × product_of_sequential_probs_averaged_over_orderings
-  //
-  // Simplest correct formula when n=k (all slots are target slots):
-  // P = Σ_orderings product_of_sequential_probs (each ordering gives one term)
-  //
-  // Our permute() gives Σ_orderings (acc_w/W_sequential), but WITHOUT the slot factor.
-  // The slotFactor inside was wrong. Let's remove it and compute correctly:
-
-  // Redo cleanly:
-  total = 0;
-
-  function permuteClean(used: boolean[], W: number, product: number, depth: number): void {
-    if (depth === k) {
-      total += product;
-      return;
-    }
-    for (let i = 0; i < k; i++) {
-      if (used[i]) continue;
-      used[i] = true;
-      permuteClean(used, W - totalWeights[i], product * (accWeights[i] / W), depth + 1);
-      used[i] = false;
-    }
-  }
-
-  permuteClean(Array(k).fill(false), pool.totalWeight, 1, 0);
-
-  // `total` is now Σ_orderings P(this specific ordering).
-  // Each ordering is one way the k mods can appear in k slots.
-  // But we have nSlots slots total, and nSlots ≥ k.
-  // For nSlots > k: multiply by C(nSlots, k) since any k of the nSlots can be the target slots.
-  // For nSlots = k: multiply by 1.
+  perm(Array(k).fill(false), pool.totalWeight, 1, 0);
   const choose = (n: number, r: number): number => {
-    if (r > n) return 0;
+    if (r > n || r < 0) return 0;
     if (r === 0 || r === n) return 1;
     let v = 1;
     for (let i = 0; i < r; i++) v = v * (n - i) / (i + 1);
     return Math.round(v);
   };
-
   return total * choose(nSlots, k);
 }
 
-// ── Core simulation ───────────────────────────────────────────────────────────
+// ── Monte Carlo + analytical combined ─────────────────────────────────────────
 
-/** Check if a set of drawn mods satisfies all target mods */
-function checkSuccess(
-  drawn: { modId: string; tier: number }[],
-  targets: SolverMod[],
+function computeProb(
+  prefixPool: Pool, suffixPool: Pool,
+  prefixTargets: SolverMod[], suffixTargets: SolverMod[],
+  nPrefix: number, nSuffix: number,
   mode: "exact" | "minTier",
-): boolean {
-  for (const target of targets) {
-    const match = drawn.find(d => d.modId === target.modId);
-    if (!match) return false;
-
-    if (mode === "exact") {
-      if (match.tier !== target.tier) return false;
-    } else {
-      // minTier: accept tier 1 through minTier (lower number = better)
-      const worstAcceptable = target.minTier || target.tier;
-      if (match.tier > worstAcceptable) return false;
-    }
+  numSims: number,
+  seed: number,
+): { probability: number; isAnalytical: boolean } {
+  let s = seed;
+  function rng(): number {
+    s = (s * 1664525 + 1013904223) & 0xffffffff;
+    return (s >>> 0) / 0x100000000;
   }
-  return true;
+  const allTargets = [...prefixTargets, ...suffixTargets];
+  let successes = 0;
+  for (let i = 0; i < numSims; i++) {
+    const drawn = [...drawN(prefixPool, nPrefix, rng), ...drawN(suffixPool, nSuffix, rng)];
+    if (checkSuccess(drawn, allTargets, mode)) successes++;
+  }
+  let probability = successes / numSims;
+  let isAnalytical = false;
+  if (probability === 0) {
+    probability = analyticalSetProb(prefixPool, prefixTargets, nPrefix, mode)
+                * analyticalSetProb(suffixPool, suffixTargets, nSuffix, mode);
+    isAnalytical = true;
+  }
+  return { probability, isAnalytical };
 }
+
+// ── Chart generation ───────────────────────────────────────────────────────────
+
+function makeChart(p: number, pricePerAttempt: number): ChartPoint[] {
+  if (p <= 0) return [];
+  const maxAttempts = Math.min(Math.ceil(10 / p), 200_000);
+  const points = 60;
+  const step = Math.max(1, Math.floor(maxAttempts / points));
+  const chart: ChartPoint[] = [];
+  for (let n = step; n <= maxAttempts; n += step) {
+    chart.push({ attempts: n, costExalt: n * pricePerAttempt, probability: 1 - Math.pow(1 - p, n) });
+  }
+  const milestones = [0.5, 0.9].map(pct => Math.ceil(Math.log(1 - pct) / Math.log(1 - p)));
+  for (const n of milestones) {
+    if (n > 0 && n <= maxAttempts)
+      chart.push({ attempts: n, costExalt: n * pricePerAttempt, probability: 1 - Math.pow(1 - p, n) });
+  }
+  chart.sort((a, b) => a.attempts - b.attempts);
+  return chart;
+}
+
+function makePath(
+  id: string, name: string, description: string,
+  probability: number, isAnalytical: boolean,
+  costPerAttemptExalt: number, divineInExalt: number,
+): CraftPath {
+  const expectedAttempts    = probability > 0 ? 1 / probability : null;
+  const expectedCostExalt   = expectedAttempts != null ? expectedAttempts * costPerAttemptExalt : null;
+  const useDiv              = expectedCostExalt != null && expectedCostExalt >= divineInExalt;
+  const expectedCostDisplay = expectedCostExalt != null
+    ? (useDiv ? expectedCostExalt / divineInExalt : expectedCostExalt) : null;
+
+  return {
+    id, name, description, probability, expectedAttempts,
+    expectedCostExalt, expectedCostDisplay,
+    displayCurrency: useDiv ? "divine" : "exalt",
+    isAnalytical,
+    chartData: makeChart(probability, costPerAttemptExalt),
+  };
+}
+
+// ── Main solver ────────────────────────────────────────────────────────────────
 
 export function runSolver(
   allMods: ModDef[],
-  input: SolverInput,
-  chaosPriceExalt: number,
-  divineInExalt: number,
+  input: {
+    baseId: string; ilvl: number; targetMods: SolverMod[];
+    mode: "exact" | "minTier"; numSims?: number;
+  },
+  prices: {
+    chaosExalt:  number;
+    annulExalt:  number;
+    fracOrbExalt:number;
+    divineExalt: number;
+  },
 ): SolverResult {
   const { ilvl, targetMods, mode, numSims = 100_000 } = input;
+  const { chaosExalt, annulExalt, fracOrbExalt, divineExalt } = prices;
 
-  // Build separate prefix/suffix pools
   const prefixMods = allMods.filter(m => m.affix === "prefix");
   const suffixMods = allMods.filter(m => m.affix === "suffix");
   const prefixPool = buildPool(prefixMods, ilvl);
@@ -289,100 +285,145 @@ export function runSolver(
 
   const prefixTargets = targetMods.filter(m => m.affix === "prefix");
   const suffixTargets = targetMods.filter(m => m.affix === "suffix");
-
-  // Validate target mods exist in pool
-  const prefixPoolIds = new Set(prefixPool.modIds);
-  const suffixPoolIds = new Set(suffixPool.modIds);
-  for (const t of prefixTargets) {
-    if (!prefixPoolIds.has(t.modId)) {
-      throw new Error(`Prefix mod "${t.name}" (${t.modId}) not found in pool for this base at ilvl ${ilvl}`);
-    }
-  }
-  for (const t of suffixTargets) {
-    if (!suffixPoolIds.has(t.modId)) {
-      throw new Error(`Suffix mod "${t.name}" (${t.modId}) not found in pool for this base at ilvl ${ilvl}`);
-    }
-  }
-
-  // Number of prefix/suffix slots (3+3 for rare)
   const nPrefix = Math.max(3, prefixTargets.length);
   const nSuffix = Math.max(3, suffixTargets.length);
 
-  // Fast LCG RNG
-  let seed = 0x12345678;
-  function rng(): number {
-    seed = (seed * 1664525 + 1013904223) & 0xffffffff;
-    return (seed >>> 0) / 0x100000000;
+  // ── Per-mod breakdown ──────────────────────────────────────────────────────
+  const modBreakdown: ModBreakdown[] = targetMods.map(t => {
+    const pool = t.affix === "prefix" ? prefixPool : suffixPool;
+    const accW = acceptableWeight(pool, t.modId, mode, t);
+    const pPerRoll = pool.totalWeight > 0 ? accW / pool.totalWeight : 0;
+    const exaltCost = pPerRoll > 0 ? 1 / pPerRoll : Infinity;
+    return { modId: t.modId, name: t.name, affix: t.affix, pPerRoll, exaltCost };
+  }).sort((a, b) => a.pPerRoll - b.pPerRoll);
+
+  const paths: CraftPath[] = [];
+
+  // ── Path 1: Chaos Orb Spam ─────────────────────────────────────────────────
+  const chaosResult = computeProb(
+    prefixPool, suffixPool, prefixTargets, suffixTargets,
+    nPrefix, nSuffix, mode, numSims, 0x12345678,
+  );
+  paths.push(makePath(
+    "chaos", "Chaos Orb Spam",
+    "Reroll all mods simultaneously until all targets appear.",
+    chaosResult.probability, chaosResult.isAnalytical,
+    chaosExalt, divineExalt,
+  ));
+
+  // ── Path 2: Fracture hardest mod → Chaos rest ─────────────────────────────
+  // Strategy: chaos until the single hardest mod appears, fracture it, then
+  // chaos the remaining N-1 mods (which have higher combined probability).
+  if (targetMods.length >= 2 && fracOrbExalt > 0) {
+    const hardest = modBreakdown[0]; // lowest pPerRoll
+    const restTargets = targetMods.filter(m => m.modId !== hardest.modId);
+    const restPrefix  = restTargets.filter(m => m.affix === "prefix");
+    const restSuffix  = restTargets.filter(m => m.affix === "suffix");
+
+    // E[chaos to hit hardest mod alone] = 1/p_hardest
+    const pHardestAlone = hardest.pPerRoll;
+
+    // After fracturing, we need N-1 mods in the remaining N-1 slots
+    // One slot is already taken by the fractured mod, so:
+    const nPrefixAfter = hardest.affix === "prefix" ? nPrefix - 1 : nPrefix;
+    const nSuffixAfter = hardest.affix === "suffix" ? nSuffix - 1 : nSuffix;
+
+    const fracResult = computeProb(
+      prefixPool, suffixPool, restPrefix, restSuffix,
+      nPrefixAfter, nSuffixAfter, mode, numSims, 0xABCDEF01,
+    );
+
+    if (pHardestAlone > 0 && fracResult.probability > 0) {
+      // E[cost] = E[chaos to hit hardest] × chaos + fracture_orb + E[chaos for rest] × chaos
+      const eChaosForHardest = (1 / pHardestAlone) * chaosExalt;
+      const eChaosForRest    = (1 / fracResult.probability) * chaosExalt;
+      const totalExpected    = eChaosForHardest + fracOrbExalt + eChaosForRest;
+
+      // Build a "virtual" path using combined probability and cost
+      // We express it as a single probability at combined cost
+      const fracPath: CraftPath = {
+        id:          "fracture",
+        name:        "Fracture + Chaos",
+        description: `Chaos until "${hardest.name.slice(0, 35)}" appears, fracture it (locks it permanently), then chaos for the remaining ${restTargets.length} mods.`,
+        probability:         fracResult.probability, // probability of the "rest" phase
+        expectedAttempts:    null, // multi-phase, not a simple geometric
+        expectedCostExalt:   totalExpected,
+        expectedCostDisplay: totalExpected >= divineExalt ? totalExpected / divineExalt : totalExpected,
+        displayCurrency:     totalExpected >= divineExalt ? "divine" : "exalt",
+        isAnalytical:        chaosResult.isAnalytical || fracResult.isAnalytical,
+        chartData:           [], // multi-phase — chart not trivial
+      };
+      paths.push(fracPath);
+    }
   }
 
-  let successes = 0;
-  for (let i = 0; i < numSims; i++) {
-    const prefixes = drawN(prefixPool, nPrefix, rng);
-    const suffixes = drawN(suffixPool, nSuffix, rng);
-    const all = [...prefixes, ...suffixes];
-    if (checkSuccess(all, targetMods, mode)) successes++;
-  }
+  // ── Path 3: Chaos until N-1, Annul wrong mod, Exalt hardest ───────────────
+  // Strategy: chaos until N-1 target mods appear + 1 non-target,
+  // annul the non-target (~1/total_mods chance), then exalt the hardest.
+  if (targetMods.length >= 2 && annulExalt > 0) {
+    const hardest = modBreakdown[0];
+    const restTargets = targetMods.filter(m => m.modId !== hardest.modId);
+    const restPrefix  = restTargets.filter(m => m.affix === "prefix");
+    const restSuffix  = restTargets.filter(m => m.affix === "suffix");
 
-  let probability    = successes / numSims;
-  let isAnalytical   = false;
+    // The "chaos until N-1 specific mods appear" probability
+    // We need the N-1 rest mods to appear, but we want one slot to have a NON-target mod
+    // so we can annul and then exalt.
+    // Approximation: P(N-1 rest mods hit in N-1 slots) — one slot free for hardest mod's affix
+    const nPrefixPhase = hardest.affix === "prefix" ? nPrefix - 1 : nPrefix;
+    const nSuffixPhase = hardest.affix === "suffix" ? nSuffix - 1 : nSuffix;
 
-  // When Monte Carlo returns 0, fall back to analytical calculation.
-  // This happens when probability is so low that 100k sims almost never hit it.
-  if (probability === 0) {
-    const analyticPref = analyticalSetProb(prefixPool, prefixTargets, nPrefix, mode);
-    const analyticSuff = analyticalSetProb(suffixPool, suffixTargets, nSuffix, mode);
-    probability   = analyticPref * analyticSuff;
-    isAnalytical  = true;
-  }
+    const annulResult = computeProb(
+      prefixPool, suffixPool, restPrefix, restSuffix,
+      nPrefixPhase, nSuffixPhase, mode, numSims, 0xDEADBEEF,
+    );
 
-  // Expected cost — use null instead of Infinity so JSON serialisation is safe
-  const expectedAttempts    = probability > 0 ? 1 / probability : null;
-  const expectedCostExalt   = expectedAttempts != null ? expectedAttempts * chaosPriceExalt : null;
-  const useDiv              = expectedCostExalt != null && expectedCostExalt >= divineInExalt;
-  const expectedCostDisplay = expectedCostExalt != null
-    ? (useDiv ? expectedCostExalt / divineInExalt : expectedCostExalt)
-    : null;
+    // P(annul removes the unwanted mod) ≈ 1 / total_mods_on_item
+    const totalMods   = nPrefix + nSuffix;
+    const pAnnulHits  = 1 / totalMods;
 
-  // Chart data: cost vs cumulative probability
-  // P(success by N attempts) = 1 - (1-p)^N
-  const chartData: ChartPoint[] = [];
-  if (probability > 0) {
-    const maxAttempts = Math.min(Math.ceil(10 / probability), 100_000);
-    const points = 60;
-    const step   = Math.max(1, Math.floor(maxAttempts / points));
+    // E[exalts for hardest mod in open slot]
+    const hardestPool = hardest.affix === "prefix" ? prefixPool : suffixPool;
+    const hardestTarget = targetMods.find(t => t.modId === hardest.modId)!;
+    const hardestAccW = acceptableWeight(hardestPool, hardest.modId, mode, hardestTarget);
+    const eExalts     = hardestPool.totalWeight > 0 && hardestAccW > 0
+      ? hardestPool.totalWeight / hardestAccW : Infinity;
 
-    for (let n = step; n <= maxAttempts; n += step) {
-      chartData.push({
-        attempts:    n,
-        costExalt:   n * chaosPriceExalt,
-        probability: 1 - Math.pow(1 - probability, n),
+    if (annulResult.probability > 0 && isFinite(eExalts)) {
+      const eChaosPhase = (1 / annulResult.probability) * chaosExalt;
+      const eAnnulPhase = (1 / pAnnulHits) * annulExalt;
+      const eExaltPhase = eExalts; // in exalts (price = 1 exalt each)
+      const totalExpected = eChaosPhase + eAnnulPhase + eExaltPhase;
+
+      paths.push({
+        id:          "annul-exalt",
+        name:        "Chaos → Annul → Exalt",
+        description: `Chaos until ${restTargets.length} mods hit, annul the wrong mod, then exalt "${hardest.name.slice(0, 35)}" into the open slot.`,
+        probability:         annulResult.probability,
+        expectedAttempts:    null,
+        expectedCostExalt:   totalExpected,
+        expectedCostDisplay: totalExpected >= divineExalt ? totalExpected / divineExalt : totalExpected,
+        displayCurrency:     totalExpected >= divineExalt ? "divine" : "exalt",
+        isAnalytical:        annulResult.isAnalytical,
+        chartData:           [],
       });
     }
-    // Always include the 50% and 90% milestones
-    const p50 = Math.ceil(Math.log(0.5) / Math.log(1 - probability));
-    const p90 = Math.ceil(Math.log(0.1) / Math.log(1 - probability));
-    for (const n of [p50, p90]) {
-      if (n > 0 && n <= maxAttempts) {
-        chartData.push({
-          attempts:    n,
-          costExalt:   n * chaosPriceExalt,
-          probability: 1 - Math.pow(1 - probability, n),
-        });
-      }
-    }
-    chartData.sort((a, b) => a.attempts - b.attempts);
   }
+
+  // ── Rank paths and mark best ───────────────────────────────────────────────
+  const ranked = [...paths].sort((a, b) => {
+    const ac = a.expectedCostExalt ?? Infinity;
+    const bc = b.expectedCostExalt ?? Infinity;
+    return ac - bc;
+  });
+  if (ranked.length > 0) ranked[0].isBest = true;
 
   return {
     mode,
-    probability,
-    expectedAttempts,
-    expectedCostExalt,
-    expectedCostDisplay,
-    displayCurrency: useDiv ? "divine" : "exalt",
-    divineInExalt,
-    chaosPriceExalt,
-    chartData,
-    isAnalytical,
+    paths: ranked,
+    modBreakdown,
+    divineInExalt: divineExalt,
+    chaosPriceExalt:  chaosExalt,
+    annulPriceExalt:  annulExalt,
   };
 }
