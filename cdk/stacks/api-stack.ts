@@ -9,6 +9,8 @@ import * as s3 from "aws-cdk-lib/aws-s3";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 import * as logs from "aws-cdk-lib/aws-logs";
 import * as iam from "aws-cdk-lib/aws-iam";
+import * as events from "aws-cdk-lib/aws-events";
+import * as targets from "aws-cdk-lib/aws-events-targets";
 import { HttpApi, HttpMethod, CorsHttpMethod } from "aws-cdk-lib/aws-apigatewayv2";
 import { HttpLambdaIntegration } from "aws-cdk-lib/aws-apigatewayv2-integrations";
 import { HttpLambdaAuthorizer, HttpLambdaResponseType } from "aws-cdk-lib/aws-apigatewayv2-authorizers";
@@ -75,6 +77,18 @@ export class ApiStack extends cdk.Stack {
     scratch.grantReadWrite(prepareFn);
     scratch.grantRead(workerFn);
     scratch.grantReadWrite(aggregateFn); // read for refinement + delete
+
+    // ── price-sync: scheduled poe2scout → DynamoDB (single source of truth) ─────
+    const priceSyncFn = makeFn("PriceSyncFn", "price-sync", {
+      memorySize: 256,
+      timeout: cdk.Duration.seconds(60),
+    });
+    table.grantWriteData(priceSyncFn);
+    new events.Rule(this, "PriceSyncSchedule", {
+      ruleName: `poe2-price-sync-${env_name}`,
+      schedule: events.Schedule.rate(cdk.Duration.minutes(10)),
+      targets: [new targets.LambdaFunction(priceSyncFn)],
+    });
 
     // Retry transient Lambda errors (esp. Lambda.TooManyRequestsException from
     // the Map fan-out hitting account concurrency limits) with exponential backoff.
