@@ -25,7 +25,6 @@ function policy_B3(whittling: boolean, restart_threshold: number): Policy {
   return (rng, pool, target) => {
     const basket: Record<string, number> = { white_base: 1, alch: 1 };
     let state = act_alchemy(empty_rare(), pool, rng);
-    const chaosCurrency = whittling ? "chaos_whittling" : "chaos";
 
     let attempts = 0, guard = 0;
     while (!is_satisfied(state, target)) {
@@ -36,7 +35,9 @@ function policy_B3(whittling: boolean, restart_threshold: number): Policy {
         attempts = 0; continue;
       }
       state = act_chaos(state, pool, rng, whittling ? "whittling" : null);
-      basket[chaosCurrency] = (basket[chaosCurrency] ?? 0) + 1;
+      basket.chaos = (basket.chaos ?? 0) + 1;
+      // Omens are consumed one-per-use — charge the omen on every whittled chaos.
+      if (whittling) basket.omen_whittling = (basket.omen_whittling ?? 0) + 1;
       attempts++;
     }
     return basket;
@@ -97,6 +98,7 @@ function policy_C2(essence_mod: ModEntry, essence_currency: string, restart_thre
         if (++guard > MAX_ITERS) return basket;
         state = act_chaos(state, pool, rng, "whittling");
         basket.chaos = (basket.chaos ?? 0) + 1;
+        basket.omen_whittling = (basket.omen_whittling ?? 0) + 1; // 1 omen per use
         inner++;
       }
       if (is_satisfied(state, target)) return basket;
@@ -132,6 +134,7 @@ function policy_E1(anchor_group: string, inner_restart: number): Policy {
     while (!is_satisfied(state, rest_target) && phase2 < inner_restart) {
       state = act_chaos(state, pool, rng, "whittling");
       basket.chaos = (basket.chaos ?? 0) + 1;
+      basket.omen_whittling = (basket.omen_whittling ?? 0) + 1; // 1 omen per use
       phase2++;
     }
     if (!is_satisfied(state, rest_target)) basket.white_base += 1;
@@ -239,7 +242,7 @@ export function describe_steps(
       return [
         { action: "Acquire white base", currency: "white_base", probability: 1, expectedCost: prices.white_base ?? 0 },
         { action: "Orb of Alchemy → rare with 4 random mods", currency: "alch", probability: 1, expectedCost: prices.alch ?? 0 },
-        { action: `Chaos w/ Omen of Whittling until ${target.k_required} target mod(s) present`, currency: "chaos_whittling",
+        { action: `Chaos + Omen of Whittling (1 omen each) until ${target.k_required} target mod(s) present`, currency: "chaos + omen_whittling",
           probability: Math.min(1, pStep), expectedCost: meanCost, branchCondition: `repeat until satisfied; restart base after ${p.restart_threshold} chaos` },
       ];
     }

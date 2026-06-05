@@ -200,6 +200,8 @@ export function act_annul(s: ItemState, rng: () => number, omen: OmenType = null
 
 export function act_fracture(s: ItemState, rng: () => number): ItemState {
   s = clone(s);
+  // An item can hold only one fractured affix — no-op if already fractured.
+  if (s.fractured_mod_ids.size > 0) return s;
   const all = all_mods(s);
   if (all.length < 4) return s;
   const target = all[Math.floor(rng() * all.length)];
