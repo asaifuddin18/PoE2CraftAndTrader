@@ -126,8 +126,10 @@ export class ApiStack extends cdk.Stack {
 
     // Standard (not Express) so the frontend can poll DescribeExecution and the
     // run is not bound by API Gateway's 30s synchronous ceiling.
+    // No explicit stateMachineName: a fixed name blocks the Express→Standard
+    // replacement (CFN can't create a same-named replacement before deleting
+    // the old one). Let CDK auto-name it; consumers use the ARN token.
     const stateMachine = new sfn.StateMachine(this, "CraftSolver", {
-      stateMachineName: `poe2-craft-solver-${env_name}`,
       stateMachineType: sfn.StateMachineType.STANDARD,
       definitionBody: sfn.DefinitionBody.fromChainable(definition),
       timeout: cdk.Duration.minutes(5),
