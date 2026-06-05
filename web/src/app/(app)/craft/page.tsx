@@ -209,17 +209,30 @@ export default function CraftPage() {
       const executionArn: string = start.executionArn;
       if (!executionArn) throw new Error("Solver did not start");
 
-      // 3) poll until the execution completes (Standard workflow, no 30s cap)
+      // 3) poll until the execution completes (Standard workflow, no 30s cap).
+      // Tolerate transient network blips (e.g. ERR_NETWORK_CHANGED) — a dropped
+      // poll shouldn't kill a run that's still progressing server-side.
       const deadline = Date.now() + 5 * 60 * 1000;
       let data: SolverOutput | null = null;
+      let terminalError: Error | null = null;
+      let consecutiveErrors = 0;
       while (Date.now() < deadline) {
         await new Promise(r => setTimeout(r, 1500));
-        const sRes = await fetch(`${CRAFT_API_URL}/status?executionArn=${encodeURIComponent(executionArn)}`, { headers: auth });
-        const s = await sRes.json();
-        if (!sRes.ok) throw new Error(s.error ?? sRes.statusText);
-        if (s.status === "SUCCEEDED") { data = s.output as SolverOutput; break; }
-        if (s.status && s.status !== "RUNNING") throw new Error(s.error ?? `Solver ${s.status}`);
+        let s: { status?: string; output?: SolverOutput; error?: string };
+        try {
+          const sRes = await fetch(`${CRAFT_API_URL}/status?executionArn=${encodeURIComponent(executionArn)}`, { headers: auth });
+          s = await sRes.json();
+          if (!sRes.ok) throw new Error(s.error ?? sRes.statusText);
+        } catch {
+          // Transient network/poll error — give up only after ~15s of outages.
+          if (++consecutiveErrors >= 10) throw new Error("Lost connection while solving");
+          continue;
+        }
+        consecutiveErrors = 0;
+        if (s.status === "SUCCEEDED") { data = s.output ?? null; break; }
+        if (s.status && s.status !== "RUNNING") { terminalError = new Error(s.error ?? `Solver ${s.status}`); break; }
       }
+      if (terminalError) throw terminalError;
       if (!data) throw new Error("Solver timed out");
       if (!data.feasible) throw new Error(data.error ?? "No feasible craft path found");
       setResult(data);
