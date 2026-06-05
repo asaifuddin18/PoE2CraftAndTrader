@@ -76,17 +76,31 @@ export class ApiStack extends cdk.Stack {
     scratch.grantRead(workerFn);
     scratch.grantReadWrite(aggregateFn); // read for refinement + delete
 
-    // ── Step Functions Express workflow: Prepare → Choice → Map(Worker) → Aggregate
+    // Retry transient Lambda errors (esp. Lambda.TooManyRequestsException from
+    // the Map fan-out hitting account concurrency limits) with exponential backoff.
+    const lambdaRetry = {
+      errors: [
+        "Lambda.TooManyRequestsException",
+        "Lambda.ServiceException",
+        "Lambda.AWSLambdaException",
+        "Lambda.SdkClientException",
+      ],
+      interval: cdk.Duration.seconds(2),
+      maxAttempts: 8,
+      backoffRate: 2,
+    };
+
+    // ── Step Functions Standard workflow: Prepare → Choice → Map(Worker) → Aggregate
     const prepareTask = new tasks.LambdaInvoke(this, "Prepare", {
       lambdaFunction: prepareFn,
       payloadResponseOnly: true,
       resultPath: "$.prep",
-    });
+    }).addRetry(lambdaRetry);
 
     const workerTask = new tasks.LambdaInvoke(this, "Worker", {
       lambdaFunction: workerFn,
       payloadResponseOnly: true,
-    });
+    }).addRetry(lambdaRetry);
 
     const mapState = new sfn.Map(this, "Fanout", {
       itemsPath: "$.prep.jobs",
@@ -94,7 +108,8 @@ export class ApiStack extends cdk.Stack {
         scratchKey: sfn.JsonPath.stringAt("$.prep.scratchKey"),
         job: sfn.JsonPath.objectAt("$$.Map.Item.Value"),
       },
-      maxConcurrency: 20,
+      // Kept modest to stay under low account Lambda concurrency limits.
+      maxConcurrency: 5,
       resultPath: "$.results",
     });
     mapState.itemProcessor(workerTask);
@@ -108,7 +123,7 @@ export class ApiStack extends cdk.Stack {
         jobs: sfn.JsonPath.objectAt("$.prep.jobs"),
         startedAt: sfn.JsonPath.numberAt("$.startedAt"),
       }),
-    });
+    }).addRetry(lambdaRetry);
 
     const infeasible = new sfn.Pass(this, "Infeasible", {
       parameters: {
