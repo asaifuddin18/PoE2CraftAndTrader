@@ -15,9 +15,11 @@ import {
 
 // ── Policy factories (ported from craft-engine.ts) ────────────────────────────
 
-// Absolute per-sample iteration guard — guarantees every Monte-Carlo sample
-// terminates even when the target is effectively unreachable for a pattern.
-const MAX_ITERS = 600;
+// Absolute per-sample action budget — guarantees every Monte-Carlo sample
+// terminates promptly even when the target is effectively unreachable for a
+// pattern. Counts EVERY currency action (incl. nested loops), so worst-case
+// work per sample is bounded regardless of loop nesting.
+const MAX_ITERS = 500;
 
 function policy_B3(whittling: boolean, restart_threshold: number): Policy {
   return (rng, pool, target) => {
@@ -55,6 +57,7 @@ function policy_A1(anchors: TargetMod[], restart_threshold: number): Policy {
 
       let inner = 0;
       while (!anchors.every(t => mod_satisfied(state, t)) && inner < 50) {
+        if (++guard > MAX_ITERS) return basket;
         if (state.prefixes.length + state.suffixes.length < 2) {
           state = act_augment(state, pool, rng);
           basket.augment = (basket.augment ?? 0) + 1;
@@ -91,6 +94,7 @@ function policy_C2(essence_mod: ModEntry, essence_currency: string, restart_thre
 
       let inner = 0;
       while (!is_satisfied(state, target) && inner < restart_threshold) {
+        if (++guard > MAX_ITERS) return basket;
         state = act_chaos(state, pool, rng, "whittling");
         basket.chaos = (basket.chaos ?? 0) + 1;
         inner++;
