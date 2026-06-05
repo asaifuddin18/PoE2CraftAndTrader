@@ -85,7 +85,7 @@ export function build_pools(mods: RawMod[], ilvl: number): ModPool {
         required_level: t.ilvl,
         weight:         t.weight,
         name:           m.name,
-      } satisfies ModEntry))
+      } as ModEntry))
     );
   return {
     prefixes: eligible.filter(m => m.gen_type === "prefix"),
