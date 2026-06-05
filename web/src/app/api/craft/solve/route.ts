@@ -1,15 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { runSolver, type SolverMod } from "@/lib/craft-solver";
+import { solve, type SolverInput, type PriceTable } from "@/lib/craft-engine";
 
 // Price cache (5 min TTL)
-let priceCache: {
-  chaosExalt: number; annulExalt: number; fracOrbExalt: number; divineExalt: number;
-  expiresAt: number;
-} | null = null;
+let priceCache: { prices: PriceTable; expiresAt: number } | null = null;
 
-async function getPrices() {
-  if (priceCache && priceCache.expiresAt > Date.now()) return priceCache;
+async function getPrices(): Promise<PriceTable> {
+  if (priceCache && priceCache.expiresAt > Date.now()) return priceCache.prices;
+
+  const defaults: PriceTable = {
+    white_base:    0.1,
+    chaos:         3,
+    alch:          0.5,
+    annul:         40,
+    exalt:         1,     // base unit
+    regal:         0.25,
+    transmute:     0.1,
+    augment:       0.07,
+    alteration:    0.05,
+    fracturing_orb:100,
+    divine:        90,
+  };
 
   try {
     const [currRes, leagueRes] = await Promise.all([
@@ -26,16 +37,19 @@ async function getPrices() {
     const league      = leagues.find((l: Record<string,unknown>) => l.Value === "Runes of Aldur") ?? leagues[0];
     const divineExalt = Number((league as Record<string,unknown>)?.DivinePrice) || 90;
 
-    priceCache = {
-      chaosExalt:   find("chaos")    || 3,
-      annulExalt:   find("annul")    || 40,
-      fracOrbExalt: find("fracturing-orb") || 100,
-      divineExalt,
-      expiresAt:    Date.now() + 5 * 60 * 1000,
+    const prices: PriceTable = {
+      ...defaults,
+      chaos:          find("chaos")          || defaults.chaos,
+      annul:          find("annul")          || defaults.annul,
+      fracturing_orb: find("fracturing-orb") || defaults.fracturing_orb,
+      regal:          find("regal")          || defaults.regal,
+      divine:         divineExalt,
     };
-    return priceCache;
+
+    priceCache = { prices, expiresAt: Date.now() + 5 * 60 * 1000 };
+    return prices;
   } catch {
-    return { chaosExalt: 3, annulExalt: 40, fracOrbExalt: 100, divineExalt: 90, expiresAt: 0 };
+    return defaults;
   }
 }
 
@@ -47,28 +61,24 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { baseMods, targetMods, mode, ilvl, numSims } = body;
+    const { baseMods, targetMods, ilvl, mode, k_required, essenceMod } = body;
 
     if (!baseMods?.length)   return NextResponse.json({ error: "baseMods required" },   { status: 400 });
     if (!targetMods?.length) return NextResponse.json({ error: "targetMods required" }, { status: 400 });
-    if (!mode)               return NextResponse.json({ error: "mode required" },        { status: 400 });
+
+    const input: SolverInput = {
+      baseMods,
+      targetMods,
+      ilvl:       Number(ilvl) || 84,
+      mode:       mode || "minTier",
+      k_required: Number(k_required) || targetMods.length,
+      essenceMod,
+    };
 
     const prices = await getPrices();
-    const start  = Date.now();
+    const result = solve(input, prices);
 
-    const result = runSolver(
-      baseMods,
-      {
-        baseId:     "client",
-        ilvl:       Number(ilvl) || 84,
-        targetMods: (targetMods as SolverMod[]),
-        mode,
-        numSims:    Math.min(Number(numSims) || 100_000, 500_000),
-      },
-      prices,
-    );
-
-    return NextResponse.json({ ...result, elapsed_ms: Date.now() - start });
+    return NextResponse.json({ ...result, prices });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error("[craft/solve]", msg);

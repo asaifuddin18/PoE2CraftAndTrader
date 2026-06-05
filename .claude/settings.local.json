@@ -32,7 +32,14 @@
       "Bash(mkdir -p /Users/aziz/workplace/PoE2CraftAndTrader/cdk/bin)",
       "Bash(mkdir -p /Users/aziz/workplace/PoE2CraftAndTrader/cdk/stacks)",
       "Bash(npm init *)",
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "Bash(gh run *)",
+      "Bash(gh repo *)",
+      "Bash(gh api *)",
+      "Bash(python3 -c \"import sys,json; [print\\(f[\\\\\"name\\\\\"]\\) for f in json.load\\(sys.stdin\\)]\")",
+      "Bash(op --version)",
+      "Read(//Users/aziz/.config/op/**)",
+      "Bash(npx vercel *)"
     ]
   }
 }
