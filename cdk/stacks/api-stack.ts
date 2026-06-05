@@ -149,9 +149,17 @@ export class ApiStack extends cdk.Stack {
       timeout: cdk.Duration.seconds(15),
       env: { CORS_ORIGIN: corsOrigin ?? "*" },
     });
+    // Execution ARNs are arn:...:execution:<machineName>:<execName>. Build it via
+    // formatArn from the (token) machine name — string .replace() on the ARN token
+    // is a no-op and would scope the policy to the wrong resource.
     statusFn.addToRolePolicy(new iam.PolicyStatement({
       actions: ["states:DescribeExecution"],
-      resources: [`${stateMachine.stateMachineArn.replace(":stateMachine:", ":execution:")}:*`],
+      resources: [cdk.Stack.of(this).formatArn({
+        service: "states",
+        resource: "execution",
+        resourceName: `${stateMachine.stateMachineName}:*`,
+        arnFormat: cdk.ArnFormat.COLON_RESOURCE_NAME,
+      })],
     }));
 
     const authorizerFn = makeFn("AuthorizerFn", "craft-authorizer", {
