@@ -173,10 +173,11 @@ export function act_chaos(s: ItemState, pool: ModPool, rng: () => number, omen: 
   }
 
   remove_mod(s, removed);
-  const pg = present_groups(s);
-  const p = removed.gen_type === "prefix" ? pool.prefixes : pool.suffixes;
-  const added = draw(p, pg, rng);
-  if (added) add_mod(s, added);
+  // Add a random affix into ANY open slot — NOT necessarily the removed type.
+  // With both sides open it's a 50/50 slot pick; if one side is full (e.g. a
+  // 6-mod rare after removing a prefix) it collapses to the only open type.
+  const slot = choose_slot(s, null, rng);
+  if (slot) draw_into(s, pool, slot, rng);
   return s;
 }
 
