@@ -12,7 +12,7 @@ import { auth } from "@/auth";
 
 export const runtime = "nodejs";
 
-const TTL_SECONDS = 120;
+const TTL_SECONDS = 600;
 
 function b64url(input: Buffer | string): string {
   return Buffer.from(input).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");

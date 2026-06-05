@@ -8,6 +8,7 @@ import * as tasks from "aws-cdk-lib/aws-stepfunctions-tasks";
 import * as s3 from "aws-cdk-lib/aws-s3";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 import * as logs from "aws-cdk-lib/aws-logs";
+import * as iam from "aws-cdk-lib/aws-iam";
 import { HttpApi, HttpMethod, CorsHttpMethod } from "aws-cdk-lib/aws-apigatewayv2";
 import { HttpLambdaIntegration } from "aws-cdk-lib/aws-apigatewayv2-integrations";
 import { HttpLambdaAuthorizer, HttpLambdaResponseType } from "aws-cdk-lib/aws-apigatewayv2-authorizers";
@@ -123,28 +124,33 @@ export class ApiStack extends cdk.Stack {
         .otherwise(infeasible),
     );
 
+    // Standard (not Express) so the frontend can poll DescribeExecution and the
+    // run is not bound by API Gateway's 30s synchronous ceiling.
     const stateMachine = new sfn.StateMachine(this, "CraftSolver", {
       stateMachineName: `poe2-craft-solver-${env_name}`,
-      stateMachineType: sfn.StateMachineType.EXPRESS,
+      stateMachineType: sfn.StateMachineType.STANDARD,
       definitionBody: sfn.DefinitionBody.fromChainable(definition),
-      timeout: cdk.Duration.seconds(29),
-      logs: {
-        destination: new logs.LogGroup(this, "CraftSolverLogs", {
-          logGroupName: `/aws/vendedlogs/poe2-craft-solver-${env_name}`,
-          retention: logs.RetentionDays.TWO_WEEKS,
-          removalPolicy: cdk.RemovalPolicy.DESTROY,
-        }),
-        level: sfn.LogLevel.ERROR,
-      },
+      timeout: cdk.Duration.minutes(5),
     });
 
-    // ── API Gateway (HTTP API) → entry Lambda (StartSyncExecution) ──────────────
+    // ── API Gateway (HTTP API) → entry Lambda (StartExecution, async) ───────────
     const entryFn = makeFn("EntryFn", "craft-entry", {
       memorySize: 256,
-      timeout: cdk.Duration.seconds(30),
+      timeout: cdk.Duration.seconds(15),
       env: { STATE_MACHINE_ARN: stateMachine.stateMachineArn, CORS_ORIGIN: corsOrigin ?? "*" },
     });
-    stateMachine.grantStartSyncExecution(entryFn);
+    stateMachine.grantStartExecution(entryFn);
+
+    // Status poller: DescribeExecution for a given executionArn.
+    const statusFn = makeFn("StatusFn", "craft-status", {
+      memorySize: 256,
+      timeout: cdk.Duration.seconds(15),
+      env: { CORS_ORIGIN: corsOrigin ?? "*" },
+    });
+    statusFn.addToRolePolicy(new iam.PolicyStatement({
+      actions: ["states:DescribeExecution"],
+      resources: [`${stateMachine.stateMachineArn.replace(":stateMachine:", ":execution:")}:*`],
+    }));
 
     const authorizerFn = makeFn("AuthorizerFn", "craft-authorizer", {
       memorySize: 256,
@@ -163,7 +169,7 @@ export class ApiStack extends cdk.Stack {
       apiName: `poe2-craft-api-${env_name}`,
       corsPreflight: {
         allowOrigins: [corsOrigin ?? "*"],
-        allowMethods: [CorsHttpMethod.POST, CorsHttpMethod.OPTIONS],
+        allowMethods: [CorsHttpMethod.POST, CorsHttpMethod.GET, CorsHttpMethod.OPTIONS],
         allowHeaders: ["Authorization", "Content-Type"],
       },
     });
@@ -172,6 +178,13 @@ export class ApiStack extends cdk.Stack {
       path: "/solve",
       methods: [HttpMethod.POST],
       integration: new HttpLambdaIntegration("SolveIntegration", entryFn),
+      authorizer,
+    });
+
+    httpApi.addRoutes({
+      path: "/status",
+      methods: [HttpMethod.GET],
+      integration: new HttpLambdaIntegration("StatusIntegration", statusFn),
       authorizer,
     });
 

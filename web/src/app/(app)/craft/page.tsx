@@ -196,15 +196,31 @@ export default function CraftPage() {
       const tokRes = await fetch("/api/craft/token");
       const tok = await tokRes.json();
       if (!tokRes.ok) throw new Error(tok.error ?? "Could not obtain craft token");
+      const auth = { Authorization: `Bearer ${tok.token}` };
 
-      // 2) call API Gateway directly (mod pool is loaded server-side from DynamoDB)
-      const res = await fetch(`${CRAFT_API_URL}/solve`, {
+      // 2) start the solver (async) — mod pool is loaded server-side from DynamoDB
+      const startRes = await fetch(`${CRAFT_API_URL}/solve`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${tok.token}` },
+        headers: { "Content-Type": "application/json", ...auth },
         body: JSON.stringify({ baseId: selected.baseId, ilvl: selected.ilvl, targetMods, mode, k_required: k }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? res.statusText);
+      const start = await startRes.json();
+      if (!startRes.ok) throw new Error(start.error ?? startRes.statusText);
+      const executionArn: string = start.executionArn;
+      if (!executionArn) throw new Error("Solver did not start");
+
+      // 3) poll until the execution completes (Standard workflow, no 30s cap)
+      const deadline = Date.now() + 5 * 60 * 1000;
+      let data: SolverOutput | null = null;
+      while (Date.now() < deadline) {
+        await new Promise(r => setTimeout(r, 1500));
+        const sRes = await fetch(`${CRAFT_API_URL}/status?executionArn=${encodeURIComponent(executionArn)}`, { headers: auth });
+        const s = await sRes.json();
+        if (!sRes.ok) throw new Error(s.error ?? sRes.statusText);
+        if (s.status === "SUCCEEDED") { data = s.output as SolverOutput; break; }
+        if (s.status && s.status !== "RUNNING") throw new Error(s.error ?? `Solver ${s.status}`);
+      }
+      if (!data) throw new Error("Solver timed out");
       if (!data.feasible) throw new Error(data.error ?? "No feasible craft path found");
       setResult(data);
       const best = data.all_patterns?.find((p: PatternResult) => p.is_best);

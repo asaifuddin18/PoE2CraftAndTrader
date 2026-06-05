@@ -1,11 +1,11 @@
 /**
- * API Gateway (HTTP API) proxy → starts the Express state machine synchronously
- * and returns the aggregated SolverOutput.
+ * API Gateway (HTTP API) → starts the Standard state machine asynchronously and
+ * returns the executionArn. The browser then polls GET /status until done.
  *
  * Route: POST /solve   (protected by the Lambda authorizer)
  */
 import { randomUUID } from "node:crypto";
-import { SFNClient, StartSyncExecutionCommand } from "@aws-sdk/client-sfn";
+import { SFNClient, StartExecutionCommand } from "@aws-sdk/client-sfn";
 import type { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from "aws-lambda";
 import type { SolveRequest } from "../shared/types";
 
@@ -15,7 +15,7 @@ const STATE_MACHINE_ARN = process.env.STATE_MACHINE_ARN ?? "";
 const CORS = {
   "Access-Control-Allow-Origin": process.env.CORS_ORIGIN ?? "*",
   "Access-Control-Allow-Headers": "Authorization,Content-Type",
-  "Access-Control-Allow-Methods": "POST,OPTIONS",
+  "Access-Control-Allow-Methods": "POST,GET,OPTIONS",
   "Content-Type": "application/json",
 };
 
@@ -32,7 +32,7 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
   } catch {
     return reply(400, { error: "Invalid JSON body" });
   }
-  if (!req.baseId)            return reply(400, { error: "baseId required" });
+  if (!req.baseId)             return reply(400, { error: "baseId required" });
   if (!req.targetMods?.length) return reply(400, { error: "targetMods required" });
 
   const executionName = randomUUID();
@@ -46,17 +46,12 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
   };
 
   try {
-    const res = await sfn.send(new StartSyncExecutionCommand({
+    const res = await sfn.send(new StartExecutionCommand({
       stateMachineArn: STATE_MACHINE_ARN,
       name: executionName,
       input: JSON.stringify(input),
     }));
-
-    if (res.status !== "SUCCEEDED") {
-      return reply(500, { error: `Solver ${res.status}: ${res.error ?? ""} ${res.cause ?? ""}`.trim() });
-    }
-    // Express sync output is a JSON string; pass it through as the SolverOutput.
-    return reply(200, JSON.parse(res.output ?? "{}"));
+    return reply(202, { executionArn: res.executionArn, status: "RUNNING" });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error("[craft-entry] ERROR:", msg);
