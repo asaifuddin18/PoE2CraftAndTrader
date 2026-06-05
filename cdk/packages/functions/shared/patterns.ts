@@ -15,14 +15,19 @@ import {
 
 // ── Policy factories (ported from craft-engine.ts) ────────────────────────────
 
+// Absolute per-sample iteration guard — guarantees every Monte-Carlo sample
+// terminates even when the target is effectively unreachable for a pattern.
+const MAX_ITERS = 600;
+
 function policy_B3(whittling: boolean, restart_threshold: number): Policy {
   return (rng, pool, target) => {
     const basket: Record<string, number> = { white_base: 1, alch: 1 };
     let state = act_alchemy(empty_rare(), pool, rng);
     const chaosCurrency = whittling ? "chaos_whittling" : "chaos";
 
-    let attempts = 0;
+    let attempts = 0, guard = 0;
     while (!is_satisfied(state, target)) {
+      if (++guard > MAX_ITERS) break;
       if (attempts >= restart_threshold) {
         basket.white_base += 1; basket.alch += 1;
         state = act_alchemy(empty_rare(), pool, rng);
@@ -39,8 +44,9 @@ function policy_B3(whittling: boolean, restart_threshold: number): Policy {
 function policy_A1(anchors: TargetMod[], restart_threshold: number): Policy {
   return (rng, pool, target) => {
     const basket: Record<string, number> = { white_base: 1 };
-    let attempts = 0;
+    let attempts = 0, guard = 0;
     while (true) {
+      if (++guard > MAX_ITERS) return basket;
       if (attempts >= restart_threshold) { basket.white_base += 1; attempts = 0; }
 
       let state = act_transmute(empty_rare(), pool, rng);
@@ -76,8 +82,9 @@ function policy_A1(anchors: TargetMod[], restart_threshold: number): Policy {
 function policy_C2(essence_mod: ModEntry, essence_currency: string, restart_threshold: number): Policy {
   return (rng, pool, target) => {
     const basket: Record<string, number> = { white_base: 1 };
-    let attempts = 0;
+    let attempts = 0, guard = 0;
     while (true) {
+      if (++guard > MAX_ITERS) return basket;
       if (attempts >= restart_threshold) { basket.white_base += 1; attempts = 0; }
       let state = act_essence(empty_rare(), pool, rng, essence_mod, "greater");
       basket[essence_currency] = (basket[essence_currency] ?? 0) + 1;
@@ -151,7 +158,10 @@ export function build_policy(job: PatternJob, target: TargetSpec): Policy {
 
 // ── Candidate enumeration (the Map fan-out list) ──────────────────────────────
 
-const N_RANK = 50_000;
+// Monte-Carlo sample count for ranking. Kept modest so each worker finishes
+// well within the Lambda timeout on ~1 vCPU; the winning pattern is refined at
+// a higher N in the aggregate step.
+const N_RANK = 6_000;
 
 export function enumerate_candidates(req: SolveRequest, target: TargetSpec, pool: ModPool): PatternJob[] {
   const jobs: PatternJob[] = [];
