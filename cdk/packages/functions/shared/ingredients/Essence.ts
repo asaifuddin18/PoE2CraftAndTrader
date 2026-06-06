@@ -11,9 +11,9 @@ export class Essence implements CraftingIngredient {
 
   constructor(
     readonly id: string,
-    private readonly guaranteedMod: ModEntry,
-    private readonly tier: EssenceTier,
-    private readonly omen: OmenType = null,
+    readonly guaranteedMod: ModEntry,
+    readonly tier: EssenceTier,
+    readonly omen: OmenType = null,
   ) {}
 
   apply(item: CraftedItem, ctx: CraftContext) {

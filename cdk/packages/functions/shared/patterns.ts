@@ -25,6 +25,7 @@ import {
   RegalOrb,
   TransmutationOrb,
 } from "./ingredients";
+import { OmenOfWhittling, withModifiers } from "./modifiers";
 
 // ── Policy factories (ported from craft-engine.ts) ────────────────────────────
 
@@ -70,7 +71,10 @@ function policy_B3(whittling: boolean, restart_threshold: number): Policy {
         ({ state, basket } = applyIngredient(state, new AlchemyOrb(), pool, rng, basket));
         attempts = 0; continue;
       }
-      ({ state, basket } = applyIngredient(state, new ChaosOrb(whittling ? "whittling" : null), pool, rng, basket));
+      const chaos = whittling
+        ? withModifiers(new ChaosOrb(), new OmenOfWhittling())
+        : new ChaosOrb();
+      ({ state, basket } = applyIngredient(state, chaos, pool, rng, basket));
       attempts++;
     }
     return basket;
@@ -130,7 +134,7 @@ function policy_C2(essence_mod: ModEntry, essence_currency: string, restart_thre
       let inner = 0;
       while (!is_satisfied(state, target) && inner < restart_threshold) {
         if (++guard > MAX_ITERS) return basket;
-        ({ state, basket } = applyIngredient(state, new ChaosOrb("whittling"), pool, rng, basket));
+        ({ state, basket } = applyIngredient(state, withModifiers(new ChaosOrb(), new OmenOfWhittling()), pool, rng, basket));
         inner++;
       }
       if (is_satisfied(state, target)) return basket;
@@ -177,7 +181,7 @@ function policy_E1(anchor_group: string, inner_restart: number): Policy {
       let phase2 = 0;
       while (!is_satisfied(state, rest_target) && phase2 < inner_restart) {
         if (++guard > MAX_ITERS) return basket;
-        ({ state, basket } = applyIngredient(state, new ChaosOrb("whittling"), pool, rng, basket));
+        ({ state, basket } = applyIngredient(state, withModifiers(new ChaosOrb(), new OmenOfWhittling()), pool, rng, basket));
         phase2++;
       }
       if (is_satisfied(state, target)) return basket;
