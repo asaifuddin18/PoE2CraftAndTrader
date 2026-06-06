@@ -2,12 +2,15 @@ import type { CraftingIngredient } from "./CraftingIngredient";
 import type { CraftContext } from "../domain/CraftContext";
 import { craftResult, rejectedResult } from "../domain/CraftResult";
 import type { CraftedItem } from "../domain/CraftedItem";
+import { rejectCorruptedItem } from "./rejectCorruptedItem";
 
 export class AnnulmentOrb implements CraftingIngredient {
   readonly id = "annul";
   readonly displayName = "Orb of Annulment";
 
   apply(item: CraftedItem, ctx: CraftContext) {
+    const corrupted = rejectCorruptedItem(item);
+    if (corrupted) return corrupted;
     if (item.rarity === "normal") return rejectedResult(item, "Orb of Annulment requires a magic or rare item");
     if (item.nonFracturedMods().length === 0) return rejectedResult(item, "Item has no removable affix");
     let next = item.clone();

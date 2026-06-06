@@ -3,6 +3,7 @@ import type { CraftContext } from "../domain/CraftContext";
 import { craftResult, rejectedResult } from "../domain/CraftResult";
 import type { CraftedItem } from "../domain/CraftedItem";
 import type { ModEntry } from "../types";
+import { rejectCorruptedItem } from "./rejectCorruptedItem";
 
 export type EssenceTier = "greater" | "perfect";
 
@@ -22,6 +23,8 @@ export class Essence implements CraftingIngredient {
   ) {}
 
   apply(item: CraftedItem, ctx: CraftContext) {
+    const corrupted = rejectCorruptedItem(item);
+    if (corrupted) return corrupted;
     const guaranteedMod = this.guaranteedMods[Math.floor(ctx.rng() * this.guaranteedMods.length)];
     if (!guaranteedMod) return rejectedResult(item, `${this.displayName} is not applicable to this item type`);
     let next = item.clone();

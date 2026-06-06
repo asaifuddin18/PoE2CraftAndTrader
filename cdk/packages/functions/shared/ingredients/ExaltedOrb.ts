@@ -3,6 +3,7 @@ import type { CraftContext } from "../domain/CraftContext";
 import { craftResult, rejectedResult } from "../domain/CraftResult";
 import type { CraftedItem } from "../domain/CraftedItem";
 import { filterPoolByRequiredLevel } from "./filterPoolByRequiredLevel";
+import { rejectCorruptedItem } from "./rejectCorruptedItem";
 
 export class ExaltedOrb implements CraftingIngredient {
   constructor(
@@ -12,6 +13,8 @@ export class ExaltedOrb implements CraftingIngredient {
   ) {}
 
   apply(item: CraftedItem, ctx: CraftContext) {
+    const corrupted = rejectCorruptedItem(item);
+    if (corrupted) return corrupted;
     if (item.rarity !== "rare") return rejectedResult(item, `${this.displayName} requires a rare item`);
     if (!item.openPrefix() && !item.openSuffix()) return rejectedResult(item, "Rare item has no open affix slot");
     let next = item.clone();

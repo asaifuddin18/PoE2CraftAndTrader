@@ -108,6 +108,10 @@ function magic(prefixes: ModEntry[], suffixes: ModEntry[] = []): CraftedItem {
   return CraftedItem.fromState(state);
 }
 
+function corrupted(item: CraftedItem): CraftedItem {
+  return CraftedItem.fromState({ ...item.toState(), corrupted: true });
+}
+
 function modIds(i: CraftedItem): string[] {
   const s = i.toState();
   return [...s.prefixes, ...s.suffixes].map(m => m.modId).sort();
@@ -502,15 +506,35 @@ test("Conflicting side-specific annulment omens cannot be combined", () => {
   );
 });
 
-test("Fracturing Orb requires at least four mods and allows only one fractured affix", () => {
+test("Fracturing Orb requires a rare item with at least four affixes and no existing fracture", () => {
+  const magicItem = magic([p1], [s1]);
+  assertRejected(new FracturingOrb().apply(magicItem, ctx()), magicItem);
+
   const tooFew = new FracturingOrb().apply(item([p1], [s1]), ctx(rngSequence([0])));
-  assert.equal(tooFew.item.fracturedModIds.size, 0);
+  assertRejected(tooFew, item([p1], [s1]));
 
   const first = new FracturingOrb().apply(item([p1, p2], [s1, s2]), ctx(rngSequence([0])));
   assert.equal(first.item.fracturedModIds.size, 1);
   const second = new FracturingOrb().apply(first.item, ctx(rngSequence([0.9])));
-  assert.equal(second.item.fracturedModIds.size, 1);
+  assertRejected(second, first.item);
   assert.deepEqual(first.cost, { fracturing_orb: 1 });
+});
+
+test("Fracturing Orb can select any affix regardless of side or required level", () => {
+  const base = item([p1, p4], [s1, s4]);
+  const first = new FracturingOrb().apply(base, ctx(rngSequence([0])));
+  const last = new FracturingOrb().apply(base, ctx(rngSequence([0.999])));
+
+  assert.ok(first.item.fracturedModIds.has("p1"));
+  assert.ok(last.item.fracturedModIds.has("s4"));
+});
+
+test("Fracturing Orb has no compatible omen", () => {
+  assert.throws(
+    () => withModifiers(new FracturingOrb(), new OmenOfWhittling())
+      .apply(item([p1, p2], [s1, s2]), ctx()),
+    /cannot apply/,
+  );
 });
 
 test("Greater Essence upgrades magic to rare and adds only the guaranteed mod", () => {
@@ -651,6 +675,40 @@ test("Invalid Greater/Perfect Essence uses are rejected without cost", () => {
 
   assertRejected(testEssence("greater_essence_test", guaranteed, "greater").apply(normal, ctx()), normal);
   assertRejected(testEssence("perfect_essence_test", guaranteed, "perfect").apply(magicItem, ctx()), magicItem);
+});
+
+test("All modeled crafting ingredients reject corrupted items without cost", () => {
+  const normal = corrupted(CraftedItem.emptyNormal());
+  const magicItem = corrupted(magic([p1]));
+  const rare = corrupted(item([p1, p2], [s1, s2]));
+  const guaranteed = mod("guaranteed_corrupted_test", "prefix", 1);
+
+  const cases = [
+    { ingredient: new TransmutationOrb(), item: normal },
+    { ingredient: new GreaterTransmutationOrb(), item: normal },
+    { ingredient: new PerfectTransmutationOrb(), item: normal },
+    { ingredient: new AlchemyOrb(), item: normal },
+    { ingredient: new AugmentationOrb(), item: magicItem },
+    { ingredient: new GreaterAugmentationOrb(), item: magicItem },
+    { ingredient: new PerfectAugmentationOrb(), item: magicItem },
+    { ingredient: new RegalOrb(), item: magicItem },
+    { ingredient: new GreaterRegalOrb(), item: magicItem },
+    { ingredient: new PerfectRegalOrb(), item: magicItem },
+    { ingredient: new ExaltedOrb(), item: rare },
+    { ingredient: new GreaterExaltedOrb(), item: rare },
+    { ingredient: new PerfectExaltedOrb(), item: rare },
+    { ingredient: new ChaosOrb(), item: rare },
+    { ingredient: new GreaterChaosOrb(), item: rare },
+    { ingredient: new PerfectChaosOrb(), item: rare },
+    { ingredient: new AnnulmentOrb(), item: rare },
+    { ingredient: new FracturingOrb(), item: rare },
+    { ingredient: testEssence("greater_essence_corrupted_test", guaranteed, "greater"), item: magicItem },
+    { ingredient: testEssence("perfect_essence_corrupted_test", guaranteed, "perfect"), item: rare },
+  ];
+
+  for (const entry of cases) {
+    assertRejected(entry.ingredient.apply(entry.item, ctx()), entry.item);
+  }
 });
 
 test("An omen is not consumed when its ingredient use is rejected", () => {

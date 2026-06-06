@@ -3,6 +3,7 @@ import type { CraftContext } from "../domain/CraftContext";
 import { craftResult, rejectedResult } from "../domain/CraftResult";
 import type { CraftedItem } from "../domain/CraftedItem";
 import { filterPoolByRequiredLevel } from "./filterPoolByRequiredLevel";
+import { rejectCorruptedItem } from "./rejectCorruptedItem";
 
 export class ChaosOrb implements CraftingIngredient {
   constructor(
@@ -12,6 +13,8 @@ export class ChaosOrb implements CraftingIngredient {
   ) {}
 
   apply(item: CraftedItem, ctx: CraftContext) {
+    const corrupted = rejectCorruptedItem(item);
+    if (corrupted) return corrupted;
     if (item.rarity !== "rare") return rejectedResult(item, "Chaos Orb requires a rare item");
     if (item.nonFracturedMods().length === 0) return rejectedResult(item, "Rare item has no removable affix");
     const removed = item.removeRandomAffix(ctx);

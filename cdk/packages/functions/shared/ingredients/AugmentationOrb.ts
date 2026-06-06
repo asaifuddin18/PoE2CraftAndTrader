@@ -3,6 +3,7 @@ import type { CraftContext } from "../domain/CraftContext";
 import { craftResult, rejectedResult } from "../domain/CraftResult";
 import type { CraftedItem } from "../domain/CraftedItem";
 import { filterPoolByRequiredLevel } from "./filterPoolByRequiredLevel";
+import { rejectCorruptedItem } from "./rejectCorruptedItem";
 
 export class AugmentationOrb implements CraftingIngredient {
   constructor(
@@ -12,6 +13,8 @@ export class AugmentationOrb implements CraftingIngredient {
   ) {}
 
   apply(item: CraftedItem, ctx: CraftContext) {
+    const corrupted = rejectCorruptedItem(item);
+    if (corrupted) return corrupted;
     if (item.rarity !== "magic") return rejectedResult(item, "Orb of Augmentation requires a magic item");
     if (!item.openPrefix() && !item.openSuffix()) return rejectedResult(item, "Magic item has no open affix slot");
     const result = item.addRandomAffix({
