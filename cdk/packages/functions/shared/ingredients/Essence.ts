@@ -19,7 +19,9 @@ export class Essence implements CraftingIngredient {
     let next = item.clone();
 
     if (this.tier === "perfect") {
-      const removed = next.removeRandomAffix(ctx);
+      const room = makeRoomForGuaranteedMod(next, this.guaranteedMod, ctx);
+      next = room.item;
+      const removed = room.removed ?? next.removeRandomAffix(ctx);
       next = removed.item.addMod(this.guaranteedMod);
       return craftResult(next, { [this.id]: 1 }, [
         {
@@ -30,21 +32,32 @@ export class Essence implements CraftingIngredient {
       ]);
     }
 
-    next = next.setRarity("rare").clearAffixes().addMod(this.guaranteedMod);
-    const added: string[] = [];
-    for (let i = 1; i < 4; i++) {
-      const result = next.addRandomAffix(ctx);
-      next = result.item;
-      if (result.added) added.push(result.added.modId);
-      else break;
-    }
+    next = next.setRarity("rare");
+    const room = makeRoomForGuaranteedMod(next, this.guaranteedMod, ctx);
+    next = room.item.addMod(this.guaranteedMod);
 
     return craftResult(next, { [this.id]: 1 }, [
       {
         type: "currency",
         message: this.displayName,
-        details: { tier: this.tier, guaranteed: this.guaranteedMod.modId, added },
+        details: { tier: this.tier, guaranteed: this.guaranteedMod.modId, removed: room.removed?.removed?.modId ?? null },
       },
     ]);
   }
+}
+
+function makeRoomForGuaranteedMod(item: CraftedItem, guaranteedMod: ModEntry, ctx: CraftContext) {
+  const state = item.toState();
+  const side = guaranteedMod.gen_type;
+  const sideMods = side === "prefix" ? state.prefixes : state.suffixes;
+  const sideFull = sideMods.length >= (state.rarity === "magic" ? 1 : 3);
+
+  if (!sideFull) return { item, removed: null };
+
+  const candidates = sideMods.filter(m => !state.fractured_mod_ids.has(m.modId));
+  if (candidates.length === 0) return { item, removed: null };
+
+  const removed = candidates[Math.floor(ctx.rng() * candidates.length)];
+  const next = item.removeMod(removed);
+  return { item: next, removed: { item: next, removed } };
 }

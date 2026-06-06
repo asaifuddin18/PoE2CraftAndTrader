@@ -129,6 +129,7 @@ function policy_C2(essence_mod: ModEntry, essence_currency: string, restart_thre
       if (++guard > MAX_ITERS) return basket;
       if (attempts >= restart_threshold) { basket = spend(basket, "white_base"); attempts = 0; }
       let state = empty_rare();
+      ({ state, basket } = applyIngredient(state, new TransmutationOrb(), pool, rng, basket));
       ({ state, basket } = applyIngredient(state, new Essence(essence_currency, essence_mod, "greater"), pool, rng, basket));
 
       let inner = 0;
@@ -311,7 +312,8 @@ export function describe_steps(
       const e = p.essence!;
       return [
         baseStep,
-        { action: `${e.currency.replace(/_/g, " ")} → rare, guarantees anchor mod`, currency: e.currency, probability: 1, expectedCost: prices[e.currency] ?? 0 },
+        { action: "Transmute → magic", currency: "transmute", probability: 1, expectedCost: prices.transmute ?? 0 },
+        { action: `${e.currency.replace(/_/g, " ")} → rare, adds guaranteed anchor mod`, currency: e.currency, probability: 1, expectedCost: prices[e.currency] ?? 0 },
         { action: `Chaos w/ Omen of Whittling to fill remaining ${target.required_mods.length - 1} mod(s)`, currency: "chaos",
           probability: 1, expectedCost: meanCost, branchCondition: `restart base after ${p.restart_threshold} chaos` },
       ];

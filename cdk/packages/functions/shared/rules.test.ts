@@ -234,15 +234,27 @@ test("Fracturing Orb requires at least four mods and allows only one fractured a
   assert.deepEqual(first.cost, { fracturing_orb: 1 });
 });
 
-test("Greater Essence creates a rare item with guaranteed mod plus random affixes", () => {
+test("Greater Essence upgrades magic to rare and adds only the guaranteed mod", () => {
   const guaranteed = mod("guaranteed", "prefix", 1);
   const result = new Essence("greater_essence_test", guaranteed, "greater")
-    .apply(CraftedItem.emptyRare(), ctx(seededRng(9)));
+    .apply(magic([], [s1]), ctx(seededRng(9)));
   const state = result.item.toState();
   assert.equal(state.rarity, "rare");
   assert.ok(state.prefixes.some(m => m.modId === "guaranteed"));
-  assert.equal(countMods(result.item), 4);
+  assert.ok(state.suffixes.some(m => m.modId === "s1"));
+  assert.equal(countMods(result.item), 2);
   assert.deepEqual(result.cost, { greater_essence_test: 1 });
+});
+
+test("Greater Essence removes a same-side affix when the guaranteed side is full", () => {
+  const guaranteed = mod("guaranteed_prefix", "prefix", 1);
+  const result = new Essence("greater_essence_test", guaranteed, "greater")
+    .apply(item([p1, p2, p3], [s1]), ctx(rngSequence([0])));
+  const state = result.item.toState();
+  assert.equal(state.prefixes.length, 3);
+  assert.ok(state.prefixes.some(m => m.modId === "guaranteed_prefix"));
+  assert.ok(state.suffixes.some(m => m.modId === "s1"));
+  assert.equal(countMods(result.item), 4);
 });
 
 test("Perfect Essence replaces one removable affix and supports crystallisation omens", () => {
@@ -265,6 +277,16 @@ test("Perfect Essence replaces one removable affix and supports crystallisation 
   assert.ok(dex.item.toState().prefixes.some(m => m.modId === "p1"));
   assert.ok(!dex.item.toState().suffixes.some(m => m.modId === "s1"));
   assert.ok(dex.item.toState().suffixes.some(m => m.modId === "guaranteed_suffix"));
+});
+
+test("Perfect Essence removes a same-side affix when the guaranteed side is full", () => {
+  const guaranteed = mod("guaranteed_prefix", "prefix", 1);
+  const result = new Essence("perfect_essence_test", guaranteed, "perfect")
+    .apply(item([p1, p2, p3], [s1]), ctx(rngSequence([0])));
+  const state = result.item.toState();
+  assert.equal(state.prefixes.length, 3);
+  assert.ok(state.prefixes.some(m => m.modId === "guaranteed_prefix"));
+  assert.ok(state.suffixes.some(m => m.modId === "s1"));
 });
 
 test("Omens reject incompatible ingredients", () => {
