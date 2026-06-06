@@ -3,9 +3,14 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "npm run test:rules",
+    "test": "npm run test:rules && npm run test:game-data && npm run test:game-data-types",
     "test:rules": "TS_NODE_TRANSPILE_ONLY=1 TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\",\"moduleResolution\":\"node\",\"esModuleInterop\":true,\"strict\":false,\"ignoreDeprecations\":\"6.0\"}' ts-node --skip-project packages/functions/shared/rules.test.ts",
-    "generate:essences": "node scripts/generate-essence-catalog.mjs"
+    "test:game-data": "TS_NODE_TRANSPILE_ONLY=1 TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\",\"moduleResolution\":\"node\",\"esModuleInterop\":true,\"resolveJsonModule\":true,\"strict\":false,\"ignoreDeprecations\":\"6.0\"}' ts-node --skip-project packages/game-data/game-data.test.ts",
+    "test:game-data-types": "tsc -p tsconfig.game-data.json",
+    "generate:essences": "node scripts/generate-essence-catalog.mjs",
+    "bootstrap:game-data": "node scripts/bootstrap-game-data.mjs",
+    "project:game-data": "TS_NODE_TRANSPILE_ONLY=1 TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\",\"moduleResolution\":\"node\",\"esModuleInterop\":true,\"strict\":false,\"ignoreDeprecations\":\"6.0\"}' ts-node --skip-project scripts/project-game-data.ts",
+    "sync:game-data": "TS_NODE_TRANSPILE_ONLY=1 TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\",\"moduleResolution\":\"node\",\"esModuleInterop\":true,\"strict\":false,\"ignoreDeprecations\":\"6.0\"}' ts-node --skip-project scripts/sync-game-data.ts"
   },
   "keywords": [],
   "author": "",

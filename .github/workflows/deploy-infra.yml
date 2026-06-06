@@ -46,9 +46,22 @@ jobs:
           role-to-assume: arn:aws:iam::664658497880:role/poe2-github-deploy-dev
           aws-region: us-east-1
 
+      - name: Validate game data and projections
+        working-directory: cdk
+        run: |
+          npm test
+          npm run project:game-data
+          git diff --exit-code ../web/public/ideal-item-data.json
+
       - name: CDK Deploy
         working-directory: cdk
         run: npx cdk deploy --all --require-approval never --context env=${{ github.event.inputs.env || 'dev' }}
+
+      - name: Project game data into DynamoDB
+        working-directory: cdk
+        env:
+          DYNAMODB_TABLE: poe2-craft-trader-${{ env.ENV_NAME }}
+        run: npm run sync:game-data
 
       # Push the shared HS256 signing secret into Secrets Manager so the craft
       # authorizer verifies the same value the Next.js app signs with. Kept out

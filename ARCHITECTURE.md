@@ -304,7 +304,7 @@ Vercel-hosted Next.js frontend + AWS backend. All GGG API calls are proxied thro
 | Lambda: trade-proxy | Forwards trade searches to GGG API, enforces rate limits, caches results in DynamoDB (60s TTL) |
 | Lambda: craft-engine | Loads mod weights from DynamoDB, computes probabilities and expected costs |
 | Lambda: price-sync | Fetches poe2.ninja currency prices on a 10-minute EventBridge schedule |
-| Mod data (manual load) | Loaded manually post-patch via admin script directly into DynamoDB |
+| Mod data | Code-owned equipment/mod catalog projected into DynamoDB after deploy |
 | DynamoDB | All storage: user accounts, saved queries, ideal items, mod data, GGG response cache (TTL), price cache (TTL) |
 
 ### 4.4 Infrastructure as Code — AWS CDK
@@ -366,7 +366,7 @@ packages/
 | Dependency | Used For | Notes |
 |---|---|---|
 | poe2.ninja | Live currency prices | Fetch every 10 min, stored in DynamoDB with TTL |
-| RePoE2 (GitHub) | Datamined mod weights by item class + ilvl | Manually loaded into DynamoDB post-patch by developer |
+| RePoE2 (GitHub) | Datamined mod weights by item class + ilvl | Reviewed and imported into the code-owned game-data catalog |
 | Google OAuth | User sign-in | Standard OAuth 2.0 via NextAuth.js |
 
 ### 4.6 Data Flow — Trade Search
@@ -481,7 +481,7 @@ packages/
 
 ### 6.1 Mod Weight Data
 
-Mod weights are sourced from RePoE2, a community-maintained datamined dataset. Data is loaded manually into DynamoDB by the developer after each patch — intentional, as crafting mechanics change frequently enough that developer review before loading is safer than automation.
+Mod weights originate from reviewed datamined sources, then live in the repository's code-owned game-data catalog. The deployment workflow validates that catalog and projects it into DynamoDB. DynamoDB is the runtime store, while Git is the authoritative history of game-rule changes.
 
 > **Key nuances the solver must handle correctly:**
 > - Mod pools are restricted by item class
@@ -538,7 +538,7 @@ Each of the top 3 returned paths:
 | Frontend framework | Next.js (App Router) | SSR for listings, Vercel-native |
 | Auth library | NextAuth.js v5 | First-class Google OAuth, JWT sessions |
 | Database | DynamoDB | Serverless; all storage including mod data and cache TTL items |
-| Mod data storage | DynamoDB (permanent, no TTL) | Queried directly by Lambda at runtime; updated manually post-patch |
+| Mod data storage | Code-owned catalog projected to DynamoDB | Queried from DynamoDB at runtime; synchronized after deploy |
 | Solver algorithm | Beam search (width ~50) | Bounds computation to < 10s; exact search is infeasible |
 | Probability validation | Monte Carlo (dev only) | Verify beam search accuracy during development — not at request time |
 | Currency prices | poe2.ninja (10-min polling) | Stored in DynamoDB with TTL |
@@ -551,7 +551,7 @@ Each of the top 3 returned paths:
 | Phase | Deliverable | Dependencies |
 |---|---|---|
 | 0 — CDK foundation | Bootstrap CDK. Define StorageStack, ApiStack, SchedulerStack. Deploy to dev. | None |
-| 1 — Mod data load | Prepare RePoE2 data, write admin load script, load into DynamoDB. Validate queryable by item class + ilvl. | Phase 0 |
+| 1 — Mod data load | Maintain reviewed equipment/mod definitions in code and project them into DynamoDB. Validate queryable by item class + ilvl. | Phase 0 |
 | 2 — Auth | Google OAuth via NextAuth. DynamoDB user table. Protected routes. | Phase 0 |
 | 3 — Trade search | trade-proxy Lambda. Query builder UI, results feed. | Phase 1, 2 |
 | 4 — Ideal item | Ideal item editor UI, DynamoDB storage, link to saved query. | Phase 2 |

@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "declaration": false,
+    "rootDir": ".."
+  },
+  "include": [
+    "packages/game-data/**/*.ts",
+    "scripts/project-game-data.ts",
+    "scripts/sync-game-data.ts"
+  ]
+}

@@ -71,6 +71,13 @@ export class IamStack extends cdk.Stack {
       resources: ["*"],
     }));
 
+    githubDeployRole.addToPolicy(new iam.PolicyStatement({
+      sid: "ProjectGameData",
+      effect: iam.Effect.ALLOW,
+      actions: ["dynamodb:Scan", "dynamodb:BatchWriteItem"],
+      resources: [storageStack.table.tableArn],
+    }));
+
     // Allow the deploy workflow's post-deploy step to populate the craft auth
     // secret (kept out of the CFN template). Scoped to this app's secret name.
     githubDeployRole.addToPolicy(new iam.PolicyStatement({

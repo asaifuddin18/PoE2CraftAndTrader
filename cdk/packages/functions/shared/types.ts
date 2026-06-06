@@ -61,7 +61,7 @@ export interface RawMod {
   affix:     string;                  // "prefix" | "suffix"
   modgroups: string[];
   tags:      string[];
-  statId?:   string;
+  statId?:   string | null;
   tiers:     { tier: number; ilvl: number; weight: number; values: unknown[] }[];
 }
 
