@@ -757,15 +757,16 @@ test("Greater Essence upgrades magic to rare and adds only the guaranteed mod", 
   assert.deepEqual(result.cost, { greater_essence_test: 1 });
 });
 
-test("Greater Essence removes a same-side affix when the guaranteed side is full", () => {
+test("Greater Essence rejects rare items and impossible full guaranteed sides without cost", () => {
   const guaranteed = mod("guaranteed_prefix", "prefix", 1);
-  const result = testEssence("greater_essence_test", guaranteed, "greater")
-    .apply(item([p1, p2, p3], [s1]), ctx(rngSequence([0])));
-  const state = result.item.toState();
-  assert.equal(state.prefixes.length, 3);
-  assert.ok(state.prefixes.some(m => m.modId === "guaranteed_prefix"));
-  assert.ok(state.suffixes.some(m => m.modId === "s1"));
-  assert.equal(countMods(result.item), 4);
+  const rare = item([p1], [s1]);
+  assertRejected(testEssence("greater_essence_test", guaranteed, "greater").apply(rare, ctx()), rare);
+
+  const invalidFullMagic = magic([p1, p2, p3], [s1]);
+  assertRejected(
+    testEssence("greater_essence_test", guaranteed, "greater").apply(invalidFullMagic, ctx()),
+    invalidFullMagic,
+  );
 });
 
 test("Essence catalog resolves different guaranteed mods by item type", () => {
@@ -827,6 +828,49 @@ test("Perfect Essence removes a same-side affix when the guaranteed side is full
   assert.ok(state.suffixes.some(m => m.modId === "s1"));
 });
 
+test("Perfect Essence removes any random affix when the guaranteed side already has room", () => {
+  const guaranteed = mod("guaranteed_prefix", "prefix", 1);
+  const result = testEssence("perfect_essence_test", guaranteed, "perfect")
+    .apply(item([p1], [s1]), ctx(rngSequence([0, 0.999])));
+
+  assert.ok(result.item.toState().prefixes.some(m => m.modId === "p1"));
+  assert.ok(result.item.toState().prefixes.some(m => m.modId === "guaranteed_prefix"));
+  assert.equal(result.item.toState().suffixes.length, 0);
+});
+
+test("Perfect Essence and Crystallisation fail atomically when removal cannot create guaranteed-side room", () => {
+  const guaranteedPrefix = mod("guaranteed_prefix", "prefix", 1);
+  const full = item([p1, p2, p3], [s1, s2, s3]);
+  const result = withModifiers(
+    testEssence("perfect_essence_test", guaranteedPrefix, "perfect"),
+    new OmenOfDextralCrystallisation(),
+  ).apply(full, ctx(rngSequence([0, 0])));
+
+  assertRejected(result, full);
+});
+
+test("Crystallisation fails without cost when its requested removal side is unavailable", () => {
+  const guaranteed = mod("guaranteed_prefix", "prefix", 1);
+  const noSuffix = item([p1], []);
+  const result = withModifiers(
+    testEssence("perfect_essence_test", guaranteed, "perfect"),
+    new OmenOfDextralCrystallisation(),
+  ).apply(noSuffix, ctx(rngSequence([0])));
+
+  assertRejected(result, noSuffix);
+});
+
+test("Crystallisation omens apply only to Perfect Essences", () => {
+  const guaranteed = mod("guaranteed_prefix", "prefix", 1);
+  assert.throws(
+    () => withModifiers(
+      testEssence("greater_essence_test", guaranteed, "greater"),
+      new OmenOfSinistralCrystallisation(),
+    ).apply(magic([], [s1]), ctx()),
+    /cannot apply/,
+  );
+});
+
 test("Omens reject incompatible ingredients", () => {
   assert.throws(
     () => withModifiers(new TransmutationOrb(), new OmenOfWhittling()).apply(CraftedItem.emptyNormal(), ctx()),
@@ -882,6 +926,8 @@ test("Invalid Greater/Perfect Essence uses are rejected without cost", () => {
   const magicItem = magic([p1], [s1]);
 
   assertRejected(testEssence("greater_essence_test", guaranteed, "greater").apply(normal, ctx()), normal);
+  const rare = item([p1], [s1]);
+  assertRejected(testEssence("greater_essence_test", guaranteed, "greater").apply(rare, ctx()), rare);
   assertRejected(testEssence("perfect_essence_test", guaranteed, "perfect").apply(magicItem, ctx()), magicItem);
 });
 

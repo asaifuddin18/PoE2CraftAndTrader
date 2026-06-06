@@ -30,6 +30,7 @@ export const DEFAULT_PRICES: PriceTable = {
   omen_sinistral_coronation: 1, omen_dextral_coronation: 1,
   omen_sinistral: 1, omen_dextral: 1, omen_greater: 1,
   omen_sinistral_erasure: 1, omen_dextral_erasure: 1,
+  omen_sinistral_crystallisation: 1, omen_dextral_crystallisation: 1,
 };
 
 /** Load the mod pool for a base from DynamoDB and resolve it for this ilvl. */

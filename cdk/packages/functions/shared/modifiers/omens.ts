@@ -178,6 +178,10 @@ export class OmenOfSinistralCrystallisation extends OmenModifier {
   readonly costKey = "omen_sinistral_crystallisation";
   readonly ingredientIds = ["essence"];
 
+  canApplyTo(ingredient: CraftingIngredient): boolean {
+    return ingredient instanceof Essence && ingredient.tier === "perfect";
+  }
+
   selectRemoveAffix(_item: CraftedItem, candidates: ModEntry[], ctx: CraftContext): ModEntry | null {
     return randomFrom(candidates.filter(m => m.gen_type === "prefix"), ctx);
   }
@@ -188,6 +192,10 @@ export class OmenOfDextralCrystallisation extends OmenModifier {
   readonly displayName = "Omen of Dextral Crystallisation";
   readonly costKey = "omen_dextral_crystallisation";
   readonly ingredientIds = ["essence"];
+
+  canApplyTo(ingredient: CraftingIngredient): boolean {
+    return ingredient instanceof Essence && ingredient.tier === "perfect";
+  }
 
   selectRemoveAffix(_item: CraftedItem, candidates: ModEntry[], ctx: CraftContext): ModEntry | null {
     return randomFrom(candidates.filter(m => m.gen_type === "suffix"), ctx);

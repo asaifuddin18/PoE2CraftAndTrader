@@ -32,46 +32,51 @@ export class Essence implements CraftingIngredient {
     if (this.tier === "perfect") {
       if (item.rarity !== "rare") return rejectedResult(item, "Perfect Essence requires a rare item");
       if (item.nonFracturedMods().length === 0) return rejectedResult(item, "Rare item has no removable affix");
-      const room = makeRoomForGuaranteedMod(next, guaranteedMod, ctx);
-      next = room.item;
-      const removed = room.removed ?? next.removeRandomAffix(ctx);
+      const removalContext = ctx.hooks?.selectRemoveAffix || ctx.hooks?.filterRemoveCandidates || hasOpenSlot(item, guaranteedMod)
+        ? ctx
+        : restrictRemovalToGuaranteedSide(ctx, guaranteedMod);
+      const removed = next.removeRandomAffix(removalContext);
+      if (!removed.removed || !hasOpenSlot(removed.item, guaranteedMod)) {
+        return rejectedResult(item, `${this.displayName} could not create room for its guaranteed affix`);
+      }
       next = removed.item.addMod(guaranteedMod);
       return craftResult(next, { [this.id]: 1 }, [
         {
           type: "currency",
           message: this.displayName,
-          details: { tier: this.tier, removed: removed.removed?.modId ?? null, guaranteed: guaranteedMod.modId },
+          details: { tier: this.tier, removed: removed.removed.modId, guaranteed: guaranteedMod.modId },
         },
       ]);
     }
 
-    if (item.rarity === "normal") return rejectedResult(item, "Greater Essence requires a magic or rare item");
+    if (item.rarity !== "magic") return rejectedResult(item, "Greater Essence requires a magic item");
     next = next.setRarity("rare");
-    const room = makeRoomForGuaranteedMod(next, guaranteedMod, ctx);
-    next = room.item.addMod(guaranteedMod);
+    if (!hasOpenSlot(next, guaranteedMod)) {
+      return rejectedResult(item, `${this.displayName} has no open slot for its guaranteed affix`);
+    }
+    next = next.addMod(guaranteedMod);
 
     return craftResult(next, { [this.id]: 1 }, [
       {
         type: "currency",
         message: this.displayName,
-        details: { tier: this.tier, guaranteed: guaranteedMod.modId, removed: room.removed?.removed?.modId ?? null },
+        details: { tier: this.tier, guaranteed: guaranteedMod.modId },
       },
     ]);
   }
 }
 
-function makeRoomForGuaranteedMod(item: CraftedItem, guaranteedMod: ModEntry, ctx: CraftContext) {
-  const state = item.toState();
-  const side = guaranteedMod.gen_type;
-  const sideMods = side === "prefix" ? state.prefixes : state.suffixes;
-  const sideFull = sideMods.length >= (state.rarity === "magic" ? 1 : 3);
+function hasOpenSlot(item: CraftedItem, guaranteedMod: ModEntry): boolean {
+  return guaranteedMod.gen_type === "prefix" ? item.openPrefix() : item.openSuffix();
+}
 
-  if (!sideFull) return { item, removed: null };
-
-  const candidates = sideMods.filter(m => !state.fractured_mod_ids.has(m.modId));
-  if (candidates.length === 0) return { item, removed: null };
-
-  const removed = candidates[Math.floor(ctx.rng() * candidates.length)];
-  const next = item.removeMod(removed);
-  return { item: next, removed: { item: next, removed } };
+function restrictRemovalToGuaranteedSide(ctx: CraftContext, guaranteedMod: ModEntry): CraftContext {
+  return {
+    ...ctx,
+    hooks: {
+      ...ctx.hooks,
+      filterRemoveCandidates: (_item, candidates) =>
+        candidates.filter(candidate => candidate.gen_type === guaranteedMod.gen_type),
+    },
+  };
 }
