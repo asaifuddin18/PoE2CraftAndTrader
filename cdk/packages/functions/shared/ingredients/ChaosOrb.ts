@@ -28,13 +28,14 @@ export class ChaosOrb implements CraftingIngredient {
       ...ctx,
       pool: filterPoolByRequiredLevel(ctx.pool, this.minimumRequiredLevel),
     });
+    if (!added.added) return rejectedResult(item, `${this.displayName} could not add an eligible replacement affix`);
     return craftResult(added.item, { [this.id]: 1 }, [
       {
         type: "currency",
         message: this.displayName,
         details: {
           removed: removed.removed.modId,
-          added: added.added?.modId ?? null,
+          added: added.added.modId,
           minimumRequiredLevel: this.minimumRequiredLevel,
         },
       },

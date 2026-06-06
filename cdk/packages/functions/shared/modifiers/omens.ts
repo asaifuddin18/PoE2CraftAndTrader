@@ -44,8 +44,8 @@ export class OmenOfSinistralErasure extends OmenModifier {
   readonly costKey = "omen_sinistral_erasure";
   readonly ingredientIds = ["chaos", "greater_chaos", "perfect_chaos"];
 
-  selectRemoveAffix(_item: CraftedItem, candidates: ModEntry[], ctx: CraftContext): ModEntry | null {
-    return randomFrom(candidates.filter(m => m.gen_type === "prefix"), ctx);
+  filterRemoveCandidates(_item: CraftedItem, candidates: ModEntry[]): ModEntry[] {
+    return candidates.filter(m => m.gen_type === "prefix");
   }
 }
 
@@ -55,8 +55,8 @@ export class OmenOfDextralErasure extends OmenModifier {
   readonly costKey = "omen_dextral_erasure";
   readonly ingredientIds = ["chaos", "greater_chaos", "perfect_chaos"];
 
-  selectRemoveAffix(_item: CraftedItem, candidates: ModEntry[], ctx: CraftContext): ModEntry | null {
-    return randomFrom(candidates.filter(m => m.gen_type === "suffix"), ctx);
+  filterRemoveCandidates(_item: CraftedItem, candidates: ModEntry[]): ModEntry[] {
+    return candidates.filter(m => m.gen_type === "suffix");
   }
 }
 

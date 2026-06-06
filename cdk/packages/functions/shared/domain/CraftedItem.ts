@@ -147,7 +147,10 @@ export class CraftedItem {
   }
 
   private chooseRemovableAffix(ctx: CraftContext, hooks?: CraftActionHooks): ModEntry | null {
-    const removable = this.nonFracturedMods();
+    const allRemovable = this.nonFracturedMods();
+    const removable = hooks?.filterRemoveCandidates
+      ? hooks.filterRemoveCandidates(this, allRemovable, ctx)
+      : allRemovable;
     if (removable.length === 0) return null;
     if (hooks?.selectRemoveAffix) {
       const hooked = hooks.selectRemoveAffix(this, removable, ctx);

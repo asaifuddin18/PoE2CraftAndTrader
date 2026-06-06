@@ -41,7 +41,7 @@ function assertComposable(modifiers: CraftingModifier[]): void {
     modifiers.findIndex(candidate => candidate.id === modifier.id) !== index);
   if (duplicate) throw new Error(`${duplicate.displayName} cannot be used more than once`);
 
-  for (const hook of ["selectAddSlot", "selectRemoveAffix"] as const) {
+  for (const hook of ["selectAddSlot", "filterRemoveCandidates", "selectRemoveAffix"] as const) {
     const selectors = modifiers.filter(modifier => modifier[hook]);
     if (selectors.length > 1) {
       throw new Error(`${selectors.map(modifier => modifier.displayName).join(" and ")} cannot be combined`);
@@ -51,11 +51,13 @@ function assertComposable(modifiers: CraftingModifier[]): void {
 
 function composeHooks(modifiers: CraftingModifier[]): CraftActionHooks {
   const addSelector = modifiers.find(modifier => modifier.selectAddSlot)?.selectAddSlot;
+  const removeFilter = modifiers.find(modifier => modifier.filterRemoveCandidates)?.filterRemoveCandidates;
   const removeSelector = modifiers.find(modifier => modifier.selectRemoveAffix)?.selectRemoveAffix;
 
   return {
     selectAddSlot: addSelector,
     allowAddSlotFallback: modifiers.some(modifier => modifier.allowAddSlotFallback),
+    filterRemoveCandidates: removeFilter,
     selectRemoveAffix: removeSelector,
     modifyAddCount(ingredientId, baseCount) {
       return modifiers.reduce(

@@ -501,6 +501,18 @@ test("Chaos Orb cannot remove fractured affixes", () => {
   assert.ok(result.item.toState().prefixes.some(m => m.modId === "p1"));
 });
 
+test("Chaos Orb fails atomically when it cannot remove or add an eligible affix", () => {
+  const allFractured = item([p1], [s1], [p1, s1]);
+  assertRejected(new ChaosOrb().apply(allFractured, ctx()), allFractured);
+
+  const noReplacementPool: ModPool = { prefixes: [], suffixes: [] };
+  const original = item([p1], [s1]);
+  assertRejected(
+    new ChaosOrb().apply(original, ctxWithPool(noReplacementPool, rngSequence([0]))),
+    original,
+  );
+});
+
 test("Greater and Perfect Chaos Orbs enforce the replacement required-level floor", () => {
   const thresholdPool: ModPool = {
     prefixes: [mod("p_low", "prefix", 20), mod("p_greater", "prefix", 35), mod("p_perfect", "prefix", 50)],
@@ -555,6 +567,51 @@ test("Sinistral/Dextral erasure omens target chaos removal side", () => {
   const dex = withModifiers(new ChaosOrb(), new OmenOfDextralErasure())
     .apply(item([p1], [s1]), ctx(rngSequence([0, 0])));
   assert.equal(removedEventId(dex), "s1");
+});
+
+test("Erasure omens fail without cost when their removal side has no eligible affix", () => {
+  const noPrefix = item([], [s1]);
+  const noSuffix = item([p1], []);
+  assertRejected(
+    withModifiers(new ChaosOrb(), new OmenOfSinistralErasure()).apply(noPrefix, ctx()),
+    noPrefix,
+  );
+  assertRejected(
+    withModifiers(new ChaosOrb(), new OmenOfDextralErasure()).apply(noSuffix, ctx()),
+    noSuffix,
+  );
+});
+
+test("Whittling combines with Erasure to remove the lowest-level affix from that side", () => {
+  const result = withModifiers(
+    new PerfectChaosOrb(),
+    new OmenOfWhittling(),
+    new OmenOfSinistralErasure(),
+  ).apply(
+    item([p4, p1], [s1]),
+    ctxWithPool({
+      prefixes: [mod("replacement_p50", "prefix", 50)],
+      suffixes: [mod("replacement_s50", "suffix", 50)],
+    }, rngSequence([0, 0])),
+  );
+
+  assert.equal(removedEventId(result), "p1");
+  assert.deepEqual(result.cost, {
+    perfect_chaos: 1,
+    omen_whittling: 1,
+    omen_sinistral_erasure: 1,
+  });
+});
+
+test("Conflicting Erasure omens cannot be combined", () => {
+  assert.throws(
+    () => withModifiers(
+      new ChaosOrb(),
+      new OmenOfSinistralErasure(),
+      new OmenOfDextralErasure(),
+    ).apply(item([p1], [s1]), ctx()),
+    /cannot be combined/,
+  );
 });
 
 test("Whittling and erasure omens work with tiered Chaos Orbs", () => {
