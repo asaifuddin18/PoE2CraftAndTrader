@@ -8,19 +8,19 @@ export class AnnulmentOrb implements CraftingIngredient {
   readonly displayName = "Orb of Annulment";
 
   apply(item: CraftedItem, ctx: CraftContext) {
-    if (item.rarity !== "rare") return rejectedResult(item, "Orb of Annulment requires a rare item");
-    if (item.nonFracturedMods().length === 0) return rejectedResult(item, "Rare item has no removable affix");
+    if (item.rarity === "normal") return rejectedResult(item, "Orb of Annulment requires a magic or rare item");
+    if (item.nonFracturedMods().length === 0) return rejectedResult(item, "Item has no removable affix");
     let next = item.clone();
     const removed: string[] = [];
-    const count = Math.min(
-      ctx.hooks?.modifyRemoveCount?.(this.id, 1) ?? 1,
-      next.nonFracturedMods().length,
-    );
+    const count = ctx.hooks?.modifyRemoveCount?.(this.id, 1) ?? 1;
 
     for (let i = 0; i < count; i++) {
       const result = next.removeRandomAffix(ctx);
+      if (!result.removed) {
+        return rejectedResult(item, `${this.displayName} could not remove ${count} affixes`);
+      }
       next = result.item;
-      if (result.removed) removed.push(result.removed.modId);
+      removed.push(result.removed.modId);
     }
 
     return craftResult(next, { [this.id]: 1 }, [

@@ -26,7 +26,7 @@ export const DEFAULT_PRICES: PriceTable = {
   augment: 0.07, greater_augment: 0.07, perfect_augment: 0.07,
   alteration: 0.05, fracturing_orb: 100, divine: 90,
   // Omens are separate one-per-use consumables, priced per use.
-  omen_whittling: 2,
+  omen_whittling: 2, omen_greater_annulment: 1,
 };
 
 /** Load the mod pool for a base from DynamoDB and resolve it for this ilvl. */

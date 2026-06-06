@@ -86,14 +86,21 @@ export class OmenOfGreaterExaltation extends OmenModifier {
   readonly id = "omen_greater";
   readonly displayName = "Omen of Greater Exaltation";
   readonly costKey = "omen_greater";
-  readonly ingredientIds = ["exalt", "greater_exalt", "perfect_exalt", "annul"];
+  readonly ingredientIds = ["exalt", "greater_exalt", "perfect_exalt"];
 
   modifyAddCount(ingredientId: string, baseCount: number): number {
-    return ["exalt", "greater_exalt", "perfect_exalt"].includes(ingredientId) ? baseCount + 1 : baseCount;
+    return baseCount + 1;
   }
+}
+
+export class OmenOfGreaterAnnulment extends OmenModifier {
+  readonly id = "omen_greater_annulment";
+  readonly displayName = "Omen of Greater Annulment";
+  readonly costKey = "omen_greater_annulment";
+  readonly ingredientIds = ["annul"];
 
   modifyRemoveCount(ingredientId: string, baseCount: number): number {
-    return ingredientId === "annul" ? baseCount + 1 : baseCount;
+    return baseCount + 1;
   }
 }
 

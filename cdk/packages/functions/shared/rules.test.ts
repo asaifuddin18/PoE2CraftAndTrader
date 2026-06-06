@@ -28,6 +28,7 @@ import {
   OmenOfDextralCrystallisation,
   OmenOfDextralErasure,
   OmenOfDextralExaltation,
+  OmenOfGreaterAnnulment,
   OmenOfGreaterExaltation,
   OmenOfSinistralAnnulment,
   OmenOfSinistralCrystallisation,
@@ -417,15 +418,25 @@ test("Whittling and erasure omens work with tiered Chaos Orbs", () => {
   assert.deepEqual(erasure.cost, { greater_chaos: 1, omen_dextral_erasure: 1 });
 });
 
-test("Annulment Orb removes one affix; Greater omen removes two", () => {
+test("Annulment Orb removes one non-fractured affix from magic or rare items", () => {
   const plain = new AnnulmentOrb().apply(item([p1, p2], [s1]), ctx(rngSequence([0])));
   assert.equal(countMods(plain.item), 2);
   assert.deepEqual(plain.cost, { annul: 1 });
 
-  const greater = withModifiers(new AnnulmentOrb(), new OmenOfGreaterExaltation())
+  const magicResult = new AnnulmentOrb().apply(magic([p1], [s1]), ctx(rngSequence([0])));
+  assert.equal(countMods(magicResult.item), 1);
+  assert.deepEqual(magicResult.cost, { annul: 1 });
+
+  const fractured = new AnnulmentOrb().apply(item([p1], [s1], [p1]), ctx(rngSequence([0])));
+  assert.ok(fractured.item.toState().prefixes.some(entry => entry.modId === "p1"));
+  assert.equal(fractured.item.toState().suffixes.length, 0);
+});
+
+test("Omen of Greater Annulment removes two affixes and charges once", () => {
+  const greater = withModifiers(new AnnulmentOrb(), new OmenOfGreaterAnnulment())
     .apply(item([p1, p2], [s1]), ctx(rngSequence([0, 0])));
   assert.equal(countMods(greater.item), 1);
-  assert.deepEqual(greater.cost, { annul: 1, omen_greater: 1 });
+  assert.deepEqual(greater.cost, { annul: 1, omen_greater_annulment: 1 });
 });
 
 test("Sinistral/Dextral annulment omens target removal side", () => {
@@ -438,6 +449,57 @@ test("Sinistral/Dextral annulment omens target removal side", () => {
     .apply(item([p1], [s1]), ctx(rngSequence([0])));
   assert.equal(dex.item.toState().prefixes.length, 1);
   assert.equal(dex.item.toState().suffixes.length, 0);
+});
+
+test("Side-specific annulment fails without cost when its side has no removable affix", () => {
+  const noPrefix = item([], [s1]);
+  const noSuffix = item([p1], []);
+  assertRejected(
+    withModifiers(new AnnulmentOrb(), new OmenOfSinistralAnnulment()).apply(noPrefix, ctx()),
+    noPrefix,
+  );
+  assertRejected(
+    withModifiers(new AnnulmentOrb(), new OmenOfDextralAnnulment()).apply(noSuffix, ctx()),
+    noSuffix,
+  );
+});
+
+test("Greater and Sinistral Annulment omens combine to remove two prefixes", () => {
+  const result = withModifiers(
+    new AnnulmentOrb(),
+    new OmenOfGreaterAnnulment(),
+    new OmenOfSinistralAnnulment(),
+  ).apply(item([p1, p2], [s1]), ctx(rngSequence([0, 0])));
+
+  assert.deepEqual(result.item.toState().prefixes, []);
+  assert.equal(result.item.toState().suffixes.length, 1);
+  assert.deepEqual(result.cost, {
+    annul: 1,
+    omen_greater_annulment: 1,
+    omen_sinistral_annulment: 1,
+  });
+});
+
+test("Combined Greater and side-specific Annulment fails atomically without two removable affixes", () => {
+  const onlyOneRemovablePrefix = item([p1, p2], [s1], [p2]);
+  const result = withModifiers(
+    new AnnulmentOrb(),
+    new OmenOfGreaterAnnulment(),
+    new OmenOfSinistralAnnulment(),
+  ).apply(onlyOneRemovablePrefix, ctx(rngSequence([0, 0])));
+
+  assertRejected(result, onlyOneRemovablePrefix);
+});
+
+test("Conflicting side-specific annulment omens cannot be combined", () => {
+  assert.throws(
+    () => withModifiers(
+      new AnnulmentOrb(),
+      new OmenOfSinistralAnnulment(),
+      new OmenOfDextralAnnulment(),
+    ).apply(item([p1], [s1]), ctx()),
+    /cannot be combined/,
+  );
 });
 
 test("Fracturing Orb requires at least four mods and allows only one fractured affix", () => {
@@ -575,7 +637,8 @@ test("Invalid Exalt, Chaos, Annulment, and Fracturing uses are rejected without 
 
   const magicItem = magic([p1], [s1]);
   assertRejected(new ChaosOrb().apply(magicItem, ctx()), magicItem);
-  assertRejected(new AnnulmentOrb().apply(magicItem, ctx()), magicItem);
+  const normalItem = CraftedItem.emptyNormal();
+  assertRejected(new AnnulmentOrb().apply(normalItem, ctx()), normalItem);
 
   const tooFew = item([p1], [s1]);
   assertRejected(new FracturingOrb().apply(tooFew, ctx()), tooFew);

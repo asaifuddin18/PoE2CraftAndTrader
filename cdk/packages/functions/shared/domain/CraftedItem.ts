@@ -125,8 +125,10 @@ export class CraftedItem {
   private chooseSlot(ctx: CraftContext, hooks?: CraftActionHooks): AffixSlot | null {
     const available = this.availableSlots();
     if (available.length === 0) return null;
-    const hooked = hooks?.selectAddSlot?.(this, available, ctx);
-    if (hooked && available.includes(hooked)) return hooked;
+    if (hooks?.selectAddSlot) {
+      const hooked = hooks.selectAddSlot(this, available, ctx);
+      return hooked && available.includes(hooked) ? hooked : null;
+    }
     return available[Math.floor(ctx.rng() * available.length)];
   }
 
@@ -142,8 +144,10 @@ export class CraftedItem {
   private chooseRemovableAffix(ctx: CraftContext, hooks?: CraftActionHooks): ModEntry | null {
     const removable = this.nonFracturedMods();
     if (removable.length === 0) return null;
-    const hooked = hooks?.selectRemoveAffix?.(this, removable, ctx);
-    if (hooked && removable.includes(hooked)) return hooked;
+    if (hooks?.selectRemoveAffix) {
+      const hooked = hooks.selectRemoveAffix(this, removable, ctx);
+      return hooked && removable.includes(hooked) ? hooked : null;
+    }
     return removable[Math.floor(ctx.rng() * removable.length)];
   }
 }
