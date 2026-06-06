@@ -49,8 +49,8 @@ export function all_mods(s: ItemState): ModEntry[] { return [...s.prefixes, ...s
 export function non_fractured(s: ItemState): ModEntry[] {
   return all_mods(s).filter(m => !s.fractured_mod_ids.has(m.modId));
 }
-export function empty_rare(): ItemState {
-  return { rarity: "rare", prefixes: [], suffixes: [], fractured_mod_ids: new Set(), corrupted: false };
+export function empty_normal(): ItemState {
+  return { rarity: "normal", prefixes: [], suffixes: [], fractured_mod_ids: new Set(), corrupted: false };
 }
 export function clone(s: ItemState): ItemState {
   return { ...s, prefixes: [...s.prefixes], suffixes: [...s.suffixes], fractured_mod_ids: new Set(s.fractured_mod_ids) };

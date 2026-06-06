@@ -1,6 +1,6 @@
 import type { CraftingIngredient } from "./CraftingIngredient";
 import type { CraftContext } from "../domain/CraftContext";
-import { craftResult } from "../domain/CraftResult";
+import { craftResult, rejectedResult } from "../domain/CraftResult";
 import type { CraftedItem } from "../domain/CraftedItem";
 
 export class AlchemyOrb implements CraftingIngredient {
@@ -8,6 +8,7 @@ export class AlchemyOrb implements CraftingIngredient {
   readonly displayName = "Orb of Alchemy";
 
   apply(item: CraftedItem, ctx: CraftContext) {
+    if (item.rarity !== "normal") return rejectedResult(item, "Orb of Alchemy requires a normal item");
     let next = item.clone().setRarity("rare");
     const added: string[] = [];
 

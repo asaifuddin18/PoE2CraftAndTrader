@@ -9,7 +9,7 @@ import type {
   ModPool, TargetSpec, TargetMod, ModEntry, PriceTable, PatternJob, CraftStep, SolveRequest,
 } from "./types";
 import {
-  Policy, empty_rare, is_satisfied, mod_satisfied, open_prefix, open_suffix, p_hit,
+  Policy, empty_normal, is_satisfied, mod_satisfied, open_prefix, open_suffix, p_hit,
 } from "./engine";
 import { CraftedItem } from "./domain/CraftedItem";
 import type { CurrencyBasket } from "./domain/CurrencyBasket";
@@ -54,12 +54,12 @@ function applyIngredient(
   return { state: result.item.toState(), basket: addCost(basket, result.cost) };
 }
 
-type ModEntryState = ReturnType<typeof empty_rare>;
+type ModEntryState = ReturnType<typeof empty_normal>;
 
 function policy_B3(whittling: boolean, restart_threshold: number): Policy {
   return (rng, pool, target) => {
     let basket: CurrencyBasket = { white_base: 1 };
-    let state = empty_rare();
+    let state = empty_normal();
     ({ state, basket } = applyIngredient(state, new AlchemyOrb(), pool, rng, basket));
 
     let attempts = 0, guard = 0;
@@ -67,7 +67,7 @@ function policy_B3(whittling: boolean, restart_threshold: number): Policy {
       if (++guard > MAX_ITERS) break;
       if (attempts >= restart_threshold) {
         basket = spend(basket, "white_base");
-        state = empty_rare();
+        state = empty_normal();
         ({ state, basket } = applyIngredient(state, new AlchemyOrb(), pool, rng, basket));
         attempts = 0; continue;
       }
@@ -89,7 +89,7 @@ function policy_A1(anchors: TargetMod[], restart_threshold: number): Policy {
       if (++guard > MAX_ITERS) return basket;
       if (attempts >= restart_threshold) { basket = spend(basket, "white_base"); attempts = 0; }
 
-      let state = empty_rare();
+      let state = empty_normal();
       ({ state, basket } = applyIngredient(state, new TransmutationOrb(), pool, rng, basket));
       state.rarity = "magic";
 
@@ -99,7 +99,7 @@ function policy_A1(anchors: TargetMod[], restart_threshold: number): Policy {
         if (state.prefixes.length + state.suffixes.length < 2) {
           ({ state, basket } = applyIngredient(state, new AugmentationOrb(), pool, rng, basket));
         } else {
-          state = empty_rare();
+          state = empty_normal();
           const result = new TransmutationOrb().apply(CraftedItem.fromState(state), { pool, rng });
           state = result.item.toState();
           state.rarity = "magic";
@@ -128,7 +128,7 @@ function policy_C2(essence_mod: ModEntry, essence_currency: string, restart_thre
     while (true) {
       if (++guard > MAX_ITERS) return basket;
       if (attempts >= restart_threshold) { basket = spend(basket, "white_base"); attempts = 0; }
-      let state = empty_rare();
+      let state = empty_normal();
       ({ state, basket } = applyIngredient(state, new TransmutationOrb(), pool, rng, basket));
       ({ state, basket } = applyIngredient(state, new Essence(essence_currency, essence_mod, "greater"), pool, rng, basket));
 
@@ -152,7 +152,7 @@ function policy_E1(anchor_group: string, inner_restart: number): Policy {
     while (true) {
       if (++guard > MAX_ITERS) return basket;
 
-      let state = empty_rare();
+      let state = empty_normal();
       ({ state, basket } = applyIngredient(state, new AlchemyOrb(), pool, rng, basket));
 
       let phase1 = 0;

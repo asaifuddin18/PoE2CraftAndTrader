@@ -1,6 +1,6 @@
 import type { CraftingIngredient } from "./CraftingIngredient";
 import type { CraftContext } from "../domain/CraftContext";
-import { craftResult } from "../domain/CraftResult";
+import { craftResult, rejectedResult } from "../domain/CraftResult";
 import type { CraftedItem } from "../domain/CraftedItem";
 
 export class AugmentationOrb implements CraftingIngredient {
@@ -8,6 +8,8 @@ export class AugmentationOrb implements CraftingIngredient {
   readonly displayName = "Orb of Augmentation";
 
   apply(item: CraftedItem, ctx: CraftContext) {
+    if (item.rarity !== "magic") return rejectedResult(item, "Orb of Augmentation requires a magic item");
+    if (!item.openPrefix() && !item.openSuffix()) return rejectedResult(item, "Magic item has no open affix slot");
     const result = item.addRandomAffix(ctx);
     return craftResult(result.item, { [this.id]: 1 }, [
       { type: "currency", message: this.displayName, details: { added: result.added?.modId ?? null } },

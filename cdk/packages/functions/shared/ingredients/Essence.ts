@@ -1,6 +1,6 @@
 import type { CraftingIngredient } from "./CraftingIngredient";
 import type { CraftContext } from "../domain/CraftContext";
-import { craftResult } from "../domain/CraftResult";
+import { craftResult, rejectedResult } from "../domain/CraftResult";
 import type { CraftedItem } from "../domain/CraftedItem";
 import type { ModEntry } from "../types";
 
@@ -19,6 +19,8 @@ export class Essence implements CraftingIngredient {
     let next = item.clone();
 
     if (this.tier === "perfect") {
+      if (item.rarity !== "rare") return rejectedResult(item, "Perfect Essence requires a rare item");
+      if (item.nonFracturedMods().length === 0) return rejectedResult(item, "Rare item has no removable affix");
       const room = makeRoomForGuaranteedMod(next, this.guaranteedMod, ctx);
       next = room.item;
       const removed = room.removed ?? next.removeRandomAffix(ctx);
@@ -32,6 +34,7 @@ export class Essence implements CraftingIngredient {
       ]);
     }
 
+    if (item.rarity === "normal") return rejectedResult(item, "Greater Essence requires a magic or rare item");
     next = next.setRarity("rare");
     const room = makeRoomForGuaranteedMod(next, this.guaranteedMod, ctx);
     next = room.item.addMod(this.guaranteedMod);

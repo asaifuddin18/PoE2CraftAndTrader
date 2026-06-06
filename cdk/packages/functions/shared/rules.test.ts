@@ -112,8 +112,18 @@ function removedEventId(result: { events: { details?: Record<string, unknown> }[
   return (result.events[0]?.details?.removed as string | null | undefined) ?? null;
 }
 
+function assertRejected(
+  result: { applied: boolean; item: CraftedItem; cost: Record<string, number>; events: { type: string }[] },
+  original: CraftedItem,
+) {
+  assert.equal(result.applied, false);
+  assert.deepEqual(result.cost, {});
+  assert.deepEqual(result.item.toState(), original.toState());
+  assert.equal(result.events[0]?.type, "rejected");
+}
+
 test("Transmutation Orb makes a magic item and adds one random affix", () => {
-  const result = new TransmutationOrb().apply(CraftedItem.emptyRare(), ctx(rngSequence([0])));
+  const result = new TransmutationOrb().apply(CraftedItem.emptyNormal(), ctx(rngSequence([0])));
   const state = result.item.toState();
   assert.equal(state.rarity, "magic");
   assert.equal(countMods(result.item), 1);
@@ -137,7 +147,7 @@ test("Regal Orb upgrades magic to rare and adds one affix", () => {
 });
 
 test("Alchemy Orb makes a rare item with up to four random affixes", () => {
-  const result = new AlchemyOrb().apply(CraftedItem.emptyRare(), ctx(seededRng(4)));
+  const result = new AlchemyOrb().apply(CraftedItem.emptyNormal(), ctx(seededRng(4)));
   const state = result.item.toState();
   assert.equal(state.rarity, "rare");
   assert.equal(countMods(result.item), 4);
@@ -356,9 +366,47 @@ test("Perfect Essence removes a same-side affix when the guaranteed side is full
 
 test("Omens reject incompatible ingredients", () => {
   assert.throws(
-    () => withModifiers(new TransmutationOrb(), new OmenOfWhittling()).apply(CraftedItem.emptyRare(), ctx()),
+    () => withModifiers(new TransmutationOrb(), new OmenOfWhittling()).apply(CraftedItem.emptyNormal(), ctx()),
     /cannot apply/,
   );
+});
+
+test("Invalid Transmutation, Alchemy, Augmentation, and Regal uses are rejected without cost", () => {
+  const rare = item([p1], [s1]);
+  assertRejected(new TransmutationOrb().apply(rare, ctx()), rare);
+  assertRejected(new AlchemyOrb().apply(rare, ctx()), rare);
+
+  const fullMagic = magic([p1], [s1]);
+  assertRejected(new AugmentationOrb().apply(fullMagic, ctx()), fullMagic);
+  assertRejected(new RegalOrb().apply(rare, ctx()), rare);
+});
+
+test("Invalid Exalt, Chaos, Annulment, and Fracturing uses are rejected without cost", () => {
+  const fullRare = item([p1, p2, p3], [s1, s2, s3]);
+  assertRejected(new ExaltedOrb().apply(fullRare, ctx()), fullRare);
+
+  const magicItem = magic([p1], [s1]);
+  assertRejected(new ChaosOrb().apply(magicItem, ctx()), magicItem);
+  assertRejected(new AnnulmentOrb().apply(magicItem, ctx()), magicItem);
+
+  const tooFew = item([p1], [s1]);
+  assertRejected(new FracturingOrb().apply(tooFew, ctx()), tooFew);
+});
+
+test("Invalid Greater/Perfect Essence uses are rejected without cost", () => {
+  const guaranteed = mod("guaranteed", "prefix", 1);
+  const normal = CraftedItem.emptyNormal();
+  const magicItem = magic([p1], [s1]);
+
+  assertRejected(new Essence("greater_essence_test", guaranteed, "greater").apply(normal, ctx()), normal);
+  assertRejected(new Essence("perfect_essence_test", guaranteed, "perfect").apply(magicItem, ctx()), magicItem);
+});
+
+test("An omen is not consumed when its ingredient use is rejected", () => {
+  const fullRare = item([p1, p2, p3], [s1, s2, s3]);
+  const result = withModifiers(new ExaltedOrb(), new OmenOfGreaterExaltation()).apply(fullRare, ctx());
+  assertRejected(result, fullRare);
+  assert.equal(result.cost.omen_greater, undefined);
 });
 
 let failed = 0;

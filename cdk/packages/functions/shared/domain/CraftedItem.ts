@@ -8,9 +8,9 @@ export class CraftedItem {
     return new CraftedItem(cloneState(state));
   }
 
-  static emptyRare(): CraftedItem {
+  static emptyNormal(): CraftedItem {
     return new CraftedItem({
-      rarity: "rare",
+      rarity: "normal",
       prefixes: [],
       suffixes: [],
       fractured_mod_ids: new Set(),

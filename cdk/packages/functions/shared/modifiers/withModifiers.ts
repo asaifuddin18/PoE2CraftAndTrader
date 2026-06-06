@@ -20,6 +20,7 @@ export function withModifiers(ingredient: CraftingIngredient, ...modifiers: Craf
       }
 
       const result = ingredient.apply(item, { ...ctx, hooks: modifier });
+      if (!result.applied) return result;
       return craftResult(
         result.item,
         mergeCurrency(result.cost, modifier.cost()),

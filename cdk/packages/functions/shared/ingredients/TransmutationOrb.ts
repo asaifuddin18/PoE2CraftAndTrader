@@ -1,6 +1,6 @@
 import type { CraftingIngredient } from "./CraftingIngredient";
 import type { CraftContext } from "../domain/CraftContext";
-import { craftResult } from "../domain/CraftResult";
+import { craftResult, rejectedResult } from "../domain/CraftResult";
 import type { CraftedItem } from "../domain/CraftedItem";
 
 export class TransmutationOrb implements CraftingIngredient {
@@ -8,6 +8,7 @@ export class TransmutationOrb implements CraftingIngredient {
   readonly displayName = "Orb of Transmutation";
 
   apply(item: CraftedItem, ctx: CraftContext) {
+    if (item.rarity !== "normal") return rejectedResult(item, "Orb of Transmutation requires a normal item");
     let next = item.clone().setRarity("magic");
     let result = next.addRandomAffix(ctx);
     next = result.item;

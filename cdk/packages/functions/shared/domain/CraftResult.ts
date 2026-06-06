@@ -8,11 +8,21 @@ export interface CraftEvent {
 }
 
 export interface CraftResult {
+  applied: boolean;
   item: CraftedItem;
   cost: CurrencyBasket;
   events: CraftEvent[];
 }
 
 export function craftResult(item: CraftedItem, cost: CurrencyBasket = {}, events: CraftEvent[] = []): CraftResult {
-  return { item, cost, events };
+  return { applied: true, item, cost, events };
+}
+
+export function rejectedResult(item: CraftedItem, message: string): CraftResult {
+  return {
+    applied: false,
+    item: item.clone(),
+    cost: {},
+    events: [{ type: "rejected", message }],
+  };
 }

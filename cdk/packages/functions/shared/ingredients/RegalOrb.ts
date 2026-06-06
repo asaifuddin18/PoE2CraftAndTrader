@@ -1,6 +1,6 @@
 import type { CraftingIngredient } from "./CraftingIngredient";
 import type { CraftContext } from "../domain/CraftContext";
-import { craftResult } from "../domain/CraftResult";
+import { craftResult, rejectedResult } from "../domain/CraftResult";
 import type { CraftedItem } from "../domain/CraftedItem";
 
 export class RegalOrb implements CraftingIngredient {
@@ -8,6 +8,7 @@ export class RegalOrb implements CraftingIngredient {
   readonly displayName = "Regal Orb";
 
   apply(item: CraftedItem, ctx: CraftContext) {
+    if (item.rarity !== "magic") return rejectedResult(item, "Regal Orb requires a magic item");
     const rare = item.clone().setRarity("rare");
     const result = rare.addRandomAffix(ctx);
     return craftResult(result.item, { [this.id]: 1 }, [

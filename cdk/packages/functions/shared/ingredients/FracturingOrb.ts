@@ -1,6 +1,6 @@
 import type { CraftingIngredient } from "./CraftingIngredient";
 import type { CraftContext } from "../domain/CraftContext";
-import { craftResult } from "../domain/CraftResult";
+import { craftResult, rejectedResult } from "../domain/CraftResult";
 import type { CraftedItem } from "../domain/CraftedItem";
 
 export class FracturingOrb implements CraftingIngredient {
@@ -8,6 +8,9 @@ export class FracturingOrb implements CraftingIngredient {
   readonly displayName = "Fracturing Orb";
 
   apply(item: CraftedItem, ctx: CraftContext) {
+    if (item.rarity !== "rare") return rejectedResult(item, "Fracturing Orb requires a rare item");
+    if (item.nMods() < 4) return rejectedResult(item, "Fracturing Orb requires at least four affixes");
+    if (item.fracturedModIds.size > 0) return rejectedResult(item, "Item already has a fractured affix");
     const result = item.fractureRandomAffix(ctx);
     return craftResult(result.item, { [this.id]: 1 }, [
       { type: "currency", message: this.displayName, details: { fractured: result.fractured?.modId ?? null } },

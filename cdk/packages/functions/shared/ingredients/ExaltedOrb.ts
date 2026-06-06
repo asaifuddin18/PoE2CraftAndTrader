@@ -1,6 +1,6 @@
 import type { CraftingIngredient } from "./CraftingIngredient";
 import type { CraftContext } from "../domain/CraftContext";
-import { craftResult } from "../domain/CraftResult";
+import { craftResult, rejectedResult } from "../domain/CraftResult";
 import type { CraftedItem } from "../domain/CraftedItem";
 import type { ModPool } from "../types";
 
@@ -12,6 +12,8 @@ export class ExaltedOrb implements CraftingIngredient {
   ) {}
 
   apply(item: CraftedItem, ctx: CraftContext) {
+    if (item.rarity !== "rare") return rejectedResult(item, `${this.displayName} requires a rare item`);
+    if (!item.openPrefix() && !item.openSuffix()) return rejectedResult(item, "Rare item has no open affix slot");
     let next = item.clone();
     const added: string[] = [];
     const count = ctx.hooks?.modifyAddCount?.(this.id, 1) ?? 1;
