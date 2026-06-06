@@ -16,16 +16,17 @@ export class AugmentationOrb implements CraftingIngredient {
     const corrupted = rejectCorruptedItem(item);
     if (corrupted) return corrupted;
     if (item.rarity !== "magic") return rejectedResult(item, "Orb of Augmentation requires a magic item");
-    if (!item.openPrefix() && !item.openSuffix()) return rejectedResult(item, "Magic item has no open affix slot");
+    if (item.nMods() !== 1) return rejectedResult(item, "Orb of Augmentation requires a magic item with exactly one affix");
     const result = item.addRandomAffix({
       ...ctx,
       pool: filterPoolByRequiredLevel(ctx.pool, this.minimumRequiredLevel),
     });
+    if (!result.added) return rejectedResult(item, `${this.displayName} could not add an eligible affix`);
     return craftResult(result.item, { [this.id]: 1 }, [
       {
         type: "currency",
         message: this.displayName,
-        details: { added: result.added?.modId ?? null, minimumRequiredLevel: this.minimumRequiredLevel },
+        details: { added: result.added.modId, minimumRequiredLevel: this.minimumRequiredLevel },
       },
     ]);
   }

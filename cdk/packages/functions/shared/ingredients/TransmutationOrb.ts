@@ -16,20 +16,18 @@ export class TransmutationOrb implements CraftingIngredient {
     const corrupted = rejectCorruptedItem(item);
     if (corrupted) return corrupted;
     if (item.rarity !== "normal") return rejectedResult(item, "Orb of Transmutation requires a normal item");
-    let next = item.clone().setRarity("magic");
-    let result = next.addRandomAffix({
+    const magic = item.clone().setRarity("magic");
+    const result = magic.addRandomAffix({
       ...ctx,
       pool: filterPoolByRequiredLevel(ctx.pool, this.minimumRequiredLevel),
     });
-    next = result.item;
+    if (!result.added) return rejectedResult(item, `${this.displayName} could not add an eligible affix`);
 
-    // Preserve current solver behavior: transmute creates one magic affix here;
-    // Augment is responsible for the second magic affix in A1.
-    return craftResult(next, { [this.id]: 1 }, [
+    return craftResult(result.item, { [this.id]: 1 }, [
       {
         type: "currency",
         message: this.displayName,
-        details: { added: result.added?.modId ?? null, minimumRequiredLevel: this.minimumRequiredLevel },
+        details: { added: result.added.modId, minimumRequiredLevel: this.minimumRequiredLevel },
       },
     ]);
   }

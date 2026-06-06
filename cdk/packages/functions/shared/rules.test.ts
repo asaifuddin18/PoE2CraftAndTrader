@@ -160,6 +160,44 @@ test("Augmentation Orb adds the missing magic affix", () => {
   assert.deepEqual(result.cost, { augment: 1 });
 });
 
+test("Transmutation and Augmentation variants fail without cost when no eligible affix exists", () => {
+  const lowPool: ModPool = {
+    prefixes: [mod("p_low_only", "prefix", 20)],
+    suffixes: [mod("s_low_only", "suffix", 20)],
+  };
+  const emptyPool: ModPool = { prefixes: [], suffixes: [] };
+  const normal = CraftedItem.emptyNormal();
+  const onePrefix = magic([p1]);
+
+  assertRejected(new TransmutationOrb().apply(normal, ctxWithPool(emptyPool)), normal);
+  assertRejected(new GreaterTransmutationOrb().apply(normal, ctxWithPool(lowPool)), normal);
+  assertRejected(new PerfectTransmutationOrb().apply(normal, ctxWithPool(lowPool)), normal);
+
+  assertRejected(new AugmentationOrb().apply(onePrefix, ctxWithPool(emptyPool)), onePrefix);
+  assertRejected(new GreaterAugmentationOrb().apply(onePrefix, ctxWithPool(lowPool)), onePrefix);
+  assertRejected(new PerfectAugmentationOrb().apply(onePrefix, ctxWithPool(lowPool)), onePrefix);
+});
+
+test("Augmentation requires a magic item with exactly one affix", () => {
+  const emptyMagic = magic([]);
+  const fullMagic = magic([p1], [s1]);
+  assertRejected(new AugmentationOrb().apply(emptyMagic, ctx()), emptyMagic);
+  assertRejected(new AugmentationOrb().apply(fullMagic, ctx()), fullMagic);
+});
+
+test("No omen modifies Transmutation or Augmentation", () => {
+  assert.throws(
+    () => withModifiers(new TransmutationOrb(), new OmenOfSinistralExaltation())
+      .apply(CraftedItem.emptyNormal(), ctx()),
+    /cannot apply/,
+  );
+  assert.throws(
+    () => withModifiers(new AugmentationOrb(), new OmenOfSinistralExaltation())
+      .apply(magic([p1]), ctx()),
+    /cannot apply/,
+  );
+});
+
 test("Regal Orb upgrades magic to rare and adds one affix", () => {
   const result = new RegalOrb().apply(magic([p1]), ctx(rngSequence([0.9, 0])));
   const state = result.item.toState();
