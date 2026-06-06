@@ -10,8 +10,16 @@ import {
   Essence,
   ExaltedOrb,
   FracturingOrb,
+  GreaterAugmentationOrb,
+  GreaterChaosOrb,
   GreaterExaltedOrb,
+  GreaterRegalOrb,
+  GreaterTransmutationOrb,
+  PerfectAugmentationOrb,
+  PerfectChaosOrb,
   PerfectExaltedOrb,
+  PerfectRegalOrb,
+  PerfectTransmutationOrb,
   RegalOrb,
   TransmutationOrb,
 } from "./ingredients";
@@ -188,6 +196,63 @@ test("Greater and Perfect Exalted Orbs enforce required-level floors", () => {
   assert.deepEqual(perfect.cost, { perfect_exalt: 1 });
 });
 
+test("Greater and Perfect Transmutation Orbs enforce required-level floors", () => {
+  const thresholdPool: ModPool = {
+    prefixes: [mod("p_low", "prefix", 20), mod("p_greater", "prefix", 44), mod("p_perfect", "prefix", 70)],
+    suffixes: [mod("s_low", "suffix", 20), mod("s_greater", "suffix", 44), mod("s_perfect", "suffix", 70)],
+  };
+
+  const greater = new GreaterTransmutationOrb().apply(
+    CraftedItem.emptyNormal(),
+    ctxWithPool(thresholdPool, rngSequence([0, 0])),
+  );
+  assert.ok(greater.item.allMods()[0].required_level >= 44);
+  assert.deepEqual(greater.cost, { greater_transmute: 1 });
+
+  const perfect = new PerfectTransmutationOrb().apply(
+    CraftedItem.emptyNormal(),
+    ctxWithPool(thresholdPool, rngSequence([0, 0])),
+  );
+  assert.ok(perfect.item.allMods()[0].required_level >= 70);
+  assert.deepEqual(perfect.cost, { perfect_transmute: 1 });
+});
+
+test("Greater and Perfect Augmentation Orbs enforce required-level floors", () => {
+  const thresholdPool: ModPool = {
+    prefixes: [],
+    suffixes: [mod("s_low", "suffix", 20), mod("s_greater", "suffix", 44), mod("s_perfect", "suffix", 70)],
+  };
+
+  const greater = new GreaterAugmentationOrb().apply(
+    magic([p1]),
+    ctxWithPool(thresholdPool, rngSequence([0])),
+  );
+  assert.ok(greater.item.toState().suffixes[0].required_level >= 44);
+  assert.deepEqual(greater.cost, { greater_augment: 1 });
+
+  const perfect = new PerfectAugmentationOrb().apply(
+    magic([p1]),
+    ctxWithPool(thresholdPool, rngSequence([0])),
+  );
+  assert.ok(perfect.item.toState().suffixes[0].required_level >= 70);
+  assert.deepEqual(perfect.cost, { perfect_augment: 1 });
+});
+
+test("Greater and Perfect Regal Orbs enforce required-level floors", () => {
+  const thresholdPool: ModPool = {
+    prefixes: [],
+    suffixes: [mod("s_low", "suffix", 20), mod("s_greater", "suffix", 35), mod("s_perfect", "suffix", 50)],
+  };
+
+  const greater = new GreaterRegalOrb().apply(magic([p1]), ctxWithPool(thresholdPool, rngSequence([0.9, 0])));
+  assert.ok(greater.item.toState().suffixes[0].required_level >= 35);
+  assert.deepEqual(greater.cost, { greater_regal: 1 });
+
+  const perfect = new PerfectRegalOrb().apply(magic([p1]), ctxWithPool(thresholdPool, rngSequence([0.9, 0])));
+  assert.ok(perfect.item.toState().suffixes[0].required_level >= 50);
+  assert.deepEqual(perfect.cost, { perfect_regal: 1 });
+});
+
 test("Perfect Exalted Orb still respects the item's ilvl ceiling", () => {
   const raw: RawMod = {
     modId: "tiered",
@@ -242,6 +307,23 @@ test("Sinistral and Dextral exaltation omens target prefix/suffix add slots", ()
   assert.deepEqual(dex.cost, { exalt: 1, omen_dextral: 1 });
 });
 
+test("Sinistral and Dextral exaltation omens work with tiered Regal Orbs", () => {
+  const thresholdPool: ModPool = {
+    prefixes: [mod("p50", "prefix", 50)],
+    suffixes: [mod("s50", "suffix", 50)],
+  };
+
+  const sin = withModifiers(new PerfectRegalOrb(), new OmenOfSinistralExaltation())
+    .apply(magic([], [s1]), ctxWithPool(thresholdPool, rngSequence([0])));
+  assert.equal(sin.item.toState().prefixes[0]?.modId, "p50");
+  assert.deepEqual(sin.cost, { perfect_regal: 1, omen_sinistral: 1 });
+
+  const dex = withModifiers(new GreaterRegalOrb(), new OmenOfDextralExaltation())
+    .apply(magic([p1]), ctxWithPool(thresholdPool, rngSequence([0])));
+  assert.equal(dex.item.toState().suffixes[0]?.modId, "s50");
+  assert.deepEqual(dex.cost, { greater_regal: 1, omen_dextral: 1 });
+});
+
 test("Chaos Orb removes one non-fractured affix, then adds into any open slot", () => {
   let addedPrefix = 0;
   let addedSuffix = 0;
@@ -263,6 +345,45 @@ test("Chaos Orb cannot remove fractured affixes", () => {
   assert.ok(result.item.toState().prefixes.some(m => m.modId === "p1"));
 });
 
+test("Greater and Perfect Chaos Orbs enforce the replacement required-level floor", () => {
+  const thresholdPool: ModPool = {
+    prefixes: [mod("p_low", "prefix", 20), mod("p_greater", "prefix", 35), mod("p_perfect", "prefix", 50)],
+    suffixes: [mod("s_low", "suffix", 20), mod("s_greater", "suffix", 35), mod("s_perfect", "suffix", 50)],
+  };
+
+  const greater = new GreaterChaosOrb().apply(
+    item([p1], [s1]),
+    ctxWithPool(thresholdPool, rngSequence([0, 0, 0])),
+  );
+  const greaterAdded = greater.item.allMods().find(entry => !["p1", "s1"].includes(entry.modId));
+  assert.ok((greaterAdded?.required_level ?? 0) >= 35);
+  assert.deepEqual(greater.cost, { greater_chaos: 1 });
+
+  const perfect = new PerfectChaosOrb().apply(
+    item([p1], [s1]),
+    ctxWithPool(thresholdPool, rngSequence([0, 0, 0])),
+  );
+  const perfectAdded = perfect.item.allMods().find(entry => !["p1", "s1"].includes(entry.modId));
+  assert.ok((perfectAdded?.required_level ?? 0) >= 50);
+  assert.deepEqual(perfect.cost, { perfect_chaos: 1 });
+});
+
+test("Tiered Chaos preserves fractured affixes and may replace across affix sides", () => {
+  const replacementPool: ModPool = {
+    prefixes: [mod("p50", "prefix", 50)],
+    suffixes: [mod("s50", "suffix", 50)],
+  };
+  const result = new PerfectChaosOrb().apply(
+    item([p1], [s1, s2], [p1]),
+    ctxWithPool(replacementPool, rngSequence([0, 0, 0])),
+  );
+  const state = result.item.toState();
+  assert.ok(state.prefixes.some(entry => entry.modId === "p1"));
+  assert.equal(state.suffixes.length, 1);
+  assert.ok(state.prefixes.some(entry => entry.modId === "p50"));
+  assert.equal(removedEventId(result), "s1");
+});
+
 test("Whittling omen selects the lowest required-level removable affix and charges once", () => {
   const result = withModifiers(new ChaosOrb(), new OmenOfWhittling())
     .apply(item([p1], [s4]), ctx(rngSequence([0])));
@@ -278,6 +399,22 @@ test("Sinistral/Dextral erasure omens target chaos removal side", () => {
   const dex = withModifiers(new ChaosOrb(), new OmenOfDextralErasure())
     .apply(item([p1], [s1]), ctx(rngSequence([0, 0])));
   assert.equal(removedEventId(dex), "s1");
+});
+
+test("Whittling and erasure omens work with tiered Chaos Orbs", () => {
+  const thresholdPool: ModPool = {
+    prefixes: [mod("p50", "prefix", 50)],
+    suffixes: [mod("s50", "suffix", 50)],
+  };
+  const whittling = withModifiers(new PerfectChaosOrb(), new OmenOfWhittling())
+    .apply(item([p1], [s4]), ctxWithPool(thresholdPool, rngSequence([0, 0])));
+  assert.equal(removedEventId(whittling), "p1");
+  assert.deepEqual(whittling.cost, { perfect_chaos: 1, omen_whittling: 1 });
+
+  const erasure = withModifiers(new GreaterChaosOrb(), new OmenOfDextralErasure())
+    .apply(item([p1], [s1]), ctxWithPool(thresholdPool, rngSequence([0, 0])));
+  assert.equal(removedEventId(erasure), "s1");
+  assert.deepEqual(erasure.cost, { greater_chaos: 1, omen_dextral_erasure: 1 });
 });
 
 test("Annulment Orb removes one affix; Greater omen removes two", () => {
@@ -411,6 +548,25 @@ test("Invalid Transmutation, Alchemy, Augmentation, and Regal uses are rejected 
   const fullMagic = magic([p1], [s1]);
   assertRejected(new AugmentationOrb().apply(fullMagic, ctx()), fullMagic);
   assertRejected(new RegalOrb().apply(rare, ctx()), rare);
+});
+
+test("Invalid tiered Transmutation, Augmentation, Regal, and Chaos uses are rejected without cost", () => {
+  const rare = item([p1], [s1]);
+  const fullMagic = magic([p1], [s1]);
+  const magicItem = magic([p1]);
+
+  for (const ingredient of [new GreaterTransmutationOrb(), new PerfectTransmutationOrb()]) {
+    assertRejected(ingredient.apply(rare, ctx()), rare);
+  }
+  for (const ingredient of [new GreaterAugmentationOrb(), new PerfectAugmentationOrb()]) {
+    assertRejected(ingredient.apply(fullMagic, ctx()), fullMagic);
+  }
+  for (const ingredient of [new GreaterRegalOrb(), new PerfectRegalOrb()]) {
+    assertRejected(ingredient.apply(rare, ctx()), rare);
+  }
+  for (const ingredient of [new GreaterChaosOrb(), new PerfectChaosOrb()]) {
+    assertRejected(ingredient.apply(magicItem, ctx()), magicItem);
+  }
 });
 
 test("Invalid Exalt, Chaos, Annulment, and Fracturing uses are rejected without cost", () => {

@@ -2,7 +2,7 @@ import type { CraftingIngredient } from "./CraftingIngredient";
 import type { CraftContext } from "../domain/CraftContext";
 import { craftResult, rejectedResult } from "../domain/CraftResult";
 import type { CraftedItem } from "../domain/CraftedItem";
-import type { ModPool } from "../types";
+import { filterPoolByRequiredLevel } from "./filterPoolByRequiredLevel";
 
 export class ExaltedOrb implements CraftingIngredient {
   constructor(
@@ -32,12 +32,4 @@ export class ExaltedOrb implements CraftingIngredient {
       { type: "currency", message: this.displayName, details: { added, minimumRequiredLevel: this.minimumRequiredLevel } },
     ]);
   }
-}
-
-function filterPoolByRequiredLevel(pool: ModPool, minimumRequiredLevel: number): ModPool {
-  if (minimumRequiredLevel <= 0) return pool;
-  return {
-    prefixes: pool.prefixes.filter(m => m.required_level >= minimumRequiredLevel),
-    suffixes: pool.suffixes.filter(m => m.required_level >= minimumRequiredLevel),
-  };
 }

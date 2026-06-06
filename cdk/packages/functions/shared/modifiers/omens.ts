@@ -31,7 +31,7 @@ export class OmenOfWhittling extends OmenModifier {
   readonly id = "omen_whittling";
   readonly displayName = "Omen of Whittling";
   readonly costKey = "omen_whittling";
-  readonly ingredientIds = ["chaos"];
+  readonly ingredientIds = ["chaos", "greater_chaos", "perfect_chaos"];
 
   selectRemoveAffix(_item: CraftedItem, candidates: ModEntry[]): ModEntry | null {
     return candidates.reduce((min, m) => m.required_level < min.required_level ? m : min);
@@ -42,7 +42,7 @@ export class OmenOfSinistralErasure extends OmenModifier {
   readonly id = "omen_sinistral_erasure";
   readonly displayName = "Omen of Sinistral Erasure";
   readonly costKey = "omen_sinistral_erasure";
-  readonly ingredientIds = ["chaos"];
+  readonly ingredientIds = ["chaos", "greater_chaos", "perfect_chaos"];
 
   selectRemoveAffix(_item: CraftedItem, candidates: ModEntry[], ctx: CraftContext): ModEntry | null {
     return randomFrom(candidates.filter(m => m.gen_type === "prefix"), ctx);
@@ -53,7 +53,7 @@ export class OmenOfDextralErasure extends OmenModifier {
   readonly id = "omen_dextral_erasure";
   readonly displayName = "Omen of Dextral Erasure";
   readonly costKey = "omen_dextral_erasure";
-  readonly ingredientIds = ["chaos"];
+  readonly ingredientIds = ["chaos", "greater_chaos", "perfect_chaos"];
 
   selectRemoveAffix(_item: CraftedItem, candidates: ModEntry[], ctx: CraftContext): ModEntry | null {
     return randomFrom(candidates.filter(m => m.gen_type === "suffix"), ctx);
@@ -64,7 +64,7 @@ export class OmenOfSinistralExaltation extends OmenModifier {
   readonly id = "omen_sinistral";
   readonly displayName = "Omen of Sinistral Exaltation";
   readonly costKey = "omen_sinistral";
-  readonly ingredientIds = ["alch", "regal", "exalt", "greater_exalt", "perfect_exalt"];
+  readonly ingredientIds = ["alch", "regal", "greater_regal", "perfect_regal", "exalt", "greater_exalt", "perfect_exalt"];
 
   selectAddSlot(_item: CraftedItem, availableSlots: AffixSlot[]): AffixSlot | null {
     return availableSlots.includes("prefix") ? "prefix" : null;
@@ -75,7 +75,7 @@ export class OmenOfDextralExaltation extends OmenModifier {
   readonly id = "omen_dextral";
   readonly displayName = "Omen of Dextral Exaltation";
   readonly costKey = "omen_dextral";
-  readonly ingredientIds = ["alch", "regal", "exalt", "greater_exalt", "perfect_exalt"];
+  readonly ingredientIds = ["alch", "regal", "greater_regal", "perfect_regal", "exalt", "greater_exalt", "perfect_exalt"];
 
   selectAddSlot(_item: CraftedItem, availableSlots: AffixSlot[]): AffixSlot | null {
     return availableSlots.includes("suffix") ? "suffix" : null;

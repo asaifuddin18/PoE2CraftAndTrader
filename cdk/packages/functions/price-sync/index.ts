@@ -23,8 +23,11 @@ const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({ region: REGION }), 
 // Solver-default prices (must match shared/loaders.DEFAULT_PRICES). Live values
 // are merged over these; anything without a live equivalent keeps the default.
 const DEFAULT_PRICES: Record<string, number> = {
-  white_base: 0.1, chaos: 3, alch: 0.5, annul: 40, exalt: 1, greater_exalt: 1, perfect_exalt: 1,
-  regal: 0.25, transmute: 0.1, augment: 0.07, alteration: 0.05, fracturing_orb: 100, divine: 90,
+  white_base: 0.1, chaos: 3, greater_chaos: 3, perfect_chaos: 3, alch: 0.5, annul: 40,
+  exalt: 1, greater_exalt: 1, perfect_exalt: 1, regal: 0.25, greater_regal: 0.25, perfect_regal: 0.25,
+  transmute: 0.1, greater_transmute: 0.1, perfect_transmute: 0.1,
+  augment: 0.07, greater_augment: 0.07, perfect_augment: 0.07,
+  alteration: 0.05, fracturing_orb: 100, divine: 90,
   omen_whittling: 2,
 };
 
@@ -51,14 +54,22 @@ interface CurrencyEntry {
 const SOLVER_KEY_MATCHERS: Record<string, { apiIds?: string[]; name?: RegExp }> = {
   greater_exalt:  { name: /greater exalted orb/i },
   perfect_exalt:  { name: /perfect exalted orb/i },
-  chaos:          { apiIds: ["chaos"],            name: /chaos orb/i },
+  greater_chaos:  { name: /greater chaos orb/i },
+  perfect_chaos:  { name: /perfect chaos orb/i },
+  chaos:          { apiIds: ["chaos"],            name: /^chaos orb$/i },
   divine:         { apiIds: ["divine"],           name: /divine orb/i },
   annul:          { apiIds: ["annul", "annulment"], name: /annulment/i },
-  regal:          { apiIds: ["regal"],            name: /regal orb/i },
+  greater_regal:  { name: /greater regal orb/i },
+  perfect_regal:  { name: /perfect regal orb/i },
+  regal:          { apiIds: ["regal"],            name: /^regal orb$/i },
   fracturing_orb: { apiIds: ["fracturing-orb", "fracturing"], name: /fracturing orb/i },
   alch:           { apiIds: ["alchemy"],          name: /orb of alchemy/i },
-  transmute:      { apiIds: ["transmutation", "transmute"], name: /transmutation/i },
-  augment:        { apiIds: ["augmentation", "augment"], name: /augmentation/i },
+  greater_transmute: { name: /greater orb of transmutation/i },
+  perfect_transmute: { name: /perfect orb of transmutation/i },
+  transmute:      { apiIds: ["transmutation", "transmute"], name: /^orb of transmutation$/i },
+  greater_augment: { name: /greater orb of augmentation/i },
+  perfect_augment: { name: /perfect orb of augmentation/i },
+  augment:        { apiIds: ["augmentation", "augment"], name: /^orb of augmentation$/i },
   omen_whittling: { name: /omen of whittling/i },
 };
 
