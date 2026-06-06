@@ -147,7 +147,6 @@ augment(s):            # magic w/ 1 mod -> magic w/ 2. fills the OPEN slot type.
 regal(s, omen=None):   # magic -> rare, keep mods, add 1. §2.2
     if omen == "sinistral": force prefix
     elif omen == "dextral": force suffix
-    elif omen == "homogenising": force same tag-group-family as an existing mod
     else: if both open -> 50/50 slot pick, else open slot
     draw() into chosen slot. rarity = rare.
 
@@ -161,7 +160,6 @@ exalt(s, omen=None):   # rare with open slot, add 1. §2.3 / §8.5
     if omen == "sinistral": force prefix
     elif omen == "dextral": force suffix
     elif omen == "greater": add TWO mods (sequential draws)
-    elif omen == "homogenising": same tag-group-family as existing
     else: if both open -> 50/50, else open slot
     draw().
 
@@ -236,7 +234,7 @@ C3  perfect_essence      Perfect Essence chain on existing rare (swap junk->guar
                          applies: finishing a near-done rare; optional crystallisation omens
 
 D1  exalt_fill           Plain Exalt to fill open rare (completion sub-step, rarely standalone)
-D2  exalt_omen           Omen-directed Exalt (sinistral/dextral/greater/homogenising)
+D2  exalt_omen           Omen-directed Exalt (sinistral/dextral/greater/catalysing)
                          applies: need a specific slot type filled, avoid 50/50 gamble
 
 E1  fracture_anchor      Annul-down to 4 mods -> Fracture desired -> rebuild rest

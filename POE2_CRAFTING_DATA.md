@@ -305,7 +305,6 @@ Omens are single-use items that **modify the outcome of the next specific curren
 | Omen of Sinistral Exaltation | Next Exalted Orb adds only **Prefix** modifiers |
 | Omen of Dextral Exaltation | Next Exalted Orb adds only **Suffix** modifiers |
 | Omen of Greater Exaltation | Next Exalted Orb adds **two** random modifiers |
-| Omen of Homogenising Exaltation | Next Exalted Orb adds a modifier of the **same type** (tag category) as an existing modifier on the item |
 | Omen of Catalysing Exaltation | Next Exalted Orb consumes all Catalyst Quality on the item |
 
 **Orb of Alchemy Omens**
@@ -321,7 +320,6 @@ Omens are single-use items that **modify the outcome of the next specific curren
 |------|--------|
 | Omen of Sinistral Coronation | Next Regal Orb adds only **Prefix** modifiers |
 | Omen of Dextral Coronation | Next Regal Orb adds only **Suffix** modifiers |
-| Omen of Homogenising Coronation | Next Regal Orb adds a modifier of the **same type** as an existing modifier |
 
 **Orb of Annulment Omens**
 

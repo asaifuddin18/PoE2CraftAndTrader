@@ -190,7 +190,6 @@ function modifierFromOmen(omen: OmenType, ingredientId: string): CraftingModifie
     case "dextral_annulment": return new OmenOfDextralAnnulment();
     case "sinistral_crystallisation": return new OmenOfSinistralCrystallisation();
     case "dextral_crystallisation": return new OmenOfDextralCrystallisation();
-    case "homogenising":
     case null:
       return null;
   }

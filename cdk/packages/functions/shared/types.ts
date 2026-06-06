@@ -51,7 +51,7 @@ export interface ItemState {
 }
 
 export type OmenType =
-  | "sinistral" | "dextral" | "greater" | "greater_annulment" | "homogenising" | "whittling"
+  | "sinistral" | "dextral" | "greater" | "greater_annulment" | "whittling"
   | "sinistral_erasure" | "dextral_erasure" | "sinistral_annulment" | "dextral_annulment"
   | "sinistral_crystallisation" | "dextral_crystallisation"
   | null;
