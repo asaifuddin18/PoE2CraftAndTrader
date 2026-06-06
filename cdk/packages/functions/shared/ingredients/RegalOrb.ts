@@ -21,6 +21,7 @@ export class RegalOrb implements CraftingIngredient {
       ...ctx,
       pool: filterPoolByRequiredLevel(ctx.pool, this.minimumRequiredLevel),
     });
+    if (!result.added) return rejectedResult(item, `${this.displayName} could not add an eligible affix`);
     return craftResult(result.item, { [this.id]: 1 }, [
       {
         type: "currency",

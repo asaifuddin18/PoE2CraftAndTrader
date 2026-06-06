@@ -27,6 +27,7 @@ import {
   OmenOfDextralAnnulment,
   OmenOfDextralAlchemy,
   OmenOfDextralCrystallisation,
+  OmenOfDextralCoronation,
   OmenOfDextralErasure,
   OmenOfDextralExaltation,
   OmenOfGreaterAnnulment,
@@ -34,6 +35,7 @@ import {
   OmenOfSinistralAnnulment,
   OmenOfSinistralAlchemy,
   OmenOfSinistralCrystallisation,
+  OmenOfSinistralCoronation,
   OmenOfSinistralErasure,
   OmenOfSinistralExaltation,
   OmenOfWhittling,
@@ -363,21 +365,52 @@ test("Sinistral and Dextral exaltation omens target prefix/suffix add slots", ()
   assert.deepEqual(dex.cost, { exalt: 1, omen_dextral: 1 });
 });
 
-test("Sinistral and Dextral exaltation omens work with tiered Regal Orbs", () => {
+test("Sinistral and Dextral Coronation omens work with all Regal Orb variants", () => {
   const thresholdPool: ModPool = {
     prefixes: [mod("p50", "prefix", 50)],
     suffixes: [mod("s50", "suffix", 50)],
   };
+  const variants = [new RegalOrb(), new GreaterRegalOrb(), new PerfectRegalOrb()];
 
-  const sin = withModifiers(new PerfectRegalOrb(), new OmenOfSinistralExaltation())
-    .apply(magic([], [s1]), ctxWithPool(thresholdPool, rngSequence([0])));
-  assert.equal(sin.item.toState().prefixes[0]?.modId, "p50");
-  assert.deepEqual(sin.cost, { perfect_regal: 1, omen_sinistral: 1 });
+  for (const ingredient of variants) {
+    const sin = withModifiers(ingredient, new OmenOfSinistralCoronation())
+      .apply(magic([], [s1]), ctxWithPool(thresholdPool, rngSequence([0])));
+    assert.equal(sin.item.toState().prefixes[0]?.modId, "p50");
+    assert.equal(sin.cost[ingredient.id], 1);
+    assert.equal(sin.cost.omen_sinistral_coronation, 1);
 
-  const dex = withModifiers(new GreaterRegalOrb(), new OmenOfDextralExaltation())
-    .apply(magic([p1]), ctxWithPool(thresholdPool, rngSequence([0])));
-  assert.equal(dex.item.toState().suffixes[0]?.modId, "s50");
-  assert.deepEqual(dex.cost, { greater_regal: 1, omen_dextral: 1 });
+    const dex = withModifiers(ingredient, new OmenOfDextralCoronation())
+      .apply(magic([p1]), ctxWithPool(thresholdPool, rngSequence([0])));
+    assert.equal(dex.item.toState().suffixes[0]?.modId, "s50");
+    assert.equal(dex.cost[ingredient.id], 1);
+    assert.equal(dex.cost.omen_dextral_coronation, 1);
+  }
+});
+
+test("Coronation omens fail without cost when their side has no eligible Regal affix", () => {
+  const noPrefixPool: ModPool = { prefixes: [], suffixes: [s1] };
+  const noSuffixPool: ModPool = { prefixes: [p1], suffixes: [] };
+  const magicWithSuffix = magic([], [s1]);
+  const magicWithPrefix = magic([p1]);
+
+  assertRejected(
+    withModifiers(new RegalOrb(), new OmenOfSinistralCoronation())
+      .apply(magicWithSuffix, ctxWithPool(noPrefixPool)),
+    magicWithSuffix,
+  );
+  assertRejected(
+    withModifiers(new PerfectRegalOrb(), new OmenOfDextralCoronation())
+      .apply(magicWithPrefix, ctxWithPool(noSuffixPool)),
+    magicWithPrefix,
+  );
+});
+
+test("Exaltation omens are not Coronation omens", () => {
+  assert.throws(
+    () => withModifiers(new RegalOrb(), new OmenOfSinistralExaltation())
+      .apply(magic([], [s1]), ctx()),
+    /cannot apply/,
+  );
 });
 
 test("Chaos Orb removes one non-fractured affix, then adds into any open slot", () => {

@@ -23,6 +23,7 @@ import {
   OmenOfDextralAnnulment,
   OmenOfDextralAlchemy,
   OmenOfDextralCrystallisation,
+  OmenOfDextralCoronation,
   OmenOfDextralErasure,
   OmenOfDextralExaltation,
   OmenOfGreaterExaltation,
@@ -30,6 +31,7 @@ import {
   OmenOfSinistralAnnulment,
   OmenOfSinistralAlchemy,
   OmenOfSinistralCrystallisation,
+  OmenOfSinistralCoronation,
   OmenOfSinistralErasure,
   OmenOfSinistralExaltation,
   OmenOfWhittling,
@@ -165,13 +167,17 @@ function modifierFromOmen(omen: OmenType, ingredientId: string): CraftingModifie
         ? new OmenOfSinistralAnnulment()
         : ingredientId === "alch"
           ? new OmenOfSinistralAlchemy()
-          : new OmenOfSinistralExaltation();
+          : ingredientId.includes("regal")
+            ? new OmenOfSinistralCoronation()
+            : new OmenOfSinistralExaltation();
     case "dextral":
       return ingredientId === "annul"
         ? new OmenOfDextralAnnulment()
         : ingredientId === "alch"
           ? new OmenOfDextralAlchemy()
-          : new OmenOfDextralExaltation();
+          : ingredientId.includes("regal")
+            ? new OmenOfDextralCoronation()
+            : new OmenOfDextralExaltation();
     case "greater": return ingredientId === "annul" ? new OmenOfGreaterAnnulment() : new OmenOfGreaterExaltation();
     case "greater_annulment": return new OmenOfGreaterAnnulment();
     case "sinistral_annulment": return new OmenOfSinistralAnnulment();

@@ -64,7 +64,7 @@ export class OmenOfSinistralExaltation extends OmenModifier {
   readonly id = "omen_sinistral";
   readonly displayName = "Omen of Sinistral Exaltation";
   readonly costKey = "omen_sinistral";
-  readonly ingredientIds = ["regal", "greater_regal", "perfect_regal", "exalt", "greater_exalt", "perfect_exalt"];
+  readonly ingredientIds = ["exalt", "greater_exalt", "perfect_exalt"];
 
   selectAddSlot(_item: CraftedItem, availableSlots: AffixSlot[]): AffixSlot | null {
     return availableSlots.includes("prefix") ? "prefix" : null;
@@ -75,7 +75,29 @@ export class OmenOfDextralExaltation extends OmenModifier {
   readonly id = "omen_dextral";
   readonly displayName = "Omen of Dextral Exaltation";
   readonly costKey = "omen_dextral";
-  readonly ingredientIds = ["regal", "greater_regal", "perfect_regal", "exalt", "greater_exalt", "perfect_exalt"];
+  readonly ingredientIds = ["exalt", "greater_exalt", "perfect_exalt"];
+
+  selectAddSlot(_item: CraftedItem, availableSlots: AffixSlot[]): AffixSlot | null {
+    return availableSlots.includes("suffix") ? "suffix" : null;
+  }
+}
+
+export class OmenOfSinistralCoronation extends OmenModifier {
+  readonly id = "omen_sinistral_coronation";
+  readonly displayName = "Omen of Sinistral Coronation";
+  readonly costKey = "omen_sinistral_coronation";
+  readonly ingredientIds = ["regal", "greater_regal", "perfect_regal"];
+
+  selectAddSlot(_item: CraftedItem, availableSlots: AffixSlot[]): AffixSlot | null {
+    return availableSlots.includes("prefix") ? "prefix" : null;
+  }
+}
+
+export class OmenOfDextralCoronation extends OmenModifier {
+  readonly id = "omen_dextral_coronation";
+  readonly displayName = "Omen of Dextral Coronation";
+  readonly costKey = "omen_dextral_coronation";
+  readonly ingredientIds = ["regal", "greater_regal", "perfect_regal"];
 
   selectAddSlot(_item: CraftedItem, availableSlots: AffixSlot[]): AffixSlot | null {
     return availableSlots.includes("suffix") ? "suffix" : null;
