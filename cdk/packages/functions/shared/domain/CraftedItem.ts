@@ -1,5 +1,5 @@
-import type { CraftContext } from "./CraftContext";
-import type { ModEntry, ItemState, ModPool, OmenType } from "../types";
+import type { AffixSlot, CraftActionHooks, CraftContext } from "./CraftContext";
+import type { ModEntry, ItemState, ModPool } from "../types";
 
 export class CraftedItem {
   private constructor(private readonly s: ItemState) {}
@@ -88,20 +88,20 @@ export class CraftedItem {
     return next;
   }
 
-  addRandomAffix(ctx: CraftContext, omen: OmenType = null): { item: CraftedItem; added: ModEntry | null } {
-    const slot = this.chooseSlot(omen, ctx.rng);
+  addRandomAffix(ctx: CraftContext, hooks: CraftActionHooks | undefined = ctx.hooks): { item: CraftedItem; added: ModEntry | null } {
+    const slot = this.chooseSlot(ctx, hooks);
     if (!slot) return { item: this.clone(), added: null };
     return this.addRandomAffixIntoSlot(ctx.pool, slot, ctx.rng);
   }
 
-  addRandomAffixIntoSlot(pool: ModPool, slot: "prefix" | "suffix", rng: () => number): { item: CraftedItem; added: ModEntry | null } {
+  addRandomAffixIntoSlot(pool: ModPool, slot: AffixSlot, rng: () => number): { item: CraftedItem; added: ModEntry | null } {
     const p = slot === "prefix" ? pool.prefixes : pool.suffixes;
     const added = draw(p, this.presentGroups(), rng);
     return { item: added ? this.addMod(added) : this.clone(), added };
   }
 
-  removeRandomAffix(ctx: CraftContext, omen: OmenType = null): { item: CraftedItem; removed: ModEntry | null } {
-    const removed = this.chooseRemovableAffix(omen, ctx.rng);
+  removeRandomAffix(ctx: CraftContext, hooks: CraftActionHooks | undefined = ctx.hooks): { item: CraftedItem; removed: ModEntry | null } {
+    const removed = this.chooseRemovableAffix(ctx, hooks);
     if (!removed) return { item: this.clone(), removed: null };
     return { item: this.removeMod(removed), removed };
   }
@@ -122,43 +122,29 @@ export class CraftedItem {
     return 3;
   }
 
-  private chooseSlot(omen: OmenType, rng: () => number): "prefix" | "suffix" | null {
-    const op = this.openPrefix();
-    const os = this.openSuffix();
-    if (omen === "sinistral" && op) return "prefix";
-    if (omen === "dextral" && os) return "suffix";
-    if (op && os) return rng() < 0.5 ? "prefix" : "suffix";
-    if (op) return "prefix";
-    if (os) return "suffix";
-    return null;
+  private chooseSlot(ctx: CraftContext, hooks?: CraftActionHooks): AffixSlot | null {
+    const available = this.availableSlots();
+    if (available.length === 0) return null;
+    const hooked = hooks?.selectAddSlot?.(this, available, ctx);
+    if (hooked && available.includes(hooked)) return hooked;
+    return available[Math.floor(ctx.rng() * available.length)];
   }
 
-  private chooseRemovableAffix(omen: OmenType, rng: () => number): ModEntry | null {
-    if (omen === "whittling") {
-      const removable = this.nonFracturedMods();
-      if (removable.length === 0) return null;
-      return removable.reduce((min, m) => m.required_level < min.required_level ? m : min);
-    }
+  private availableSlots(): AffixSlot[] {
+    const slots: AffixSlot[] = [];
+    const op = this.openPrefix();
+    const os = this.openSuffix();
+    if (op) slots.push("prefix");
+    if (os) slots.push("suffix");
+    return slots;
+  }
 
-    let removable = this.nonFracturedMods();
-    if (
-      omen === "sinistral_erasure" ||
-      omen === "sinistral" ||
-      omen === "sinistral_annulment" ||
-      omen === "sinistral_crystallisation"
-    ) {
-      removable = this.s.prefixes.filter(m => !this.s.fractured_mod_ids.has(m.modId));
-    } else if (
-      omen === "dextral_erasure" ||
-      omen === "dextral" ||
-      omen === "dextral_annulment" ||
-      omen === "dextral_crystallisation"
-    ) {
-      removable = this.s.suffixes.filter(m => !this.s.fractured_mod_ids.has(m.modId));
-    }
-
+  private chooseRemovableAffix(ctx: CraftContext, hooks?: CraftActionHooks): ModEntry | null {
+    const removable = this.nonFracturedMods();
     if (removable.length === 0) return null;
-    return removable[Math.floor(rng() * removable.length)];
+    const hooked = hooks?.selectRemoveAffix?.(this, removable, ctx);
+    if (hooked && removable.includes(hooked)) return hooked;
+    return removable[Math.floor(ctx.rng() * removable.length)];
   }
 }
 

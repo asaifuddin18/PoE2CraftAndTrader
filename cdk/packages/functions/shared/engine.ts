@@ -19,6 +19,21 @@ import {
   RegalOrb,
   TransmutationOrb,
 } from "./ingredients";
+import {
+  OmenOfDextralAnnulment,
+  OmenOfDextralCrystallisation,
+  OmenOfDextralErasure,
+  OmenOfDextralExaltation,
+  OmenOfGreaterExaltation,
+  OmenOfSinistralAnnulment,
+  OmenOfSinistralCrystallisation,
+  OmenOfSinistralErasure,
+  OmenOfSinistralExaltation,
+  OmenOfWhittling,
+  withModifiers,
+  type CraftingModifier,
+} from "./modifiers";
+import type { CraftingIngredient } from "./ingredients";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // § 1. Item-state helpers
@@ -91,23 +106,23 @@ export function act_augment(s: ItemState, pool: ModPool, rng: () => number): Ite
 }
 
 export function act_regal(s: ItemState, pool: ModPool, rng: () => number, omen: OmenType = null): ItemState {
-  return new RegalOrb(omen).apply(CraftedItem.fromState(s), { pool, rng }).item.toState();
+  return applyWithOptionalOmen(new RegalOrb(), omen, s, pool, rng);
 }
 
 export function act_alchemy(s: ItemState, pool: ModPool, rng: () => number, omen: OmenType = null): ItemState {
-  return new AlchemyOrb(omen).apply(CraftedItem.fromState(s), { pool, rng }).item.toState();
+  return applyWithOptionalOmen(new AlchemyOrb(), omen, s, pool, rng);
 }
 
 export function act_exalt(s: ItemState, pool: ModPool, rng: () => number, omen: OmenType = null): ItemState {
-  return new ExaltedOrb(omen).apply(CraftedItem.fromState(s), { pool, rng }).item.toState();
+  return applyWithOptionalOmen(new ExaltedOrb(), omen, s, pool, rng);
 }
 
 export function act_chaos(s: ItemState, pool: ModPool, rng: () => number, omen: OmenType = null): ItemState {
-  return new ChaosOrb(omen).apply(CraftedItem.fromState(s), { pool, rng }).item.toState();
+  return applyWithOptionalOmen(new ChaosOrb(), omen, s, pool, rng);
 }
 
 export function act_annul(s: ItemState, rng: () => number, omen: OmenType = null): ItemState {
-  return new AnnulmentOrb(omen).apply(CraftedItem.fromState(s), { pool: { prefixes: [], suffixes: [] }, rng }).item.toState();
+  return applyWithOptionalOmen(new AnnulmentOrb(), omen, s, { prefixes: [], suffixes: [] }, rng);
 }
 
 export function act_fracture(s: ItemState, rng: () => number): ItemState {
@@ -120,7 +135,37 @@ export function act_essence(
   tier_type: "lesser" | "normal" | "greater" | "perfect",
   omen: OmenType = null,
 ): ItemState {
-  return new Essence("essence", guaranteedMod, tier_type, omen).apply(CraftedItem.fromState(s), { pool, rng }).item.toState();
+  return applyWithOptionalOmen(new Essence("essence", guaranteedMod, tier_type), omen, s, pool, rng);
+}
+
+function applyWithOptionalOmen(
+  ingredient: CraftingIngredient,
+  omen: OmenType,
+  state: ItemState,
+  pool: ModPool,
+  rng: () => number,
+): ItemState {
+  const modifier = modifierFromOmen(omen, ingredient.id);
+  const applied = modifier ? withModifiers(ingredient, modifier) : ingredient;
+  return applied.apply(CraftedItem.fromState(state), { pool, rng }).item.toState();
+}
+
+function modifierFromOmen(omen: OmenType, ingredientId: string): CraftingModifier | null {
+  switch (omen) {
+    case "whittling": return new OmenOfWhittling();
+    case "sinistral_erasure": return new OmenOfSinistralErasure();
+    case "dextral_erasure": return new OmenOfDextralErasure();
+    case "sinistral": return ingredientId === "annul" ? new OmenOfSinistralAnnulment() : new OmenOfSinistralExaltation();
+    case "dextral": return ingredientId === "annul" ? new OmenOfDextralAnnulment() : new OmenOfDextralExaltation();
+    case "greater": return new OmenOfGreaterExaltation();
+    case "sinistral_annulment": return new OmenOfSinistralAnnulment();
+    case "dextral_annulment": return new OmenOfDextralAnnulment();
+    case "sinistral_crystallisation": return new OmenOfSinistralCrystallisation();
+    case "dextral_crystallisation": return new OmenOfDextralCrystallisation();
+    case "homogenising":
+    case null:
+      return null;
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

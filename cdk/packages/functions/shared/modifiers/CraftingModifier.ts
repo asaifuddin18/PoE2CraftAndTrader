@@ -1,18 +1,12 @@
 import type { CraftingIngredient } from "../ingredients";
 import type { CurrencyBasket } from "../domain/CurrencyBasket";
-import type { OmenType } from "../types";
+import type { CraftActionHooks } from "../domain/CraftContext";
 
-export interface CraftingModifier {
+export interface CraftingModifier extends CraftActionHooks {
   readonly id: string;
   readonly displayName: string;
   readonly costKey: string;
 
   canApplyTo(ingredient: CraftingIngredient): boolean;
   cost(): CurrencyBasket;
-
-  /**
-   * Compatibility bridge for the current ingredient implementation. The next
-   * pass should replace this with generic selection hooks on CraftedItem.
-   */
-  toOmenType(): OmenType;
 }

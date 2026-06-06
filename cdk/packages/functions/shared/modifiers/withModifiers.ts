@@ -2,15 +2,7 @@ import type { CraftContext } from "../domain/CraftContext";
 import { craftResult } from "../domain/CraftResult";
 import type { CraftedItem } from "../domain/CraftedItem";
 import { mergeCurrency } from "../domain/CurrencyBasket";
-import {
-  AlchemyOrb,
-  AnnulmentOrb,
-  ChaosOrb,
-  Essence,
-  ExaltedOrb,
-  RegalOrb,
-  type CraftingIngredient,
-} from "../ingredients";
+import type { CraftingIngredient } from "../ingredients";
 import type { CraftingModifier } from "./CraftingModifier";
 
 export function withModifiers(ingredient: CraftingIngredient, ...modifiers: CraftingModifier[]): CraftingIngredient {
@@ -27,8 +19,7 @@ export function withModifiers(ingredient: CraftingIngredient, ...modifiers: Craf
         throw new Error(`${modifier.displayName} cannot apply to ${ingredient.displayName}`);
       }
 
-      const adapted = applyCompatModifier(ingredient, modifier);
-      const result = adapted.apply(item, ctx);
+      const result = ingredient.apply(item, { ...ctx, hooks: modifier });
       return craftResult(
         result.item,
         mergeCurrency(result.cost, modifier.cost()),
@@ -39,20 +30,4 @@ export function withModifiers(ingredient: CraftingIngredient, ...modifiers: Craf
       );
     },
   };
-}
-
-function applyCompatModifier(ingredient: CraftingIngredient, modifier: CraftingModifier): CraftingIngredient {
-  const omen = modifier.toOmenType();
-  switch (ingredient.id) {
-    case "chaos": return new ChaosOrb(omen);
-    case "alch": return new AlchemyOrb(omen);
-    case "regal": return new RegalOrb(omen);
-    case "exalt": return new ExaltedOrb(omen);
-    case "annul": return new AnnulmentOrb(omen);
-    case "essence":
-      return ingredient instanceof Essence
-        ? new Essence(ingredient.id, ingredient.guaranteedMod, ingredient.tier, omen)
-        : ingredient;
-    default: return ingredient;
-  }
 }
