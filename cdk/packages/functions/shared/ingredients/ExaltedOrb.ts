@@ -2,24 +2,40 @@ import type { CraftingIngredient } from "./CraftingIngredient";
 import type { CraftContext } from "../domain/CraftContext";
 import { craftResult } from "../domain/CraftResult";
 import type { CraftedItem } from "../domain/CraftedItem";
+import type { ModPool } from "../types";
 
 export class ExaltedOrb implements CraftingIngredient {
-  readonly id = "exalt";
-  readonly displayName = "Exalted Orb";
+  constructor(
+    readonly id = "exalt",
+    readonly displayName = "Exalted Orb",
+    readonly minimumRequiredLevel = 0,
+  ) {}
 
   apply(item: CraftedItem, ctx: CraftContext) {
     let next = item.clone();
     const added: string[] = [];
     const count = ctx.hooks?.modifyAddCount?.(this.id, 1) ?? 1;
+    const filteredContext = {
+      ...ctx,
+      pool: filterPoolByRequiredLevel(ctx.pool, this.minimumRequiredLevel),
+    };
 
     for (let i = 0; i < count; i++) {
-      const result = next.addRandomAffix(ctx);
+      const result = next.addRandomAffix(filteredContext);
       next = result.item;
       if (result.added) added.push(result.added.modId);
     }
 
     return craftResult(next, { [this.id]: 1 }, [
-      { type: "currency", message: this.displayName, details: { added } },
+      { type: "currency", message: this.displayName, details: { added, minimumRequiredLevel: this.minimumRequiredLevel } },
     ]);
   }
+}
+
+function filterPoolByRequiredLevel(pool: ModPool, minimumRequiredLevel: number): ModPool {
+  if (minimumRequiredLevel <= 0) return pool;
+  return {
+    prefixes: pool.prefixes.filter(m => m.required_level >= minimumRequiredLevel),
+    suffixes: pool.suffixes.filter(m => m.required_level >= minimumRequiredLevel),
+  };
 }

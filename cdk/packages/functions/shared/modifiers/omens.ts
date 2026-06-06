@@ -64,7 +64,7 @@ export class OmenOfSinistralExaltation extends OmenModifier {
   readonly id = "omen_sinistral";
   readonly displayName = "Omen of Sinistral Exaltation";
   readonly costKey = "omen_sinistral";
-  readonly ingredientIds = ["alch", "regal", "exalt"];
+  readonly ingredientIds = ["alch", "regal", "exalt", "greater_exalt", "perfect_exalt"];
 
   selectAddSlot(_item: CraftedItem, availableSlots: AffixSlot[]): AffixSlot | null {
     return availableSlots.includes("prefix") ? "prefix" : null;
@@ -75,7 +75,7 @@ export class OmenOfDextralExaltation extends OmenModifier {
   readonly id = "omen_dextral";
   readonly displayName = "Omen of Dextral Exaltation";
   readonly costKey = "omen_dextral";
-  readonly ingredientIds = ["alch", "regal", "exalt"];
+  readonly ingredientIds = ["alch", "regal", "exalt", "greater_exalt", "perfect_exalt"];
 
   selectAddSlot(_item: CraftedItem, availableSlots: AffixSlot[]): AffixSlot | null {
     return availableSlots.includes("suffix") ? "suffix" : null;
@@ -86,10 +86,10 @@ export class OmenOfGreaterExaltation extends OmenModifier {
   readonly id = "omen_greater";
   readonly displayName = "Omen of Greater Exaltation";
   readonly costKey = "omen_greater";
-  readonly ingredientIds = ["exalt", "annul"];
+  readonly ingredientIds = ["exalt", "greater_exalt", "perfect_exalt", "annul"];
 
   modifyAddCount(ingredientId: string, baseCount: number): number {
-    return ingredientId === "exalt" ? baseCount + 1 : baseCount;
+    return ["exalt", "greater_exalt", "perfect_exalt"].includes(ingredientId) ? baseCount + 1 : baseCount;
   }
 
   modifyRemoveCount(ingredientId: string, baseCount: number): number {

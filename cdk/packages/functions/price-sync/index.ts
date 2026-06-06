@@ -23,7 +23,7 @@ const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({ region: REGION }), 
 // Solver-default prices (must match shared/loaders.DEFAULT_PRICES). Live values
 // are merged over these; anything without a live equivalent keeps the default.
 const DEFAULT_PRICES: Record<string, number> = {
-  white_base: 0.1, chaos: 3, alch: 0.5, annul: 40, exalt: 1,
+  white_base: 0.1, chaos: 3, alch: 0.5, annul: 40, exalt: 1, greater_exalt: 1, perfect_exalt: 1,
   regal: 0.25, transmute: 0.1, augment: 0.07, alteration: 0.05, fracturing_orb: 100, divine: 90,
   omen_whittling: 2,
 };
@@ -49,6 +49,8 @@ interface CurrencyEntry {
 
 // Map each solver price key to candidate poe2scout apiIds and/or a name regex.
 const SOLVER_KEY_MATCHERS: Record<string, { apiIds?: string[]; name?: RegExp }> = {
+  greater_exalt:  { name: /greater exalted orb/i },
+  perfect_exalt:  { name: /perfect exalted orb/i },
   chaos:          { apiIds: ["chaos"],            name: /chaos orb/i },
   divine:         { apiIds: ["divine"],           name: /divine orb/i },
   annul:          { apiIds: ["annul", "annulment"], name: /annulment/i },

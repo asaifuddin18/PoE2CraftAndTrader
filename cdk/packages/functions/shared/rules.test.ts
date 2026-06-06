@@ -9,6 +9,8 @@ import {
   Essence,
   ExaltedOrb,
   FracturingOrb,
+  GreaterExaltedOrb,
+  PerfectExaltedOrb,
   RegalOrb,
   TransmutationOrb,
 } from "./ingredients";
@@ -25,7 +27,8 @@ import {
   OmenOfWhittling,
   withModifiers,
 } from "./modifiers";
-import type { ItemState, ModEntry, ModPool } from "./types";
+import { build_pools } from "./engine";
+import type { ItemState, ModEntry, ModPool, RawMod } from "./types";
 
 type TestFn = () => void;
 
@@ -67,6 +70,10 @@ function seededRng(seed = 1): () => number {
 
 function ctx(rng: () => number = rngSequence([0])): CraftContext {
   return { pool, rng };
+}
+
+function ctxWithPool(customPool: ModPool, rng: () => number = rngSequence([0])): CraftContext {
+  return { pool: customPool, rng };
 }
 
 function item(prefixes: ModEntry[], suffixes: ModEntry[], fractured: ModEntry[] = []): CraftedItem {
@@ -146,6 +153,64 @@ test("Exalted Orb adds one affix; Greater omen makes it add two and charges the 
     .apply(item([], []), ctx(rngSequence([0, 0, 0.9, 0])));
   assert.equal(countMods(greater.item), 2);
   assert.deepEqual(greater.cost, { exalt: 1, omen_greater: 1 });
+});
+
+test("Greater and Perfect Exalted Orbs enforce required-level floors", () => {
+  const lowPrefix = mod("low_prefix", "prefix", 20, 10_000);
+  const greaterPrefix = mod("greater_prefix", "prefix", 35, 1);
+  const perfectPrefix = mod("perfect_prefix", "prefix", 50, 1);
+  const highPool: ModPool = { prefixes: [lowPrefix, greaterPrefix, perfectPrefix], suffixes: [] };
+
+  const normal = new ExaltedOrb().apply(item([], []), ctxWithPool(highPool, rngSequence([0])));
+  assert.equal(normal.item.toState().prefixes[0]?.required_level, 20);
+
+  const greater = new GreaterExaltedOrb().apply(item([], []), ctxWithPool(highPool, rngSequence([0])));
+  assert.ok((greater.item.toState().prefixes[0]?.required_level ?? 0) >= 35);
+  assert.deepEqual(greater.cost, { greater_exalt: 1 });
+
+  const perfect = new PerfectExaltedOrb().apply(item([], []), ctxWithPool(highPool, rngSequence([0])));
+  assert.ok((perfect.item.toState().prefixes[0]?.required_level ?? 0) >= 50);
+  assert.deepEqual(perfect.cost, { perfect_exalt: 1 });
+});
+
+test("Perfect Exalted Orb still respects the item's ilvl ceiling", () => {
+  const raw: RawMod = {
+    modId: "tiered",
+    name: "Tiered Prefix",
+    affix: "prefix",
+    modgroups: ["Tiered"],
+    tags: [],
+    tiers: [
+      { tier: 1, ilvl: 60, weight: 100, values: [] },
+      { tier: 2, ilvl: 50, weight: 100, values: [] },
+      { tier: 3, ilvl: 35, weight: 100, values: [] },
+    ],
+  };
+  const ilvl55Pool = build_pools([raw], 55);
+  const result = new PerfectExaltedOrb().apply(item([], []), ctxWithPool(ilvl55Pool, rngSequence([0])));
+  const added = result.item.toState().prefixes[0];
+  assert.equal(added?.required_level, 50);
+  assert.notEqual(added?.required_level, 60);
+});
+
+test("Greater Exaltation omen works with all exalted-orb variants", () => {
+  const variants = [
+    new ExaltedOrb(),
+    new GreaterExaltedOrb(),
+    new PerfectExaltedOrb(),
+  ];
+  const highPool: ModPool = {
+    prefixes: [mod("p35", "prefix", 35), mod("p50", "prefix", 50)],
+    suffixes: [mod("s35", "suffix", 35), mod("s50", "suffix", 50)],
+  };
+
+  for (const ingredient of variants) {
+    const result = withModifiers(ingredient, new OmenOfGreaterExaltation())
+      .apply(item([], []), ctxWithPool(highPool, rngSequence([0, 0, 0.9, 0])));
+    assert.equal(countMods(result.item), 2, ingredient.displayName);
+    assert.equal(result.cost[ingredient.id], 1);
+    assert.equal(result.cost.omen_greater, 1);
+  }
 });
 
 test("Sinistral and Dextral exaltation omens target prefix/suffix add slots", () => {

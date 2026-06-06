@@ -4,6 +4,8 @@ export { AugmentationOrb } from "./AugmentationOrb";
 export { RegalOrb } from "./RegalOrb";
 export { AlchemyOrb } from "./AlchemyOrb";
 export { ExaltedOrb } from "./ExaltedOrb";
+export { GreaterExaltedOrb } from "./GreaterExaltedOrb";
+export { PerfectExaltedOrb } from "./PerfectExaltedOrb";
 export { ChaosOrb } from "./ChaosOrb";
 export { AnnulmentOrb } from "./AnnulmentOrb";
 export { FracturingOrb } from "./FracturingOrb";
