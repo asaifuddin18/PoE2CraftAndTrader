@@ -7,6 +7,18 @@ import type {
   ModEntry, ModPool, TargetSpec, TargetMod, ItemState, OmenType,
   PriceTable, CostSummary, CdfPoint, RawMod, SolveRequest,
 } from "./types";
+import { CraftedItem, draw as drawFromDomain } from "./domain/CraftedItem";
+import {
+  AlchemyOrb,
+  AnnulmentOrb,
+  AugmentationOrb,
+  ChaosOrb,
+  Essence,
+  ExaltedOrb,
+  FracturingOrb,
+  RegalOrb,
+  TransmutationOrb,
+} from "./ingredients";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // § 1. Item-state helpers
@@ -53,15 +65,7 @@ export function build_pools(mods: RawMod[], ilvl: number): ModPool {
 
 // Weighted draw from pool, excluding present groups (exclusivity blocking).
 export function draw(pool: ModEntry[], present: Set<string>, rng: () => number): ModEntry | null {
-  const cand = pool.filter(m => !present.has(m.group));
-  const W = cand.reduce((s, m) => s + m.weight, 0);
-  if (W === 0) return null;
-  let r = rng() * W;
-  for (const m of cand) {
-    r -= m.weight;
-    if (r <= 0) return m;
-  }
-  return cand[cand.length - 1];
+  return drawFromDomain(pool, present, rng);
 }
 
 // Analytic: P(drawing a mod from group g at tier <= min_tier given present groups)
@@ -75,139 +79,39 @@ export function p_hit(pool: ModEntry[], g: string, min_tier: number, present: Se
 
 // ─────────────────────────────────────────────────────────────────────────────
 // § 3. Currency action primitives
+// Compatibility wrappers around the OO ingredient model.
 // ─────────────────────────────────────────────────────────────────────────────
 
-function add_mod(s: ItemState, m: ModEntry): void {
-  if (m.gen_type === "prefix") s.prefixes.push(m); else s.suffixes.push(m);
-}
-function remove_mod(s: ItemState, m: ModEntry): void {
-  s.prefixes = s.prefixes.filter(x => x !== m);
-  s.suffixes = s.suffixes.filter(x => x !== m);
-}
-function choose_slot(s: ItemState, omen: OmenType, rng: () => number): "prefix" | "suffix" | null {
-  const op = open_prefix(s), os = open_suffix(s);
-  if (omen === "sinistral" && op) return "prefix";
-  if (omen === "dextral"   && os) return "suffix";
-  if (op && os) return rng() < 0.5 ? "prefix" : "suffix";
-  if (op) return "prefix";
-  if (os) return "suffix";
-  return null;
-}
-function draw_into(s: ItemState, pool: ModPool, slot: "prefix" | "suffix", rng: () => number): ModEntry | null {
-  const pg = present_groups(s);
-  const p = slot === "prefix" ? pool.prefixes : pool.suffixes;
-  const m = draw(p, pg, rng);
-  if (m) add_mod(s, m);
-  return m;
-}
-
 export function act_transmute(s: ItemState, pool: ModPool, rng: () => number): ItemState {
-  s = clone(s); s.rarity = "magic";
-  const slot = choose_slot(s, null, rng);
-  if (slot) draw_into(s, pool, slot, rng);
-  if (rng() < 0.5 && open_prefix(s) && open_suffix(s)) {
-    const slot2 = open_prefix(s) ? "prefix" : "suffix";
-    draw_into(s, pool, slot2, rng);
-  }
-  return s;
+  return new TransmutationOrb().apply(CraftedItem.fromState(s), { pool, rng }).item.toState();
 }
 
 export function act_augment(s: ItemState, pool: ModPool, rng: () => number): ItemState {
-  s = clone(s);
-  const slot = open_prefix(s) ? "prefix" : open_suffix(s) ? "suffix" : null;
-  if (slot) draw_into(s, pool, slot, rng);
-  return s;
+  return new AugmentationOrb().apply(CraftedItem.fromState(s), { pool, rng }).item.toState();
 }
 
 export function act_regal(s: ItemState, pool: ModPool, rng: () => number, omen: OmenType = null): ItemState {
-  s = clone(s); s.rarity = "rare";
-  const slot = choose_slot(s, omen, rng);
-  if (slot) draw_into(s, pool, slot, rng);
-  return s;
+  return new RegalOrb(omen).apply(CraftedItem.fromState(s), { pool, rng }).item.toState();
 }
 
 export function act_alchemy(s: ItemState, pool: ModPool, rng: () => number, omen: OmenType = null): ItemState {
-  s = clone(s); s.rarity = "rare";
-  for (let i = 0; i < 4; i++) {
-    let slot: "prefix" | "suffix" | null;
-    if (omen === "sinistral" && open_prefix(s)) slot = "prefix";
-    else if (omen === "dextral" && open_suffix(s)) slot = "suffix";
-    else slot = choose_slot(s, null, rng);
-    if (!slot) break;
-    draw_into(s, pool, slot, rng);
-  }
-  return s;
+  return new AlchemyOrb(omen).apply(CraftedItem.fromState(s), { pool, rng }).item.toState();
 }
 
 export function act_exalt(s: ItemState, pool: ModPool, rng: () => number, omen: OmenType = null): ItemState {
-  s = clone(s);
-  if (omen === "greater") {
-    const slot1 = choose_slot(s, null, rng); if (slot1) draw_into(s, pool, slot1, rng);
-    const slot2 = choose_slot(s, null, rng); if (slot2) draw_into(s, pool, slot2, rng);
-  } else {
-    const slot = choose_slot(s, omen, rng);
-    if (slot) draw_into(s, pool, slot, rng);
-  }
-  return s;
+  return new ExaltedOrb(omen).apply(CraftedItem.fromState(s), { pool, rng }).item.toState();
 }
 
-// Chaos: remove 1 mod, add 1 of SAME type (single replace, NOT full reroll)
 export function act_chaos(s: ItemState, pool: ModPool, rng: () => number, omen: OmenType = null): ItemState {
-  s = clone(s);
-  const removable = non_fractured(s);
-  if (removable.length === 0) return s;
-
-  let removed: ModEntry;
-  if (omen === "whittling") {
-    removed = removable.reduce((min, m) => m.required_level < min.required_level ? m : min);
-  } else if (omen === "sinistral_erasure") {
-    const prefRem = s.prefixes.filter(m => !s.fractured_mod_ids.has(m.modId));
-    if (prefRem.length === 0) return s;
-    removed = prefRem[Math.floor(rng() * prefRem.length)];
-  } else if (omen === "dextral_erasure") {
-    const sufRem = s.suffixes.filter(m => !s.fractured_mod_ids.has(m.modId));
-    if (sufRem.length === 0) return s;
-    removed = sufRem[Math.floor(rng() * sufRem.length)];
-  } else {
-    removed = removable[Math.floor(rng() * removable.length)];
-  }
-
-  remove_mod(s, removed);
-  // Add a random affix into ANY open slot — NOT necessarily the removed type.
-  // With both sides open it's a 50/50 slot pick; if one side is full (e.g. a
-  // 6-mod rare after removing a prefix) it collapses to the only open type.
-  const slot = choose_slot(s, null, rng);
-  if (slot) draw_into(s, pool, slot, rng);
-  return s;
+  return new ChaosOrb(omen).apply(CraftedItem.fromState(s), { pool, rng }).item.toState();
 }
 
 export function act_annul(s: ItemState, rng: () => number, omen: OmenType = null): ItemState {
-  s = clone(s);
-  let pool = non_fractured(s);
-  if (omen === "sinistral" || omen === "sinistral_annulment")
-    pool = s.prefixes.filter(m => !s.fractured_mod_ids.has(m.modId));
-  else if (omen === "dextral" || omen === "dextral_annulment")
-    pool = s.suffixes.filter(m => !s.fractured_mod_ids.has(m.modId));
-  if (pool.length === 0) return s;
-
-  const count = omen === "greater" ? Math.min(2, pool.length) : 1;
-  for (let i = 0; i < count; i++) {
-    const idx = Math.floor(rng() * pool.length);
-    remove_mod(s, pool[idx]);
-    pool = pool.filter((_, j) => j !== idx);
-  }
-  return s;
+  return new AnnulmentOrb(omen).apply(CraftedItem.fromState(s), { pool: { prefixes: [], suffixes: [] }, rng }).item.toState();
 }
 
 export function act_fracture(s: ItemState, rng: () => number): ItemState {
-  s = clone(s);
-  // An item can hold only one fractured affix — no-op if already fractured.
-  if (s.fractured_mod_ids.size > 0) return s;
-  const all = all_mods(s);
-  if (all.length < 4) return s;
-  const target = all[Math.floor(rng() * all.length)];
-  s.fractured_mod_ids.add(target.modId);
-  return s;
+  return new FracturingOrb().apply(CraftedItem.fromState(s), { pool: { prefixes: [], suffixes: [] }, rng }).item.toState();
 }
 
 export function act_essence(
@@ -216,26 +120,7 @@ export function act_essence(
   tier_type: "lesser" | "normal" | "greater" | "perfect",
   omen: OmenType = null,
 ): ItemState {
-  s = clone(s);
-  if (tier_type === "perfect") {
-    let removable = non_fractured(s);
-    if (omen === "sinistral_crystallisation")
-      removable = s.prefixes.filter(m => !s.fractured_mod_ids.has(m.modId));
-    else if (omen === "dextral_crystallisation")
-      removable = s.suffixes.filter(m => !s.fractured_mod_ids.has(m.modId));
-    if (removable.length > 0) remove_mod(s, removable[Math.floor(rng() * removable.length)]);
-    add_mod(s, guaranteedMod);
-  } else {
-    s.rarity = "rare";
-    s.prefixes = []; s.suffixes = [];
-    add_mod(s, guaranteedMod);
-    for (let i = 1; i < 4; i++) {
-      const slot = choose_slot(s, null, rng);
-      if (!slot) break;
-      draw_into(s, pool, slot, rng);
-    }
-  }
-  return s;
+  return new Essence("essence", guaranteedMod, tier_type, omen).apply(CraftedItem.fromState(s), { pool, rng }).item.toState();
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

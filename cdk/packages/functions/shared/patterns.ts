@@ -9,9 +9,22 @@ import type {
   ModPool, TargetSpec, TargetMod, ModEntry, PriceTable, PatternJob, CraftStep, SolveRequest,
 } from "./types";
 import {
-  Policy, empty_rare, act_alchemy, act_chaos, act_transmute, act_augment, act_regal,
-  act_exalt, act_essence, is_satisfied, mod_satisfied, open_prefix, open_suffix, p_hit,
+  Policy, empty_rare, is_satisfied, mod_satisfied, open_prefix, open_suffix, p_hit,
 } from "./engine";
+import { CraftedItem } from "./domain/CraftedItem";
+import type { CurrencyBasket } from "./domain/CurrencyBasket";
+import { addCurrency, mergeCurrency } from "./domain/CurrencyBasket";
+import type { CraftingIngredient } from "./ingredients";
+import {
+  AlchemyOrb,
+  AugmentationOrb,
+  ChaosOrb,
+  Essence,
+  ExaltedOrb,
+  FracturingOrb,
+  RegalOrb,
+  TransmutationOrb,
+} from "./ingredients";
 
 // ── Policy factories (ported from craft-engine.ts) ────────────────────────────
 
@@ -21,23 +34,43 @@ import {
 // work per sample is bounded regardless of loop nesting.
 const MAX_ITERS = 500;
 
+function addCost(basket: CurrencyBasket, cost: CurrencyBasket): CurrencyBasket {
+  return mergeCurrency(basket, cost);
+}
+
+function spend(basket: CurrencyBasket, currency: string, amount = 1): CurrencyBasket {
+  return addCurrency(basket, currency, amount);
+}
+
+function applyIngredient(
+  state: ModEntryState,
+  ingredient: CraftingIngredient,
+  pool: ModPool,
+  rng: () => number,
+  basket: CurrencyBasket,
+): { state: ModEntryState; basket: CurrencyBasket } {
+  const result = ingredient.apply(CraftedItem.fromState(state), { pool, rng });
+  return { state: result.item.toState(), basket: addCost(basket, result.cost) };
+}
+
+type ModEntryState = ReturnType<typeof empty_rare>;
+
 function policy_B3(whittling: boolean, restart_threshold: number): Policy {
   return (rng, pool, target) => {
-    const basket: Record<string, number> = { white_base: 1, alch: 1 };
-    let state = act_alchemy(empty_rare(), pool, rng);
+    let basket: CurrencyBasket = { white_base: 1 };
+    let state = empty_rare();
+    ({ state, basket } = applyIngredient(state, new AlchemyOrb(), pool, rng, basket));
 
     let attempts = 0, guard = 0;
     while (!is_satisfied(state, target)) {
       if (++guard > MAX_ITERS) break;
       if (attempts >= restart_threshold) {
-        basket.white_base += 1; basket.alch += 1;
-        state = act_alchemy(empty_rare(), pool, rng);
+        basket = spend(basket, "white_base");
+        state = empty_rare();
+        ({ state, basket } = applyIngredient(state, new AlchemyOrb(), pool, rng, basket));
         attempts = 0; continue;
       }
-      state = act_chaos(state, pool, rng, whittling ? "whittling" : null);
-      basket.chaos = (basket.chaos ?? 0) + 1;
-      // Omens are consumed one-per-use — charge the omen on every whittled chaos.
-      if (whittling) basket.omen_whittling = (basket.omen_whittling ?? 0) + 1;
+      ({ state, basket } = applyIngredient(state, new ChaosOrb(whittling ? "whittling" : null), pool, rng, basket));
       attempts++;
     }
     return basket;
@@ -46,36 +79,37 @@ function policy_B3(whittling: boolean, restart_threshold: number): Policy {
 
 function policy_A1(anchors: TargetMod[], restart_threshold: number): Policy {
   return (rng, pool, target) => {
-    const basket: Record<string, number> = { white_base: 1 };
+    let basket: CurrencyBasket = { white_base: 1 };
     let attempts = 0, guard = 0;
     while (true) {
       if (++guard > MAX_ITERS) return basket;
-      if (attempts >= restart_threshold) { basket.white_base += 1; attempts = 0; }
+      if (attempts >= restart_threshold) { basket = spend(basket, "white_base"); attempts = 0; }
 
-      let state = act_transmute(empty_rare(), pool, rng);
+      let state = empty_rare();
+      ({ state, basket } = applyIngredient(state, new TransmutationOrb(), pool, rng, basket));
       state.rarity = "magic";
-      basket.transmute = (basket.transmute ?? 0) + 1;
 
       let inner = 0;
       while (!anchors.every(t => mod_satisfied(state, t)) && inner < 50) {
         if (++guard > MAX_ITERS) return basket;
         if (state.prefixes.length + state.suffixes.length < 2) {
-          state = act_augment(state, pool, rng);
-          basket.augment = (basket.augment ?? 0) + 1;
+          ({ state, basket } = applyIngredient(state, new AugmentationOrb(), pool, rng, basket));
         } else {
-          state = act_transmute(empty_rare(), pool, rng);
+          state = empty_rare();
+          const result = new TransmutationOrb().apply(CraftedItem.fromState(state), { pool, rng });
+          state = result.item.toState();
           state.rarity = "magic";
-          basket.alteration = (basket.alteration ?? 0) + 1;
+          // Alteration is a modeling artifact for "reroll this magic item";
+          // it is intentionally not charged as a Transmutation Orb.
+          basket = spend(basket, "alteration");
         }
         inner++;
       }
       if (!anchors.every(t => mod_satisfied(state, t))) { attempts++; continue; }
 
-      state = act_regal(state, pool, rng);
-      basket.regal = (basket.regal ?? 0) + 1;
+      ({ state, basket } = applyIngredient(state, new RegalOrb(), pool, rng, basket));
       while (open_prefix(state) || open_suffix(state)) {
-        state = act_exalt(state, pool, rng);
-        basket.exalt = (basket.exalt ?? 0) + 1;
+        ({ state, basket } = applyIngredient(state, new ExaltedOrb(), pool, rng, basket));
       }
       if (is_satisfied(state, target)) return basket;
       attempts++;
@@ -85,20 +119,18 @@ function policy_A1(anchors: TargetMod[], restart_threshold: number): Policy {
 
 function policy_C2(essence_mod: ModEntry, essence_currency: string, restart_threshold: number): Policy {
   return (rng, pool, target) => {
-    const basket: Record<string, number> = { white_base: 1 };
+    let basket: CurrencyBasket = { white_base: 1 };
     let attempts = 0, guard = 0;
     while (true) {
       if (++guard > MAX_ITERS) return basket;
-      if (attempts >= restart_threshold) { basket.white_base += 1; attempts = 0; }
-      let state = act_essence(empty_rare(), pool, rng, essence_mod, "greater");
-      basket[essence_currency] = (basket[essence_currency] ?? 0) + 1;
+      if (attempts >= restart_threshold) { basket = spend(basket, "white_base"); attempts = 0; }
+      let state = empty_rare();
+      ({ state, basket } = applyIngredient(state, new Essence(essence_currency, essence_mod, "greater"), pool, rng, basket));
 
       let inner = 0;
       while (!is_satisfied(state, target) && inner < restart_threshold) {
         if (++guard > MAX_ITERS) return basket;
-        state = act_chaos(state, pool, rng, "whittling");
-        basket.chaos = (basket.chaos ?? 0) + 1;
-        basket.omen_whittling = (basket.omen_whittling ?? 0) + 1; // 1 omen per use
+        ({ state, basket } = applyIngredient(state, new ChaosOrb("whittling"), pool, rng, basket));
         inner++;
       }
       if (is_satisfied(state, target)) return basket;
@@ -109,36 +141,48 @@ function policy_C2(essence_mod: ModEntry, essence_currency: string, restart_thre
 
 function policy_E1(anchor_group: string, inner_restart: number): Policy {
   return (rng, pool, target) => {
-    const basket: Record<string, number> = { white_base: 1, alch: 1 };
-    let state = act_alchemy(empty_rare(), pool, rng);
+    let basket: CurrencyBasket = { white_base: 1 };
+    let guard = 0;
 
-    let phase1 = 0;
-    while (![...state.prefixes, ...state.suffixes].some(m => m.group === anchor_group) && phase1 < 200) {
-      state = act_chaos(state, pool, rng, null);
-      basket.chaos = (basket.chaos ?? 0) + 1;
-      phase1++;
+    while (true) {
+      if (++guard > MAX_ITERS) return basket;
+
+      let state = empty_rare();
+      ({ state, basket } = applyIngredient(state, new AlchemyOrb(), pool, rng, basket));
+
+      let phase1 = 0;
+      while (![...state.prefixes, ...state.suffixes].some(m => m.group === anchor_group) && phase1 < 200) {
+        if (++guard > MAX_ITERS) return basket;
+        ({ state, basket } = applyIngredient(state, new ChaosOrb(), pool, rng, basket));
+        phase1++;
+      }
+      const anchor = [...state.prefixes, ...state.suffixes].find(m => m.group === anchor_group);
+      if (!anchor) {
+        basket = spend(basket, "white_base");
+        continue;
+      }
+
+      ({ state, basket } = applyIngredient(state, new FracturingOrb(), pool, rng, basket));
+      if (!state.fractured_mod_ids.has(anchor.modId)) {
+        basket = spend(basket, "white_base");
+        continue;
+      }
+
+      const rest_target: TargetSpec = {
+        required_mods: target.required_mods.filter(t => t.group !== anchor_group),
+        k_required: Math.max(0, target.k_required - 1),
+      };
+      if (rest_target.required_mods.length === 0) return basket;
+
+      let phase2 = 0;
+      while (!is_satisfied(state, rest_target) && phase2 < inner_restart) {
+        if (++guard > MAX_ITERS) return basket;
+        ({ state, basket } = applyIngredient(state, new ChaosOrb("whittling"), pool, rng, basket));
+        phase2++;
+      }
+      if (is_satisfied(state, target)) return basket;
+      basket = spend(basket, "white_base");
     }
-    const anchor = [...state.prefixes, ...state.suffixes].find(m => m.group === anchor_group);
-    if (!anchor) return basket;
-
-    state.fractured_mod_ids.add(anchor.modId);
-    basket.fracturing_orb = (basket.fracturing_orb ?? 0) + 1;
-
-    const rest_target: TargetSpec = {
-      required_mods: target.required_mods.filter(t => t.group !== anchor_group),
-      k_required: Math.max(0, target.k_required - 1),
-    };
-    if (rest_target.required_mods.length === 0) return basket;
-
-    let phase2 = 0;
-    while (!is_satisfied(state, rest_target) && phase2 < inner_restart) {
-      state = act_chaos(state, pool, rng, "whittling");
-      basket.chaos = (basket.chaos ?? 0) + 1;
-      basket.omen_whittling = (basket.omen_whittling ?? 0) + 1; // 1 omen per use
-      phase2++;
-    }
-    if (!is_satisfied(state, rest_target)) basket.white_base += 1;
-    return basket;
   };
 }
 
