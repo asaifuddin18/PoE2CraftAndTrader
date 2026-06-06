@@ -18,3 +18,4 @@ export { PerfectChaosOrb } from "./PerfectChaosOrb";
 export { AnnulmentOrb } from "./AnnulmentOrb";
 export { FracturingOrb } from "./FracturingOrb";
 export { Essence, type EssenceTier } from "./Essence";
+export { Alloy } from "./Alloy";

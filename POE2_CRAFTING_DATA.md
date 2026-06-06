@@ -154,7 +154,10 @@ The guaranteed mod varies by the item type it is applied to.
 | | | Body Armour | (35–50)% increased Presence Area of Effect |
 | | | Helmet | (18–29)% increased Mana Cost Efficiency |
 | | | Boots | Temporary Minion Skills have +(1–2) to Limit of Minions summoned |
-| 5 | **Imbued Alloy** | Martial Weapons | (15–20)% increased chance to inflict Elemental and Physical Ailments |
+| 5 | **Swift Alloy** | Gloves | (9–12)% increased Cast Speed |
+| | | Ring | (7–9)% increased Attack Speed |
+| | | Belt | Flasks gain (0.75–1) charges per Second |
+| | | Shield / Focus | (30–49)% increased Totem Placement speed |
 | 6 | **Mystic Alloy** | Helmet | Spell Skills have (10–15)% increased Area of Effect |
 | | | Gloves | (10–15)% increased Area of Effect for Attacks |
 | | | Boots | +(10–15) to Spirit |
@@ -190,7 +193,7 @@ The guaranteed mod varies by the item type it is applied to.
 - P(desired mod is removed) = 1/N.
 - P(desired mod is kept) = (N−1)/N.
 - The guaranteed mod is added regardless of which mod was removed.
-- If the item already has the guaranteed mod from that alloy, the alloy **re-writes** it: removes a random mod as normal, then overwrites/re-adds the guaranteed mod (effectively refreshing its roll).
+- If the item already has the guaranteed modifier group from that alloy, the craft fails without consuming the alloy.
 
 > **Note**: Alloys are obtained from Remnant encounters in the Runes of Aldur league mechanic. They require the Verisium Anvil crafting station to use.
 

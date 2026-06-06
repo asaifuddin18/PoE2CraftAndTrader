@@ -2,9 +2,11 @@ import assert from "node:assert/strict";
 import { CraftedItem } from "./domain/CraftedItem";
 import { applyCraftingIngredient } from "./domain/applyCraftingIngredient";
 import { EssenceCatalog } from "./domain/EssenceCatalog";
+import { AlloyCatalog } from "./domain/AlloyCatalog";
 import type { CraftContext } from "./domain/CraftContext";
 import {
   AlchemyOrb,
+  Alloy,
   AnnulmentOrb,
   AugmentationOrb,
   ChaosOrb,
@@ -933,6 +935,81 @@ test("Crystallisation omens apply only to Perfect Essences", () => {
   );
 });
 
+test("Alloy removes one random affix and adds its item-specific guaranteed modifier", () => {
+  const alloy = AlloyCatalog.create("the_runefathers_alloy", "25", 52)!;
+  const result = alloy.apply(item([p1], [s1]), ctx(rngSequence([0])));
+
+  assert.equal(countMods(result.item), 2);
+  assert.ok(!modIds(result.item).includes("p1"));
+  assert.ok(modIds(result.item).includes("the_runefathers_alloy_quarterstaff"));
+  assert.deepEqual(result.cost, { the_runefathers_alloy: 1 });
+});
+
+test("Alloy catalog enforces equipment applicability and guaranteed-modifier required level", () => {
+  assert.ok(AlloyCatalog.create("the_runefathers_alloy", "25", 52));
+  assert.equal(AlloyCatalog.create("the_runefathers_alloy", "25", 51), null);
+  assert.equal(AlloyCatalog.create("the_runefathers_alloy", "1", 82), null);
+  assert.equal(AlloyCatalog.create("celestial_alloy", "11", 82), null);
+  assert.ok(AlloyCatalog.create("runic_alloy", "1", 10));
+  assert.equal(AlloyCatalog.create("runic_alloy", "1", 9), null);
+  assert.equal(AlloyCatalog.definitions().length, 13);
+  assert.ok(AlloyCatalog.definitions().some(definition => definition.id === "swift_alloy"));
+});
+
+test("Alloy forces same-side removal only when its guaranteed side is full", () => {
+  const guaranteedPrefix = mod("alloy_prefix", "prefix");
+  const alloy = new Alloy("test_alloy", "Test Alloy", guaranteedPrefix);
+  const fullPrefix = item([p1, p2, p3], [s1]);
+  const forced = alloy.apply(fullPrefix, ctx(rngSequence([0.999])));
+
+  assert.equal(forced.item.prefixes.length, 3);
+  assert.ok(forced.item.prefixes.some(candidate => candidate.modId === "alloy_prefix"));
+  assert.ok(forced.item.suffixes.some(candidate => candidate.modId === "s1"));
+
+  const room = item([p1], [s1]);
+  const eitherSide = alloy.apply(room, ctx(rngSequence([0.999])));
+  assert.ok(eitherSide.item.prefixes.some(candidate => candidate.modId === "p1"));
+  assert.equal(eitherSide.item.suffixes.length, 0);
+});
+
+test("Alloy excludes fractured affixes and fails atomically when no valid removal can make room", () => {
+  const guaranteedPrefix = mod("alloy_prefix", "prefix");
+  const alloy = new Alloy("test_alloy", "Test Alloy", guaranteedPrefix);
+  const blocked = item([p1, p2, p3], [s1], [p1, p2, p3]);
+
+  assertRejected(alloy.apply(blocked, ctx(rngSequence([0]))), blocked);
+});
+
+test("Guaranteed-modifier ingredients reject an already-present modifier group without cost", () => {
+  const guaranteed = { ...mod("alloy_guaranteed", "suffix"), group: "exclusive_guaranteed_group" };
+  const existing = { ...mod("existing_same_group", "suffix"), group: "exclusive_guaranteed_group" };
+  const base = item([p1], [existing]);
+
+  assertRejected(new Alloy("test_alloy", "Test Alloy", guaranteed).apply(base, ctx()), base);
+  assertRejected(testEssence("perfect_essence_test", guaranteed, "perfect").apply(base, ctx()), base);
+});
+
+test("Different Alloy guaranteed modifier groups can coexist", () => {
+  const first = new Alloy("first_alloy", "First Alloy", mod("first_alloy_mod", "prefix"));
+  const second = new Alloy("second_alloy", "Second Alloy", mod("second_alloy_mod", "suffix"));
+  const firstResult = first.apply(item([p1], [s1]), ctx(rngSequence([0])));
+  const secondResult = second.apply(firstResult.item, ctx(rngSequence([0.999])));
+
+  assert.equal(secondResult.applied, true);
+  assert.ok(modIds(secondResult.item).includes("first_alloy_mod"));
+  assert.ok(modIds(secondResult.item).includes("second_alloy_mod"));
+});
+
+test("Alloy requires rare, uncorrupted items and has no compatible omens", () => {
+  const alloy = new Alloy("test_alloy", "Test Alloy", mod("alloy_mod", "prefix"));
+  const magicItem = magic([p1], [s1]);
+  const corruptedRare = corrupted(item([p1], [s1]));
+
+  assertRejected(alloy.apply(magicItem, ctx()), magicItem);
+  assertRejected(alloy.apply(corruptedRare, ctx()), corruptedRare);
+  assert.throws(() => withModifiers(alloy, new OmenOfWhittling()).apply(item([p1], [s1]), ctx()), /cannot apply/);
+});
+
 test("Omens reject incompatible ingredients", () => {
   assert.throws(
     () => withModifiers(new TransmutationOrb(), new OmenOfWhittling()).apply(CraftedItem.emptyNormal(), ctx()),
@@ -1018,6 +1095,7 @@ test("All modeled crafting ingredients reject corrupted items without cost", () 
     { ingredient: new PerfectChaosOrb(), item: rare },
     { ingredient: new AnnulmentOrb(), item: rare },
     { ingredient: new FracturingOrb(), item: rare },
+    { ingredient: new Alloy("alloy_corrupted_test", "Test Alloy", guaranteed), item: rare },
     { ingredient: testEssence("greater_essence_corrupted_test", guaranteed, "greater"), item: magicItem },
     { ingredient: testEssence("perfect_essence_corrupted_test", guaranteed, "perfect"), item: rare },
   ];

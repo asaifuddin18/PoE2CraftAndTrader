@@ -28,6 +28,9 @@ const DEFAULT_PRICES: Record<string, number> = {
   transmute: 0.1, greater_transmute: 0.1, perfect_transmute: 0.1,
   augment: 0.07, greater_augment: 0.07, perfect_augment: 0.07,
   alteration: 0.05, fracturing_orb: 100, divine: 90,
+  runic_alloy: 1, adaptive_alloy: 1, protective_alloy: 1, expansive_alloy: 1, swift_alloy: 1,
+  cyclonic_alloy: 1, prismatic_alloy: 1, mystic_alloy: 1, sovereign_alloy: 1, celestial_alloy: 1,
+  transcendent_alloy: 1, the_runebinders_alloy: 1, the_runefathers_alloy: 1,
   omen_whittling: 2, omen_greater_annulment: 1, omen_sinistral_alchemy: 1, omen_dextral_alchemy: 1,
   omen_sinistral_coronation: 1, omen_dextral_coronation: 1,
   omen_sinistral: 1, omen_dextral: 1, omen_greater: 1,
@@ -118,7 +121,7 @@ async function fetchCategory(catId: string, league: string, divineInExalt: numbe
 
 function resolveSolverPrices(all: CurrencyEntry[], divineInExalt: number): Record<string, number> {
   const prices: Record<string, number> = { ...DEFAULT_PRICES, exalt: 1, divine: divineInExalt };
-  for (const entry of all.filter(entry => entry.category === "essences")) {
+  for (const entry of all.filter(entry => entry.category === "essences" || entry.category === "verisium")) {
     const key = entry.name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");
     prices[key] = entry.exaltValue;
   }
