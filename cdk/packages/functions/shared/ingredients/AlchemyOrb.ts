@@ -11,8 +11,8 @@ export class AlchemyOrb implements CraftingIngredient {
   apply(item: CraftedItem, ctx: CraftContext) {
     const corrupted = rejectCorruptedItem(item);
     if (corrupted) return corrupted;
-    if (item.rarity !== "normal") return rejectedResult(item, "Orb of Alchemy requires a normal item");
-    let next = item.clone().setRarity("rare");
+    if (item.rarity === "rare") return rejectedResult(item, "Orb of Alchemy requires a normal or magic item");
+    let next = item.clearAffixes().setRarity("rare");
     const added: string[] = [];
 
     for (let i = 0; i < 4; i++) {

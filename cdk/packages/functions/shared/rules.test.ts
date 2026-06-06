@@ -25,12 +25,14 @@ import {
 } from "./ingredients";
 import {
   OmenOfDextralAnnulment,
+  OmenOfDextralAlchemy,
   OmenOfDextralCrystallisation,
   OmenOfDextralErasure,
   OmenOfDextralExaltation,
   OmenOfGreaterAnnulment,
   OmenOfGreaterExaltation,
   OmenOfSinistralAnnulment,
+  OmenOfSinistralAlchemy,
   OmenOfSinistralCrystallisation,
   OmenOfSinistralErasure,
   OmenOfSinistralExaltation,
@@ -164,12 +166,61 @@ test("Regal Orb upgrades magic to rare and adds one affix", () => {
   assert.deepEqual(result.cost, { regal: 1 });
 });
 
-test("Alchemy Orb makes a rare item with up to four random affixes", () => {
+test("Alchemy Orb makes a rare item with exactly four random affixes", () => {
   const result = new AlchemyOrb().apply(CraftedItem.emptyNormal(), ctx(seededRng(4)));
   const state = result.item.toState();
   assert.equal(state.rarity, "rare");
   assert.equal(countMods(result.item), 4);
   assert.deepEqual(result.cost, { alch: 1 });
+});
+
+test("Alchemy Orb replaces a magic item's existing affixes with four new affixes", () => {
+  const result = new AlchemyOrb().apply(magic([p1], [s1]), ctxWithPool({
+    prefixes: [mod("new_p1", "prefix"), mod("new_p2", "prefix"), mod("new_p3", "prefix")],
+    suffixes: [mod("new_s1", "suffix"), mod("new_s2", "suffix"), mod("new_s3", "suffix")],
+  }, seededRng(4)));
+
+  assert.equal(result.item.rarity, "rare");
+  assert.equal(countMods(result.item), 4);
+  assert.ok(!modIds(result.item).includes("p1"));
+  assert.ok(!modIds(result.item).includes("s1"));
+  assert.deepEqual(result.cost, { alch: 1 });
+});
+
+test("Sinistral and Dextral Alchemy omens maximize prefixes and suffixes", () => {
+  const sinistral = withModifiers(new AlchemyOrb(), new OmenOfSinistralAlchemy())
+    .apply(CraftedItem.emptyNormal(), ctx(seededRng(4)));
+  assert.equal(sinistral.item.toState().prefixes.length, 3);
+  assert.equal(sinistral.item.toState().suffixes.length, 1);
+  assert.deepEqual(sinistral.cost, { alch: 1, omen_sinistral_alchemy: 1 });
+
+  const dextral = withModifiers(new AlchemyOrb(), new OmenOfDextralAlchemy())
+    .apply(CraftedItem.emptyNormal(), ctx(seededRng(4)));
+  assert.equal(dextral.item.toState().prefixes.length, 1);
+  assert.equal(dextral.item.toState().suffixes.length, 3);
+  assert.deepEqual(dextral.cost, { alch: 1, omen_dextral_alchemy: 1 });
+});
+
+test("Alchemy omens fall back without rejecting when their preferred side has no eligible mods", () => {
+  const suffixOnlyPool: ModPool = {
+    prefixes: [],
+    suffixes: [mod("only_s1", "suffix"), mod("only_s2", "suffix"), mod("only_s3", "suffix")],
+  };
+  const result = withModifiers(new AlchemyOrb(), new OmenOfSinistralAlchemy())
+    .apply(CraftedItem.emptyNormal(), ctxWithPool(suffixOnlyPool, rngSequence([0])));
+
+  assert.equal(result.applied, true);
+  assert.equal(result.item.toState().prefixes.length, 0);
+  assert.equal(result.item.toState().suffixes.length, 3);
+  assert.deepEqual(result.cost, { alch: 1, omen_sinistral_alchemy: 1 });
+});
+
+test("Exaltation omens are not Alchemy omens", () => {
+  assert.throws(
+    () => withModifiers(new AlchemyOrb(), new OmenOfSinistralExaltation())
+      .apply(CraftedItem.emptyNormal(), ctx()),
+    /cannot apply/,
+  );
 });
 
 test("Exalted Orb adds one affix; Greater omen makes it add two and charges the omen", () => {

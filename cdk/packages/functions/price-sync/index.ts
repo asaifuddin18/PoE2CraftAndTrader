@@ -28,7 +28,7 @@ const DEFAULT_PRICES: Record<string, number> = {
   transmute: 0.1, greater_transmute: 0.1, perfect_transmute: 0.1,
   augment: 0.07, greater_augment: 0.07, perfect_augment: 0.07,
   alteration: 0.05, fracturing_orb: 100, divine: 90,
-  omen_whittling: 2, omen_greater_annulment: 1,
+  omen_whittling: 2, omen_greater_annulment: 1, omen_sinistral_alchemy: 1, omen_dextral_alchemy: 1,
 };
 
 const CURRENCY_CATS: { id: string; label: string }[] = [
@@ -72,6 +72,8 @@ const SOLVER_KEY_MATCHERS: Record<string, { apiIds?: string[]; name?: RegExp }> 
   augment:        { apiIds: ["augmentation", "augment"], name: /^orb of augmentation$/i },
   omen_whittling: { name: /omen of whittling/i },
   omen_greater_annulment: { name: /omen of greater annulment/i },
+  omen_sinistral_alchemy: { name: /omen of sinistral alchemy/i },
+  omen_dextral_alchemy: { name: /omen of dextral alchemy/i },
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

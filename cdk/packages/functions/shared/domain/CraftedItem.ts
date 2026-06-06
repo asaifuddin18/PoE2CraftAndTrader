@@ -91,7 +91,11 @@ export class CraftedItem {
   addRandomAffix(ctx: CraftContext, hooks: CraftActionHooks | undefined = ctx.hooks): { item: CraftedItem; added: ModEntry | null } {
     const slot = this.chooseSlot(ctx, hooks);
     if (!slot) return { item: this.clone(), added: null };
-    return this.addRandomAffixIntoSlot(ctx.pool, slot, ctx.rng);
+    const result = this.addRandomAffixIntoSlot(ctx.pool, slot, ctx.rng);
+    if (result.added || !hooks?.allowAddSlotFallback) return result;
+
+    const fallback = this.availableSlots().find(candidate => candidate !== slot);
+    return fallback ? this.addRandomAffixIntoSlot(ctx.pool, fallback, ctx.rng) : result;
   }
 
   addRandomAffixIntoSlot(pool: ModPool, slot: AffixSlot, rng: () => number): { item: CraftedItem; added: ModEntry | null } {
@@ -127,7 +131,8 @@ export class CraftedItem {
     if (available.length === 0) return null;
     if (hooks?.selectAddSlot) {
       const hooked = hooks.selectAddSlot(this, available, ctx);
-      return hooked && available.includes(hooked) ? hooked : null;
+      if (hooked && available.includes(hooked)) return hooked;
+      if (!hooks.allowAddSlotFallback) return null;
     }
     return available[Math.floor(ctx.rng() * available.length)];
   }

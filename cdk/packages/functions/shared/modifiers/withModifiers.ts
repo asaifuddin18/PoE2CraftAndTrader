@@ -55,6 +55,7 @@ function composeHooks(modifiers: CraftingModifier[]): CraftActionHooks {
 
   return {
     selectAddSlot: addSelector,
+    allowAddSlotFallback: modifiers.some(modifier => modifier.allowAddSlotFallback),
     selectRemoveAffix: removeSelector,
     modifyAddCount(ingredientId, baseCount) {
       return modifiers.reduce(

@@ -64,7 +64,7 @@ export class OmenOfSinistralExaltation extends OmenModifier {
   readonly id = "omen_sinistral";
   readonly displayName = "Omen of Sinistral Exaltation";
   readonly costKey = "omen_sinistral";
-  readonly ingredientIds = ["alch", "regal", "greater_regal", "perfect_regal", "exalt", "greater_exalt", "perfect_exalt"];
+  readonly ingredientIds = ["regal", "greater_regal", "perfect_regal", "exalt", "greater_exalt", "perfect_exalt"];
 
   selectAddSlot(_item: CraftedItem, availableSlots: AffixSlot[]): AffixSlot | null {
     return availableSlots.includes("prefix") ? "prefix" : null;
@@ -75,7 +75,31 @@ export class OmenOfDextralExaltation extends OmenModifier {
   readonly id = "omen_dextral";
   readonly displayName = "Omen of Dextral Exaltation";
   readonly costKey = "omen_dextral";
-  readonly ingredientIds = ["alch", "regal", "greater_regal", "perfect_regal", "exalt", "greater_exalt", "perfect_exalt"];
+  readonly ingredientIds = ["regal", "greater_regal", "perfect_regal", "exalt", "greater_exalt", "perfect_exalt"];
+
+  selectAddSlot(_item: CraftedItem, availableSlots: AffixSlot[]): AffixSlot | null {
+    return availableSlots.includes("suffix") ? "suffix" : null;
+  }
+}
+
+export class OmenOfSinistralAlchemy extends OmenModifier {
+  readonly id = "omen_sinistral_alchemy";
+  readonly displayName = "Omen of Sinistral Alchemy";
+  readonly costKey = "omen_sinistral_alchemy";
+  readonly ingredientIds = ["alch"];
+  readonly allowAddSlotFallback = true;
+
+  selectAddSlot(_item: CraftedItem, availableSlots: AffixSlot[]): AffixSlot | null {
+    return availableSlots.includes("prefix") ? "prefix" : null;
+  }
+}
+
+export class OmenOfDextralAlchemy extends OmenModifier {
+  readonly id = "omen_dextral_alchemy";
+  readonly displayName = "Omen of Dextral Alchemy";
+  readonly costKey = "omen_dextral_alchemy";
+  readonly ingredientIds = ["alch"];
+  readonly allowAddSlotFallback = true;
 
   selectAddSlot(_item: CraftedItem, availableSlots: AffixSlot[]): AffixSlot | null {
     return availableSlots.includes("suffix") ? "suffix" : null;

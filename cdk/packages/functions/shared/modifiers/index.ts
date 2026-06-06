@@ -6,6 +6,8 @@ export {
   OmenOfDextralErasure,
   OmenOfSinistralExaltation,
   OmenOfDextralExaltation,
+  OmenOfSinistralAlchemy,
+  OmenOfDextralAlchemy,
   OmenOfGreaterExaltation,
   OmenOfGreaterAnnulment,
   OmenOfSinistralAnnulment,
