@@ -30,6 +30,7 @@ const DEFAULT_PRICES: Record<string, number> = {
   alteration: 0.05, fracturing_orb: 100, divine: 90,
   omen_whittling: 2, omen_greater_annulment: 1, omen_sinistral_alchemy: 1, omen_dextral_alchemy: 1,
   omen_sinistral_coronation: 1, omen_dextral_coronation: 1,
+  omen_sinistral: 1, omen_dextral: 1, omen_greater: 1,
 };
 
 const CURRENCY_CATS: { id: string; label: string }[] = [
@@ -77,6 +78,9 @@ const SOLVER_KEY_MATCHERS: Record<string, { apiIds?: string[]; name?: RegExp }> 
   omen_dextral_alchemy: { name: /omen of dextral alchemy/i },
   omen_sinistral_coronation: { name: /omen of sinistral coronation/i },
   omen_dextral_coronation: { name: /omen of dextral coronation/i },
+  omen_sinistral: { name: /omen of sinistral exaltation/i },
+  omen_dextral: { name: /omen of dextral exaltation/i },
+  omen_greater: { name: /omen of greater exaltation/i },
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

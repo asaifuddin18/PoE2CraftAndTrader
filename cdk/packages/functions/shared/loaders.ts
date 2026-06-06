@@ -28,6 +28,7 @@ export const DEFAULT_PRICES: PriceTable = {
   // Omens are separate one-per-use consumables, priced per use.
   omen_whittling: 2, omen_greater_annulment: 1, omen_sinistral_alchemy: 1, omen_dextral_alchemy: 1,
   omen_sinistral_coronation: 1, omen_dextral_coronation: 1,
+  omen_sinistral: 1, omen_dextral: 1, omen_greater: 1,
 };
 
 /** Load the mod pool for a base from DynamoDB and resolve it for this ilvl. */

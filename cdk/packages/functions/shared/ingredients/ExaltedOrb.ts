@@ -27,8 +27,11 @@ export class ExaltedOrb implements CraftingIngredient {
 
     for (let i = 0; i < count; i++) {
       const result = next.addRandomAffix(filteredContext);
+      if (!result.added) {
+        return rejectedResult(item, `${this.displayName} could not add ${count} eligible affixes`);
+      }
       next = result.item;
-      if (result.added) added.push(result.added.modId);
+      added.push(result.added.modId);
     }
 
     return craftResult(next, { [this.id]: 1 }, [

@@ -351,18 +351,85 @@ test("Greater Exaltation omen works with all exalted-orb variants", () => {
   }
 });
 
-test("Sinistral and Dextral exaltation omens target prefix/suffix add slots", () => {
-  const sin = withModifiers(new ExaltedOrb(), new OmenOfSinistralExaltation())
-    .apply(item([], []), ctx(rngSequence([0])));
-  assert.equal(sin.item.toState().prefixes.length, 1);
-  assert.equal(sin.item.toState().suffixes.length, 0);
-  assert.deepEqual(sin.cost, { exalt: 1, omen_sinistral: 1 });
+test("Sinistral and Dextral Exaltation omens work with all Exalted Orb variants", () => {
+  const highPool: ModPool = {
+    prefixes: [mod("p50", "prefix", 50)],
+    suffixes: [mod("s50", "suffix", 50)],
+  };
+  const variants = [new ExaltedOrb(), new GreaterExaltedOrb(), new PerfectExaltedOrb()];
 
-  const dex = withModifiers(new ExaltedOrb(), new OmenOfDextralExaltation())
-    .apply(item([], []), ctx(rngSequence([0])));
-  assert.equal(dex.item.toState().prefixes.length, 0);
-  assert.equal(dex.item.toState().suffixes.length, 1);
-  assert.deepEqual(dex.cost, { exalt: 1, omen_dextral: 1 });
+  for (const ingredient of variants) {
+    const sin = withModifiers(ingredient, new OmenOfSinistralExaltation())
+      .apply(item([], []), ctxWithPool(highPool, rngSequence([0])));
+    assert.equal(sin.item.toState().prefixes.length, 1);
+    assert.equal(sin.item.toState().suffixes.length, 0);
+    assert.equal(sin.cost[ingredient.id], 1);
+    assert.equal(sin.cost.omen_sinistral, 1);
+
+    const dex = withModifiers(ingredient, new OmenOfDextralExaltation())
+      .apply(item([], []), ctxWithPool(highPool, rngSequence([0])));
+    assert.equal(dex.item.toState().prefixes.length, 0);
+    assert.equal(dex.item.toState().suffixes.length, 1);
+    assert.equal(dex.cost[ingredient.id], 1);
+    assert.equal(dex.cost.omen_dextral, 1);
+  }
+});
+
+test("Exaltation omens fail without cost when their side has no slot or eligible affix", () => {
+  const noPrefixPool: ModPool = { prefixes: [], suffixes: [s1] };
+  const noSuffixPool: ModPool = { prefixes: [p1], suffixes: [] };
+  const noPrefixSlot = item([p1, p2, p3], [s1]);
+  const noSuffixSlot = item([p1], [s1, s2, s3]);
+
+  assertRejected(
+    withModifiers(new ExaltedOrb(), new OmenOfSinistralExaltation())
+      .apply(item([], []), ctxWithPool(noPrefixPool)),
+    item([], []),
+  );
+  assertRejected(
+    withModifiers(new PerfectExaltedOrb(), new OmenOfDextralExaltation())
+      .apply(item([], []), ctxWithPool(noSuffixPool)),
+    item([], []),
+  );
+  assertRejected(
+    withModifiers(new ExaltedOrb(), new OmenOfSinistralExaltation()).apply(noPrefixSlot, ctx()),
+    noPrefixSlot,
+  );
+  assertRejected(
+    withModifiers(new ExaltedOrb(), new OmenOfDextralExaltation()).apply(noSuffixSlot, ctx()),
+    noSuffixSlot,
+  );
+});
+
+test("Greater Exaltation combines with side-specific Exaltation to add two affixes atomically", () => {
+  const highPool: ModPool = {
+    prefixes: [mod("p50a", "prefix", 50), mod("p50b", "prefix", 50)],
+    suffixes: [mod("s50a", "suffix", 50), mod("s50b", "suffix", 50)],
+  };
+  const result = withModifiers(
+    new PerfectExaltedOrb(),
+    new OmenOfGreaterExaltation(),
+    new OmenOfSinistralExaltation(),
+  ).apply(item([], []), ctxWithPool(highPool, rngSequence([0, 0])));
+
+  assert.equal(result.item.toState().prefixes.length, 2);
+  assert.equal(result.item.toState().suffixes.length, 0);
+  assert.deepEqual(result.cost, { perfect_exalt: 1, omen_greater: 1, omen_sinistral: 1 });
+});
+
+test("Greater Exaltation failures are atomic and consume nothing", () => {
+  const onlyOneEligiblePrefix: ModPool = {
+    prefixes: [mod("only_prefix", "prefix", 50)],
+    suffixes: [],
+  };
+  const original = item([], [s1]);
+  const result = withModifiers(
+    new PerfectExaltedOrb(),
+    new OmenOfGreaterExaltation(),
+    new OmenOfSinistralExaltation(),
+  ).apply(original, ctxWithPool(onlyOneEligiblePrefix, rngSequence([0, 0])));
+
+  assertRejected(result, original);
 });
 
 test("Sinistral and Dextral Coronation omens work with all Regal Orb variants", () => {
