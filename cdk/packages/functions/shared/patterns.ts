@@ -6,12 +6,13 @@
  * builds the structured, per-step-probability trace for the output.
  */
 import type {
-  ModPool, TargetSpec, TargetMod, ModEntry, PriceTable, PatternJob, CraftStep, SolveRequest,
+  ModPool, TargetSpec, TargetMod, PriceTable, PatternJob, CraftStep, SolveRequest,
 } from "./types";
 import {
   Policy, empty_normal, is_satisfied, mod_satisfied, open_prefix, open_suffix, p_hit,
 } from "./engine";
 import { CraftedItem } from "./domain/CraftedItem";
+import { EssenceCatalog } from "./domain/EssenceCatalog";
 import type { CurrencyBasket } from "./domain/CurrencyBasket";
 import { addCurrency, mergeCurrency } from "./domain/CurrencyBasket";
 import type { CraftingIngredient } from "./ingredients";
@@ -19,7 +20,6 @@ import {
   AlchemyOrb,
   AugmentationOrb,
   ChaosOrb,
-  Essence,
   ExaltedOrb,
   FracturingOrb,
   RegalOrb,
@@ -121,7 +121,9 @@ function policy_A1(anchors: TargetMod[], restart_threshold: number): Policy {
   };
 }
 
-function policy_C2(essence_mod: ModEntry, essence_currency: string, restart_threshold: number): Policy {
+function policy_C2(essence_id: string, base_id: string, restart_threshold: number): Policy {
+  const essence = EssenceCatalog.create(essence_id, base_id);
+  if (!essence) throw new Error(`${essence_id} is not applicable to base ${base_id}`);
   return (rng, pool, target) => {
     let basket: CurrencyBasket = { white_base: 1 };
     let attempts = 0, guard = 0;
@@ -130,7 +132,7 @@ function policy_C2(essence_mod: ModEntry, essence_currency: string, restart_thre
       if (attempts >= restart_threshold) { basket = spend(basket, "white_base"); attempts = 0; }
       let state = empty_normal();
       ({ state, basket } = applyIngredient(state, new TransmutationOrb(), pool, rng, basket));
-      ({ state, basket } = applyIngredient(state, new Essence(essence_currency, essence_mod, "greater"), pool, rng, basket));
+      ({ state, basket } = applyIngredient(state, essence, pool, rng, basket));
 
       let inner = 0;
       while (!is_satisfied(state, target) && inner < restart_threshold) {
@@ -204,8 +206,7 @@ export function build_policy(job: PatternJob, target: TargetSpec): Policy {
     }
     case "C2": {
       const e = p.essence!;
-      const mod: ModEntry = { modId: e.modId, group: e.group, gen_type: e.gen_type, tier: e.tier, required_level: 0, weight: 1, name: e.currency };
-      return policy_C2(mod, e.currency, p.restart_threshold);
+      return policy_C2(e.id, e.baseId, p.restart_threshold);
     }
     case "E1":
       return policy_E1(p.anchor_group!, p.restart_threshold);
@@ -244,13 +245,13 @@ export function enumerate_candidates(req: SolveRequest, target: TargetSpec, pool
   }
 
   // C2 — Essence anchor → Chaos fill (only when an essence anchor is supplied).
-  if (req.essenceMod) {
-    const e = req.essenceMod;
+  const c2Essence = req.essenceId ? EssenceCatalog.create(req.essenceId, req.baseId) : null;
+  if (c2Essence?.tier === "greater") {
     for (const t of [8, 20]) {
       jobs.push({
         patternId: `C2_t${t}`, patternName: "Essence → Chaos-fill", policyKind: "C2",
         description: `Essence guarantees the hardest mod, Chaos fills the rest. Restart after ${t} chaos attempts.`,
-        N: N_RANK, seed: 0xC20000 + t, params: { restart_threshold: t, essence: e },
+        N: N_RANK, seed: 0xC20000 + t, params: { restart_threshold: t, essence: { id: req.essenceId, baseId: req.baseId } },
       });
     }
   }
@@ -310,10 +311,11 @@ export function describe_steps(
     }
     case "C2": {
       const e = p.essence!;
+      const essence = EssenceCatalog.create(e.id, e.baseId)!;
       return [
         baseStep,
         { action: "Transmute → magic", currency: "transmute", probability: 1, expectedCost: prices.transmute ?? 0 },
-        { action: `${e.currency.replace(/_/g, " ")} → rare, adds guaranteed anchor mod`, currency: e.currency, probability: 1, expectedCost: prices[e.currency] ?? 0 },
+        { action: `${essence.displayName} → rare, adds guaranteed anchor mod`, currency: essence.id, probability: 1, expectedCost: prices[essence.id] ?? 0 },
         { action: `Chaos w/ Omen of Whittling to fill remaining ${target.required_mods.length - 1} mod(s)`, currency: "chaos",
           probability: 1, expectedCost: meanCost, branchCondition: `restart base after ${p.restart_threshold} chaos` },
       ];

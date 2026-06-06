@@ -1,0 +1,6842 @@
+{
+  "greater_essence_of_abrasion": {
+    "id": "greater_essence_of_abrasion",
+    "name": "Greater Essence of Abrasion",
+    "tier": "greater",
+    "byBaseId": {
+      "12": [
+        {
+          "modId": "LocalAddedPhysicalDamage7",
+          "group": "PhysicalDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Physical Damage"
+        }
+      ],
+      "13": [
+        {
+          "modId": "LocalAddedPhysicalDamage7",
+          "group": "PhysicalDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Physical Damage"
+        }
+      ],
+      "15": [
+        {
+          "modId": "LocalAddedPhysicalDamage7",
+          "group": "PhysicalDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Physical Damage"
+        }
+      ],
+      "16": [
+        {
+          "modId": "LocalAddedPhysicalDamage7",
+          "group": "PhysicalDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Physical Damage"
+        }
+      ],
+      "20": [
+        {
+          "modId": "LocalAddedPhysicalDamage7",
+          "group": "PhysicalDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Physical Damage"
+        }
+      ],
+      "22": [
+        {
+          "modId": "LocalAddedPhysicalDamageTwoHand7",
+          "group": "PhysicalDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Physical Damage"
+        }
+      ],
+      "23": [
+        {
+          "modId": "LocalAddedPhysicalDamageTwoHand7",
+          "group": "PhysicalDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Physical Damage"
+        }
+      ],
+      "24": [
+        {
+          "modId": "LocalAddedPhysicalDamageTwoHand7",
+          "group": "PhysicalDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Physical Damage"
+        }
+      ],
+      "25": [
+        {
+          "modId": "LocalAddedPhysicalDamageTwoHand7",
+          "group": "PhysicalDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Physical Damage"
+        }
+      ],
+      "216": [
+        {
+          "modId": "LocalAddedPhysicalDamage7",
+          "group": "PhysicalDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Physical Damage"
+        }
+      ],
+      "217": [
+        {
+          "modId": "LocalAddedPhysicalDamage7",
+          "group": "PhysicalDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Physical Damage"
+        }
+      ],
+      "228": [
+        {
+          "modId": "LocalAddedPhysicalDamage7",
+          "group": "PhysicalDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Physical Damage"
+        }
+      ],
+      "244": [
+        {
+          "modId": "LocalAddedPhysicalDamageTwoHand7",
+          "group": "PhysicalDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Physical Damage"
+        }
+      ]
+    }
+  },
+  "greater_essence_of_alacrity": {
+    "id": "greater_essence_of_alacrity",
+    "name": "Greater Essence of Alacrity",
+    "tier": "greater",
+    "byBaseId": {
+      "18": [
+        {
+          "modId": "IncreasedCastSpeed5",
+          "group": "IncreasedCastSpeed",
+          "gen_type": "suffix",
+          "tier": 5,
+          "required_level": 60,
+          "weight": 1,
+          "name": "#% increased Cast Speed"
+        }
+      ],
+      "21": [
+        {
+          "modId": "IncreasedCastSpeedTwoHand5",
+          "group": "IncreasedCastSpeed",
+          "gen_type": "suffix",
+          "tier": 5,
+          "required_level": 60,
+          "weight": 1,
+          "name": "#% increased Cast Speed"
+        }
+      ],
+      "218": [
+        {
+          "modId": "IncreasedCastSpeed5",
+          "group": "IncreasedCastSpeed",
+          "gen_type": "suffix",
+          "tier": 5,
+          "required_level": 60,
+          "weight": 1,
+          "name": "#% increased Cast Speed"
+        }
+      ],
+      "219": [
+        {
+          "modId": "IncreasedCastSpeed5",
+          "group": "IncreasedCastSpeed",
+          "gen_type": "suffix",
+          "tier": 5,
+          "required_level": 60,
+          "weight": 1,
+          "name": "#% increased Cast Speed"
+        }
+      ],
+      "220": [
+        {
+          "modId": "IncreasedCastSpeed5",
+          "group": "IncreasedCastSpeed",
+          "gen_type": "suffix",
+          "tier": 5,
+          "required_level": 60,
+          "weight": 1,
+          "name": "#% increased Cast Speed"
+        }
+      ],
+      "221": [
+        {
+          "modId": "IncreasedCastSpeed5",
+          "group": "IncreasedCastSpeed",
+          "gen_type": "suffix",
+          "tier": 5,
+          "required_level": 60,
+          "weight": 1,
+          "name": "#% increased Cast Speed"
+        }
+      ],
+      "222": [
+        {
+          "modId": "IncreasedCastSpeed5",
+          "group": "IncreasedCastSpeed",
+          "gen_type": "suffix",
+          "tier": 5,
+          "required_level": 60,
+          "weight": 1,
+          "name": "#% increased Cast Speed"
+        }
+      ],
+      "223": [
+        {
+          "modId": "IncreasedCastSpeedTwoHand5",
+          "group": "IncreasedCastSpeed",
+          "gen_type": "suffix",
+          "tier": 5,
+          "required_level": 60,
+          "weight": 1,
+          "name": "#% increased Cast Speed"
+        }
+      ],
+      "224": [
+        {
+          "modId": "IncreasedCastSpeedTwoHand5",
+          "group": "IncreasedCastSpeed",
+          "gen_type": "suffix",
+          "tier": 5,
+          "required_level": 60,
+          "weight": 1,
+          "name": "#% increased Cast Speed"
+        }
+      ],
+      "225": [
+        {
+          "modId": "IncreasedCastSpeedTwoHand5",
+          "group": "IncreasedCastSpeed",
+          "gen_type": "suffix",
+          "tier": 5,
+          "required_level": 60,
+          "weight": 1,
+          "name": "#% increased Cast Speed"
+        }
+      ],
+      "226": [
+        {
+          "modId": "IncreasedCastSpeedTwoHand5",
+          "group": "IncreasedCastSpeed",
+          "gen_type": "suffix",
+          "tier": 5,
+          "required_level": 60,
+          "weight": 1,
+          "name": "#% increased Cast Speed"
+        }
+      ],
+      "227": [
+        {
+          "modId": "IncreasedCastSpeedTwoHand5",
+          "group": "IncreasedCastSpeed",
+          "gen_type": "suffix",
+          "tier": 5,
+          "required_level": 60,
+          "weight": 1,
+          "name": "#% increased Cast Speed"
+        }
+      ],
+      "229": [
+        {
+          "modId": "IncreasedCastSpeed5",
+          "group": "IncreasedCastSpeed",
+          "gen_type": "suffix",
+          "tier": 5,
+          "required_level": 60,
+          "weight": 1,
+          "name": "#% increased Cast Speed"
+        }
+      ]
+    }
+  },
+  "greater_essence_of_battle": {
+    "id": "greater_essence_of_battle",
+    "name": "Greater Essence of Battle",
+    "tier": "greater",
+    "byBaseId": {
+      "4": [
+        {
+          "modId": "IncreasedAccuracy7",
+          "group": "IncreasedAccuracy",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 58,
+          "weight": 1,
+          "name": "+# to Accuracy Rating"
+        }
+      ],
+      "12": [
+        {
+          "modId": "LocalIncreasedAccuracy7",
+          "group": "IncreasedAccuracy",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 58,
+          "weight": 1,
+          "name": "+# to Accuracy Rating"
+        }
+      ],
+      "13": [
+        {
+          "modId": "LocalIncreasedAccuracy7",
+          "group": "IncreasedAccuracy",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 58,
+          "weight": 1,
+          "name": "+# to Accuracy Rating"
+        }
+      ],
+      "15": [
+        {
+          "modId": "LocalIncreasedAccuracy7",
+          "group": "IncreasedAccuracy",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 58,
+          "weight": 1,
+          "name": "+# to Accuracy Rating"
+        }
+      ],
+      "16": [
+        {
+          "modId": "LocalIncreasedAccuracy7",
+          "group": "IncreasedAccuracy",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 58,
+          "weight": 1,
+          "name": "+# to Accuracy Rating"
+        }
+      ],
+      "20": [
+        {
+          "modId": "LocalIncreasedAccuracy7",
+          "group": "IncreasedAccuracy",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 58,
+          "weight": 1,
+          "name": "+# to Accuracy Rating"
+        }
+      ],
+      "22": [
+        {
+          "modId": "LocalIncreasedAccuracy7",
+          "group": "IncreasedAccuracy",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 58,
+          "weight": 1,
+          "name": "+# to Accuracy Rating"
+        }
+      ],
+      "23": [
+        {
+          "modId": "LocalIncreasedAccuracy7",
+          "group": "IncreasedAccuracy",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 58,
+          "weight": 1,
+          "name": "+# to Accuracy Rating"
+        }
+      ],
+      "24": [
+        {
+          "modId": "LocalIncreasedAccuracy7",
+          "group": "IncreasedAccuracy",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 58,
+          "weight": 1,
+          "name": "+# to Accuracy Rating"
+        }
+      ],
+      "25": [
+        {
+          "modId": "LocalIncreasedAccuracy7",
+          "group": "IncreasedAccuracy",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 58,
+          "weight": 1,
+          "name": "+# to Accuracy Rating"
+        }
+      ],
+      "33": [
+        {
+          "modId": "IncreasedAccuracy7",
+          "group": "IncreasedAccuracy",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 58,
+          "weight": 1,
+          "name": "+# to Accuracy Rating"
+        }
+      ],
+      "34": [
+        {
+          "modId": "IncreasedAccuracy7",
+          "group": "IncreasedAccuracy",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 58,
+          "weight": 1,
+          "name": "+# to Accuracy Rating"
+        }
+      ],
+      "35": [
+        {
+          "modId": "IncreasedAccuracy7",
+          "group": "IncreasedAccuracy",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 58,
+          "weight": 1,
+          "name": "+# to Accuracy Rating"
+        }
+      ],
+      "36": [
+        {
+          "modId": "IncreasedAccuracy7",
+          "group": "IncreasedAccuracy",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 58,
+          "weight": 1,
+          "name": "+# to Accuracy Rating"
+        }
+      ],
+      "37": [
+        {
+          "modId": "IncreasedAccuracy7",
+          "group": "IncreasedAccuracy",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 58,
+          "weight": 1,
+          "name": "+# to Accuracy Rating"
+        }
+      ],
+      "38": [
+        {
+          "modId": "IncreasedAccuracy7",
+          "group": "IncreasedAccuracy",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 58,
+          "weight": 1,
+          "name": "+# to Accuracy Rating"
+        }
+      ],
+      "216": [
+        {
+          "modId": "LocalIncreasedAccuracy7",
+          "group": "IncreasedAccuracy",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 58,
+          "weight": 1,
+          "name": "+# to Accuracy Rating"
+        }
+      ],
+      "217": [
+        {
+          "modId": "LocalIncreasedAccuracy7",
+          "group": "IncreasedAccuracy",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 58,
+          "weight": 1,
+          "name": "+# to Accuracy Rating"
+        }
+      ],
+      "228": [
+        {
+          "modId": "LocalIncreasedAccuracy7",
+          "group": "IncreasedAccuracy",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 58,
+          "weight": 1,
+          "name": "+# to Accuracy Rating"
+        }
+      ],
+      "244": [
+        {
+          "modId": "LocalIncreasedAccuracy7",
+          "group": "IncreasedAccuracy",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 58,
+          "weight": 1,
+          "name": "+# to Accuracy Rating"
+        }
+      ]
+    }
+  },
+  "greater_essence_of_command": {
+    "id": "greater_essence_of_command",
+    "name": "Greater Essence of Command",
+    "tier": "greater",
+    "byBaseId": {
+      "17": [
+        {
+          "modId": "NearbyAlliesAllDamage6",
+          "group": "AllDamage",
+          "gen_type": "prefix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Allies in your Presence deal #% increased Damage"
+        }
+      ]
+    }
+  },
+  "greater_essence_of_electricity": {
+    "id": "greater_essence_of_electricity",
+    "name": "Greater Essence of Electricity",
+    "tier": "greater",
+    "byBaseId": {
+      "12": [
+        {
+          "modId": "LocalAddedLightningDamage7",
+          "group": "LightningDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Lightning Damage"
+        }
+      ],
+      "13": [
+        {
+          "modId": "LocalAddedLightningDamage7",
+          "group": "LightningDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Lightning Damage"
+        }
+      ],
+      "15": [
+        {
+          "modId": "LocalAddedLightningDamage7",
+          "group": "LightningDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Lightning Damage"
+        }
+      ],
+      "16": [
+        {
+          "modId": "LocalAddedLightningDamage7",
+          "group": "LightningDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Lightning Damage"
+        }
+      ],
+      "20": [
+        {
+          "modId": "LocalAddedLightningDamage7",
+          "group": "LightningDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Lightning Damage"
+        }
+      ],
+      "22": [
+        {
+          "modId": "LocalAddedLightningDamageTwoHand7",
+          "group": "LightningDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Lightning Damage"
+        }
+      ],
+      "23": [
+        {
+          "modId": "LocalAddedLightningDamageTwoHand7",
+          "group": "LightningDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Lightning Damage"
+        }
+      ],
+      "24": [
+        {
+          "modId": "LocalAddedLightningDamageTwoHand7",
+          "group": "LightningDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Lightning Damage"
+        }
+      ],
+      "25": [
+        {
+          "modId": "LocalAddedLightningDamageTwoHand7",
+          "group": "LightningDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Lightning Damage"
+        }
+      ],
+      "216": [
+        {
+          "modId": "LocalAddedLightningDamage7",
+          "group": "LightningDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Lightning Damage"
+        }
+      ],
+      "217": [
+        {
+          "modId": "LocalAddedLightningDamage7",
+          "group": "LightningDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Lightning Damage"
+        }
+      ],
+      "228": [
+        {
+          "modId": "LocalAddedLightningDamage7",
+          "group": "LightningDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Lightning Damage"
+        }
+      ],
+      "244": [
+        {
+          "modId": "LocalAddedLightningDamageTwoHand7",
+          "group": "LightningDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Lightning Damage"
+        }
+      ]
+    }
+  },
+  "greater_essence_of_enhancement": {
+    "id": "greater_essence_of_enhancement",
+    "name": "Greater Essence of Enhancement",
+    "tier": "greater",
+    "byBaseId": {
+      "5": [
+        {
+          "modId": "LocalIncreasedPhysicalDamageReductionRatingPercent5",
+          "group": "DefencesPercent",
+          "gen_type": "prefix",
+          "tier": 5,
+          "required_level": 54,
+          "weight": 1,
+          "name": "#% increased Armour"
+        }
+      ],
+      "6": [
+        {
+          "modId": "LocalIncreasedEvasionRatingPercent5",
+          "group": "DefencesPercent",
+          "gen_type": "prefix",
+          "tier": 5,
+          "required_level": 54,
+          "weight": 1,
+          "name": "#% increased Evasion Rating"
+        }
+      ],
+      "8": [
+        {
+          "modId": "LocalIncreasedArmourAndEvasion5",
+          "group": "DefencesPercent",
+          "gen_type": "prefix",
+          "tier": 5,
+          "required_level": 54,
+          "weight": 1,
+          "name": "#% increased Armour and Evasion"
+        }
+      ],
+      "9": [
+        {
+          "modId": "LocalIncreasedArmourAndEnergyShield5",
+          "group": "DefencesPercent",
+          "gen_type": "prefix",
+          "tier": 5,
+          "required_level": 54,
+          "weight": 1,
+          "name": "#% increased Armour and Energy Shield"
+        }
+      ],
+      "33": [
+        {
+          "modId": "LocalIncreasedPhysicalDamageReductionRatingPercent5",
+          "group": "DefencesPercent",
+          "gen_type": "prefix",
+          "tier": 5,
+          "required_level": 54,
+          "weight": 1,
+          "name": "#% increased Armour"
+        }
+      ],
+      "34": [
+        {
+          "modId": "LocalIncreasedEvasionRatingPercent5",
+          "group": "DefencesPercent",
+          "gen_type": "prefix",
+          "tier": 5,
+          "required_level": 54,
+          "weight": 1,
+          "name": "#% increased Evasion Rating"
+        }
+      ],
+      "35": [
+        {
+          "modId": "LocalIncreasedEnergyShieldPercent5",
+          "group": "DefencesPercent",
+          "gen_type": "prefix",
+          "tier": 5,
+          "required_level": 54,
+          "weight": 1,
+          "name": "#% increased Energy Shield"
+        }
+      ],
+      "36": [
+        {
+          "modId": "LocalIncreasedArmourAndEvasion5",
+          "group": "DefencesPercent",
+          "gen_type": "prefix",
+          "tier": 5,
+          "required_level": 54,
+          "weight": 1,
+          "name": "#% increased Armour and Evasion"
+        }
+      ],
+      "37": [
+        {
+          "modId": "LocalIncreasedArmourAndEnergyShield5",
+          "group": "DefencesPercent",
+          "gen_type": "prefix",
+          "tier": 5,
+          "required_level": 54,
+          "weight": 1,
+          "name": "#% increased Armour and Energy Shield"
+        }
+      ],
+      "38": [
+        {
+          "modId": "LocalIncreasedEvasionAndEnergyShield5_",
+          "group": "DefencesPercent",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 54,
+          "weight": 1,
+          "name": "#% increased Evasion and Energy Shield"
+        }
+      ],
+      "39": [
+        {
+          "modId": "LocalIncreasedPhysicalDamageReductionRatingPercent5",
+          "group": "DefencesPercent",
+          "gen_type": "prefix",
+          "tier": 5,
+          "required_level": 54,
+          "weight": 1,
+          "name": "#% increased Armour"
+        }
+      ],
+      "40": [
+        {
+          "modId": "LocalIncreasedEvasionRatingPercent5",
+          "group": "DefencesPercent",
+          "gen_type": "prefix",
+          "tier": 5,
+          "required_level": 54,
+          "weight": 1,
+          "name": "#% increased Evasion Rating"
+        }
+      ],
+      "41": [
+        {
+          "modId": "LocalIncreasedEnergyShieldPercent5",
+          "group": "DefencesPercent",
+          "gen_type": "prefix",
+          "tier": 5,
+          "required_level": 54,
+          "weight": 1,
+          "name": "#% increased Energy Shield"
+        }
+      ],
+      "42": [
+        {
+          "modId": "LocalIncreasedArmourAndEvasion5",
+          "group": "DefencesPercent",
+          "gen_type": "prefix",
+          "tier": 5,
+          "required_level": 54,
+          "weight": 1,
+          "name": "#% increased Armour and Evasion"
+        }
+      ],
+      "43": [
+        {
+          "modId": "LocalIncreasedArmourAndEnergyShield5",
+          "group": "DefencesPercent",
+          "gen_type": "prefix",
+          "tier": 5,
+          "required_level": 54,
+          "weight": 1,
+          "name": "#% increased Armour and Energy Shield"
+        }
+      ],
+      "44": [
+        {
+          "modId": "LocalIncreasedEvasionAndEnergyShield5_",
+          "group": "DefencesPercent",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 54,
+          "weight": 1,
+          "name": "#% increased Evasion and Energy Shield"
+        }
+      ],
+      "45": [
+        {
+          "modId": "LocalIncreasedPhysicalDamageReductionRatingPercent5",
+          "group": "DefencesPercent",
+          "gen_type": "prefix",
+          "tier": 5,
+          "required_level": 54,
+          "weight": 1,
+          "name": "#% increased Armour"
+        }
+      ],
+      "46": [
+        {
+          "modId": "LocalIncreasedEvasionRatingPercent5",
+          "group": "DefencesPercent",
+          "gen_type": "prefix",
+          "tier": 5,
+          "required_level": 54,
+          "weight": 1,
+          "name": "#% increased Evasion Rating"
+        }
+      ],
+      "47": [
+        {
+          "modId": "LocalIncreasedEnergyShieldPercent5",
+          "group": "DefencesPercent",
+          "gen_type": "prefix",
+          "tier": 5,
+          "required_level": 54,
+          "weight": 1,
+          "name": "#% increased Energy Shield"
+        }
+      ],
+      "48": [
+        {
+          "modId": "LocalIncreasedArmourAndEvasion5",
+          "group": "DefencesPercent",
+          "gen_type": "prefix",
+          "tier": 5,
+          "required_level": 54,
+          "weight": 1,
+          "name": "#% increased Armour and Evasion"
+        }
+      ],
+      "49": [
+        {
+          "modId": "LocalIncreasedArmourAndEnergyShield5",
+          "group": "DefencesPercent",
+          "gen_type": "prefix",
+          "tier": 5,
+          "required_level": 54,
+          "weight": 1,
+          "name": "#% increased Armour and Energy Shield"
+        }
+      ],
+      "50": [
+        {
+          "modId": "LocalIncreasedEvasionAndEnergyShield5_",
+          "group": "DefencesPercent",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 54,
+          "weight": 1,
+          "name": "#% increased Evasion and Energy Shield"
+        }
+      ],
+      "52": [
+        {
+          "modId": "LocalIncreasedPhysicalDamageReductionRatingPercent5",
+          "group": "DefencesPercent",
+          "gen_type": "prefix",
+          "tier": 5,
+          "required_level": 54,
+          "weight": 1,
+          "name": "#% increased Armour"
+        }
+      ],
+      "53": [
+        {
+          "modId": "LocalIncreasedEvasionRatingPercent5",
+          "group": "DefencesPercent",
+          "gen_type": "prefix",
+          "tier": 5,
+          "required_level": 54,
+          "weight": 1,
+          "name": "#% increased Evasion Rating"
+        }
+      ],
+      "54": [
+        {
+          "modId": "LocalIncreasedEnergyShieldPercent5",
+          "group": "DefencesPercent",
+          "gen_type": "prefix",
+          "tier": 5,
+          "required_level": 54,
+          "weight": 1,
+          "name": "#% increased Energy Shield"
+        }
+      ],
+      "55": [
+        {
+          "modId": "LocalIncreasedArmourAndEvasion5",
+          "group": "DefencesPercent",
+          "gen_type": "prefix",
+          "tier": 5,
+          "required_level": 54,
+          "weight": 1,
+          "name": "#% increased Armour and Evasion"
+        }
+      ],
+      "56": [
+        {
+          "modId": "LocalIncreasedArmourAndEnergyShield5",
+          "group": "DefencesPercent",
+          "gen_type": "prefix",
+          "tier": 5,
+          "required_level": 54,
+          "weight": 1,
+          "name": "#% increased Armour and Energy Shield"
+        }
+      ],
+      "57": [
+        {
+          "modId": "LocalIncreasedEvasionAndEnergyShield5_",
+          "group": "DefencesPercent",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 54,
+          "weight": 1,
+          "name": "#% increased Evasion and Energy Shield"
+        }
+      ],
+      "229": [
+        {
+          "modId": "LocalIncreasedEnergyShieldPercent5",
+          "group": "DefencesPercent",
+          "gen_type": "prefix",
+          "tier": 5,
+          "required_level": 54,
+          "weight": 1,
+          "name": "#% increased Energy Shield"
+        }
+      ]
+    }
+  },
+  "greater_essence_of_flames": {
+    "id": "greater_essence_of_flames",
+    "name": "Greater Essence of Flames",
+    "tier": "greater",
+    "byBaseId": {
+      "12": [
+        {
+          "modId": "LocalAddedFireDamage7",
+          "group": "FireDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Fire Damage"
+        }
+      ],
+      "13": [
+        {
+          "modId": "LocalAddedFireDamage7",
+          "group": "FireDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Fire Damage"
+        }
+      ],
+      "15": [
+        {
+          "modId": "LocalAddedFireDamage7",
+          "group": "FireDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Fire Damage"
+        }
+      ],
+      "16": [
+        {
+          "modId": "LocalAddedFireDamage7",
+          "group": "FireDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Fire Damage"
+        }
+      ],
+      "20": [
+        {
+          "modId": "LocalAddedFireDamage7",
+          "group": "FireDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Fire Damage"
+        }
+      ],
+      "22": [
+        {
+          "modId": "LocalAddedFireDamageTwoHand7",
+          "group": "FireDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Fire Damage"
+        }
+      ],
+      "23": [
+        {
+          "modId": "LocalAddedFireDamageTwoHand7",
+          "group": "FireDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Fire Damage"
+        }
+      ],
+      "24": [
+        {
+          "modId": "LocalAddedFireDamageTwoHand7",
+          "group": "FireDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Fire Damage"
+        }
+      ],
+      "25": [
+        {
+          "modId": "LocalAddedFireDamageTwoHand7",
+          "group": "FireDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Fire Damage"
+        }
+      ],
+      "216": [
+        {
+          "modId": "LocalAddedFireDamage7",
+          "group": "FireDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Fire Damage"
+        }
+      ],
+      "217": [
+        {
+          "modId": "LocalAddedFireDamage7",
+          "group": "FireDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Fire Damage"
+        }
+      ],
+      "228": [
+        {
+          "modId": "LocalAddedFireDamage7",
+          "group": "FireDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Fire Damage"
+        }
+      ],
+      "244": [
+        {
+          "modId": "LocalAddedFireDamageTwoHand7",
+          "group": "FireDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Fire Damage"
+        }
+      ]
+    }
+  },
+  "greater_essence_of_grounding": {
+    "id": "greater_essence_of_grounding",
+    "name": "Greater Essence of Grounding",
+    "tier": "greater",
+    "byBaseId": {
+      "1": [
+        {
+          "modId": "LightningResist6",
+          "group": "LightningResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Lightning Resistance"
+        }
+      ],
+      "2": [
+        {
+          "modId": "LightningResist6",
+          "group": "LightningResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Lightning Resistance"
+        }
+      ],
+      "3": [
+        {
+          "modId": "LightningResist6",
+          "group": "LightningResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Lightning Resistance"
+        }
+      ],
+      "5": [
+        {
+          "modId": "LightningResist6",
+          "group": "LightningResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Lightning Resistance"
+        }
+      ],
+      "6": [
+        {
+          "modId": "LightningResist6",
+          "group": "LightningResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Lightning Resistance"
+        }
+      ],
+      "8": [
+        {
+          "modId": "LightningResist6",
+          "group": "LightningResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Lightning Resistance"
+        }
+      ],
+      "9": [
+        {
+          "modId": "LightningResist6",
+          "group": "LightningResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Lightning Resistance"
+        }
+      ],
+      "33": [
+        {
+          "modId": "LightningResist6",
+          "group": "LightningResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Lightning Resistance"
+        }
+      ],
+      "34": [
+        {
+          "modId": "LightningResist6",
+          "group": "LightningResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Lightning Resistance"
+        }
+      ],
+      "35": [
+        {
+          "modId": "LightningResist6",
+          "group": "LightningResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Lightning Resistance"
+        }
+      ],
+      "36": [
+        {
+          "modId": "LightningResist6",
+          "group": "LightningResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Lightning Resistance"
+        }
+      ],
+      "37": [
+        {
+          "modId": "LightningResist6",
+          "group": "LightningResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Lightning Resistance"
+        }
+      ],
+      "38": [
+        {
+          "modId": "LightningResist6",
+          "group": "LightningResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Lightning Resistance"
+        }
+      ],
+      "39": [
+        {
+          "modId": "LightningResist6",
+          "group": "LightningResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Lightning Resistance"
+        }
+      ],
+      "40": [
+        {
+          "modId": "LightningResist6",
+          "group": "LightningResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Lightning Resistance"
+        }
+      ],
+      "41": [
+        {
+          "modId": "LightningResist6",
+          "group": "LightningResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Lightning Resistance"
+        }
+      ],
+      "42": [
+        {
+          "modId": "LightningResist6",
+          "group": "LightningResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Lightning Resistance"
+        }
+      ],
+      "43": [
+        {
+          "modId": "LightningResist6",
+          "group": "LightningResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Lightning Resistance"
+        }
+      ],
+      "44": [
+        {
+          "modId": "LightningResist6",
+          "group": "LightningResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Lightning Resistance"
+        }
+      ],
+      "45": [
+        {
+          "modId": "LightningResist6",
+          "group": "LightningResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Lightning Resistance"
+        }
+      ],
+      "46": [
+        {
+          "modId": "LightningResist6",
+          "group": "LightningResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Lightning Resistance"
+        }
+      ],
+      "47": [
+        {
+          "modId": "LightningResist6",
+          "group": "LightningResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Lightning Resistance"
+        }
+      ],
+      "48": [
+        {
+          "modId": "LightningResist6",
+          "group": "LightningResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Lightning Resistance"
+        }
+      ],
+      "49": [
+        {
+          "modId": "LightningResist6",
+          "group": "LightningResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Lightning Resistance"
+        }
+      ],
+      "50": [
+        {
+          "modId": "LightningResist6",
+          "group": "LightningResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Lightning Resistance"
+        }
+      ],
+      "52": [
+        {
+          "modId": "LightningResist6",
+          "group": "LightningResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Lightning Resistance"
+        }
+      ],
+      "53": [
+        {
+          "modId": "LightningResist6",
+          "group": "LightningResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Lightning Resistance"
+        }
+      ],
+      "54": [
+        {
+          "modId": "LightningResist6",
+          "group": "LightningResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Lightning Resistance"
+        }
+      ],
+      "55": [
+        {
+          "modId": "LightningResist6",
+          "group": "LightningResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Lightning Resistance"
+        }
+      ],
+      "56": [
+        {
+          "modId": "LightningResist6",
+          "group": "LightningResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Lightning Resistance"
+        }
+      ],
+      "57": [
+        {
+          "modId": "LightningResist6",
+          "group": "LightningResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Lightning Resistance"
+        }
+      ],
+      "229": [
+        {
+          "modId": "LightningResist6",
+          "group": "LightningResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Lightning Resistance"
+        }
+      ]
+    }
+  },
+  "greater_essence_of_haste": {
+    "id": "greater_essence_of_haste",
+    "name": "Greater Essence of Haste",
+    "tier": "greater",
+    "byBaseId": {
+      "12": [
+        {
+          "modId": "LocalIncreasedAttackSpeed7",
+          "group": "IncreasedAttackSpeed",
+          "gen_type": "suffix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "#% increased Attack Speed"
+        }
+      ],
+      "13": [
+        {
+          "modId": "LocalIncreasedAttackSpeed7",
+          "group": "IncreasedAttackSpeed",
+          "gen_type": "suffix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "#% increased Attack Speed"
+        }
+      ],
+      "15": [
+        {
+          "modId": "LocalIncreasedAttackSpeed7",
+          "group": "IncreasedAttackSpeed",
+          "gen_type": "suffix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "#% increased Attack Speed"
+        }
+      ],
+      "16": [
+        {
+          "modId": "LocalIncreasedAttackSpeed7",
+          "group": "IncreasedAttackSpeed",
+          "gen_type": "suffix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "#% increased Attack Speed"
+        }
+      ],
+      "20": [
+        {
+          "modId": "LocalIncreasedAttackSpeed4",
+          "group": "IncreasedAttackSpeed",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 30,
+          "weight": 1,
+          "name": "#% increased Attack Speed"
+        }
+      ],
+      "22": [
+        {
+          "modId": "LocalIncreasedAttackSpeed7",
+          "group": "IncreasedAttackSpeed",
+          "gen_type": "suffix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "#% increased Attack Speed"
+        }
+      ],
+      "23": [
+        {
+          "modId": "LocalIncreasedAttackSpeed7",
+          "group": "IncreasedAttackSpeed",
+          "gen_type": "suffix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "#% increased Attack Speed"
+        }
+      ],
+      "24": [
+        {
+          "modId": "LocalIncreasedAttackSpeed7",
+          "group": "IncreasedAttackSpeed",
+          "gen_type": "suffix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "#% increased Attack Speed"
+        }
+      ],
+      "25": [
+        {
+          "modId": "LocalIncreasedAttackSpeed7",
+          "group": "IncreasedAttackSpeed",
+          "gen_type": "suffix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "#% increased Attack Speed"
+        }
+      ],
+      "216": [
+        {
+          "modId": "LocalIncreasedAttackSpeed7",
+          "group": "IncreasedAttackSpeed",
+          "gen_type": "suffix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "#% increased Attack Speed"
+        }
+      ],
+      "217": [
+        {
+          "modId": "LocalIncreasedAttackSpeed7",
+          "group": "IncreasedAttackSpeed",
+          "gen_type": "suffix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "#% increased Attack Speed"
+        }
+      ],
+      "228": [
+        {
+          "modId": "LocalIncreasedAttackSpeed4",
+          "group": "IncreasedAttackSpeed",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 30,
+          "weight": 1,
+          "name": "#% increased Attack Speed"
+        }
+      ],
+      "244": [
+        {
+          "modId": "LocalIncreasedAttackSpeed7",
+          "group": "IncreasedAttackSpeed",
+          "gen_type": "suffix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "#% increased Attack Speed"
+        }
+      ]
+    }
+  },
+  "greater_essence_of_ice": {
+    "id": "greater_essence_of_ice",
+    "name": "Greater Essence of Ice",
+    "tier": "greater",
+    "byBaseId": {
+      "12": [
+        {
+          "modId": "LocalAddedColdDamage7",
+          "group": "ColdDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Cold Damage"
+        }
+      ],
+      "13": [
+        {
+          "modId": "LocalAddedColdDamage7",
+          "group": "ColdDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Cold Damage"
+        }
+      ],
+      "15": [
+        {
+          "modId": "LocalAddedColdDamage7",
+          "group": "ColdDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Cold Damage"
+        }
+      ],
+      "16": [
+        {
+          "modId": "LocalAddedColdDamage7",
+          "group": "ColdDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Cold Damage"
+        }
+      ],
+      "20": [
+        {
+          "modId": "LocalAddedColdDamage7",
+          "group": "ColdDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Cold Damage"
+        }
+      ],
+      "22": [
+        {
+          "modId": "LocalAddedColdDamageTwoHand7",
+          "group": "ColdDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Cold Damage"
+        }
+      ],
+      "23": [
+        {
+          "modId": "LocalAddedColdDamageTwoHand7",
+          "group": "ColdDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Cold Damage"
+        }
+      ],
+      "24": [
+        {
+          "modId": "LocalAddedColdDamageTwoHand7",
+          "group": "ColdDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Cold Damage"
+        }
+      ],
+      "25": [
+        {
+          "modId": "LocalAddedColdDamageTwoHand7",
+          "group": "ColdDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Cold Damage"
+        }
+      ],
+      "216": [
+        {
+          "modId": "LocalAddedColdDamage7",
+          "group": "ColdDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Cold Damage"
+        }
+      ],
+      "217": [
+        {
+          "modId": "LocalAddedColdDamage7",
+          "group": "ColdDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Cold Damage"
+        }
+      ],
+      "228": [
+        {
+          "modId": "LocalAddedColdDamage7",
+          "group": "ColdDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Cold Damage"
+        }
+      ],
+      "244": [
+        {
+          "modId": "LocalAddedColdDamageTwoHand7",
+          "group": "ColdDamage",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 60,
+          "weight": 1,
+          "name": "Adds # to # Cold Damage"
+        }
+      ]
+    }
+  },
+  "greater_essence_of_insulation": {
+    "id": "greater_essence_of_insulation",
+    "name": "Greater Essence of Insulation",
+    "tier": "greater",
+    "byBaseId": {
+      "1": [
+        {
+          "modId": "FireResist6",
+          "group": "FireResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Fire Resistance"
+        }
+      ],
+      "2": [
+        {
+          "modId": "FireResist6",
+          "group": "FireResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Fire Resistance"
+        }
+      ],
+      "3": [
+        {
+          "modId": "FireResist6",
+          "group": "FireResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Fire Resistance"
+        }
+      ],
+      "5": [
+        {
+          "modId": "FireResist6",
+          "group": "FireResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Fire Resistance"
+        }
+      ],
+      "6": [
+        {
+          "modId": "FireResist6",
+          "group": "FireResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Fire Resistance"
+        }
+      ],
+      "8": [
+        {
+          "modId": "FireResist6",
+          "group": "FireResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Fire Resistance"
+        }
+      ],
+      "9": [
+        {
+          "modId": "FireResist6",
+          "group": "FireResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Fire Resistance"
+        }
+      ],
+      "33": [
+        {
+          "modId": "FireResist6",
+          "group": "FireResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Fire Resistance"
+        }
+      ],
+      "34": [
+        {
+          "modId": "FireResist6",
+          "group": "FireResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Fire Resistance"
+        }
+      ],
+      "35": [
+        {
+          "modId": "FireResist6",
+          "group": "FireResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Fire Resistance"
+        }
+      ],
+      "36": [
+        {
+          "modId": "FireResist6",
+          "group": "FireResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Fire Resistance"
+        }
+      ],
+      "37": [
+        {
+          "modId": "FireResist6",
+          "group": "FireResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Fire Resistance"
+        }
+      ],
+      "38": [
+        {
+          "modId": "FireResist6",
+          "group": "FireResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Fire Resistance"
+        }
+      ],
+      "39": [
+        {
+          "modId": "FireResist6",
+          "group": "FireResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Fire Resistance"
+        }
+      ],
+      "40": [
+        {
+          "modId": "FireResist6",
+          "group": "FireResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Fire Resistance"
+        }
+      ],
+      "41": [
+        {
+          "modId": "FireResist6",
+          "group": "FireResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Fire Resistance"
+        }
+      ],
+      "42": [
+        {
+          "modId": "FireResist6",
+          "group": "FireResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Fire Resistance"
+        }
+      ],
+      "43": [
+        {
+          "modId": "FireResist6",
+          "group": "FireResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Fire Resistance"
+        }
+      ],
+      "44": [
+        {
+          "modId": "FireResist6",
+          "group": "FireResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Fire Resistance"
+        }
+      ],
+      "45": [
+        {
+          "modId": "FireResist6",
+          "group": "FireResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Fire Resistance"
+        }
+      ],
+      "46": [
+        {
+          "modId": "FireResist6",
+          "group": "FireResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Fire Resistance"
+        }
+      ],
+      "47": [
+        {
+          "modId": "FireResist6",
+          "group": "FireResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Fire Resistance"
+        }
+      ],
+      "48": [
+        {
+          "modId": "FireResist6",
+          "group": "FireResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Fire Resistance"
+        }
+      ],
+      "49": [
+        {
+          "modId": "FireResist6",
+          "group": "FireResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Fire Resistance"
+        }
+      ],
+      "50": [
+        {
+          "modId": "FireResist6",
+          "group": "FireResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Fire Resistance"
+        }
+      ],
+      "52": [
+        {
+          "modId": "FireResist6",
+          "group": "FireResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Fire Resistance"
+        }
+      ],
+      "53": [
+        {
+          "modId": "FireResist6",
+          "group": "FireResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Fire Resistance"
+        }
+      ],
+      "54": [
+        {
+          "modId": "FireResist6",
+          "group": "FireResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Fire Resistance"
+        }
+      ],
+      "55": [
+        {
+          "modId": "FireResist6",
+          "group": "FireResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Fire Resistance"
+        }
+      ],
+      "56": [
+        {
+          "modId": "FireResist6",
+          "group": "FireResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Fire Resistance"
+        }
+      ],
+      "57": [
+        {
+          "modId": "FireResist6",
+          "group": "FireResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Fire Resistance"
+        }
+      ],
+      "229": [
+        {
+          "modId": "FireResist6",
+          "group": "FireResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Fire Resistance"
+        }
+      ]
+    }
+  },
+  "greater_essence_of_opulence": {
+    "id": "greater_essence_of_opulence",
+    "name": "Greater Essence of Opulence",
+    "tier": "greater",
+    "byBaseId": {
+      "1": [
+        {
+          "modId": "ItemFoundRarityIncrease3",
+          "group": "ItemFoundRarityIncrease",
+          "gen_type": "suffix",
+          "tier": 3,
+          "required_level": 40,
+          "weight": 1,
+          "name": "#% increased Rarity of Items found"
+        }
+      ],
+      "2": [
+        {
+          "modId": "ItemFoundRarityIncrease3",
+          "group": "ItemFoundRarityIncrease",
+          "gen_type": "suffix",
+          "tier": 3,
+          "required_level": 40,
+          "weight": 1,
+          "name": "#% increased Rarity of Items found"
+        }
+      ],
+      "33": [
+        {
+          "modId": "ItemFoundRarityIncrease3",
+          "group": "ItemFoundRarityIncrease",
+          "gen_type": "suffix",
+          "tier": 3,
+          "required_level": 40,
+          "weight": 1,
+          "name": "#% increased Rarity of Items found"
+        }
+      ],
+      "34": [
+        {
+          "modId": "ItemFoundRarityIncrease3",
+          "group": "ItemFoundRarityIncrease",
+          "gen_type": "suffix",
+          "tier": 3,
+          "required_level": 40,
+          "weight": 1,
+          "name": "#% increased Rarity of Items found"
+        }
+      ],
+      "35": [
+        {
+          "modId": "ItemFoundRarityIncrease3",
+          "group": "ItemFoundRarityIncrease",
+          "gen_type": "suffix",
+          "tier": 3,
+          "required_level": 40,
+          "weight": 1,
+          "name": "#% increased Rarity of Items found"
+        }
+      ],
+      "36": [
+        {
+          "modId": "ItemFoundRarityIncrease3",
+          "group": "ItemFoundRarityIncrease",
+          "gen_type": "suffix",
+          "tier": 3,
+          "required_level": 40,
+          "weight": 1,
+          "name": "#% increased Rarity of Items found"
+        }
+      ],
+      "37": [
+        {
+          "modId": "ItemFoundRarityIncrease3",
+          "group": "ItemFoundRarityIncrease",
+          "gen_type": "suffix",
+          "tier": 3,
+          "required_level": 40,
+          "weight": 1,
+          "name": "#% increased Rarity of Items found"
+        }
+      ],
+      "38": [
+        {
+          "modId": "ItemFoundRarityIncrease3",
+          "group": "ItemFoundRarityIncrease",
+          "gen_type": "suffix",
+          "tier": 3,
+          "required_level": 40,
+          "weight": 1,
+          "name": "#% increased Rarity of Items found"
+        }
+      ],
+      "39": [
+        {
+          "modId": "ItemFoundRarityIncrease3",
+          "group": "ItemFoundRarityIncrease",
+          "gen_type": "suffix",
+          "tier": 3,
+          "required_level": 40,
+          "weight": 1,
+          "name": "#% increased Rarity of Items found"
+        }
+      ],
+      "40": [
+        {
+          "modId": "ItemFoundRarityIncrease3",
+          "group": "ItemFoundRarityIncrease",
+          "gen_type": "suffix",
+          "tier": 3,
+          "required_level": 40,
+          "weight": 1,
+          "name": "#% increased Rarity of Items found"
+        }
+      ],
+      "41": [
+        {
+          "modId": "ItemFoundRarityIncrease3",
+          "group": "ItemFoundRarityIncrease",
+          "gen_type": "suffix",
+          "tier": 3,
+          "required_level": 40,
+          "weight": 1,
+          "name": "#% increased Rarity of Items found"
+        }
+      ],
+      "42": [
+        {
+          "modId": "ItemFoundRarityIncrease3",
+          "group": "ItemFoundRarityIncrease",
+          "gen_type": "suffix",
+          "tier": 3,
+          "required_level": 40,
+          "weight": 1,
+          "name": "#% increased Rarity of Items found"
+        }
+      ],
+      "43": [
+        {
+          "modId": "ItemFoundRarityIncrease3",
+          "group": "ItemFoundRarityIncrease",
+          "gen_type": "suffix",
+          "tier": 3,
+          "required_level": 40,
+          "weight": 1,
+          "name": "#% increased Rarity of Items found"
+        }
+      ],
+      "44": [
+        {
+          "modId": "ItemFoundRarityIncrease3",
+          "group": "ItemFoundRarityIncrease",
+          "gen_type": "suffix",
+          "tier": 3,
+          "required_level": 40,
+          "weight": 1,
+          "name": "#% increased Rarity of Items found"
+        }
+      ],
+      "52": [
+        {
+          "modId": "ItemFoundRarityIncrease3",
+          "group": "ItemFoundRarityIncrease",
+          "gen_type": "suffix",
+          "tier": 3,
+          "required_level": 40,
+          "weight": 1,
+          "name": "#% increased Rarity of Items found"
+        }
+      ],
+      "53": [
+        {
+          "modId": "ItemFoundRarityIncrease3",
+          "group": "ItemFoundRarityIncrease",
+          "gen_type": "suffix",
+          "tier": 3,
+          "required_level": 40,
+          "weight": 1,
+          "name": "#% increased Rarity of Items found"
+        }
+      ],
+      "54": [
+        {
+          "modId": "ItemFoundRarityIncrease3",
+          "group": "ItemFoundRarityIncrease",
+          "gen_type": "suffix",
+          "tier": 3,
+          "required_level": 40,
+          "weight": 1,
+          "name": "#% increased Rarity of Items found"
+        }
+      ],
+      "55": [
+        {
+          "modId": "ItemFoundRarityIncrease3",
+          "group": "ItemFoundRarityIncrease",
+          "gen_type": "suffix",
+          "tier": 3,
+          "required_level": 40,
+          "weight": 1,
+          "name": "#% increased Rarity of Items found"
+        }
+      ],
+      "56": [
+        {
+          "modId": "ItemFoundRarityIncrease3",
+          "group": "ItemFoundRarityIncrease",
+          "gen_type": "suffix",
+          "tier": 3,
+          "required_level": 40,
+          "weight": 1,
+          "name": "#% increased Rarity of Items found"
+        }
+      ],
+      "57": [
+        {
+          "modId": "ItemFoundRarityIncrease3",
+          "group": "ItemFoundRarityIncrease",
+          "gen_type": "suffix",
+          "tier": 3,
+          "required_level": 40,
+          "weight": 1,
+          "name": "#% increased Rarity of Items found"
+        }
+      ]
+    }
+  },
+  "greater_essence_of_ruin": {
+    "id": "greater_essence_of_ruin",
+    "name": "Greater Essence of Ruin",
+    "tier": "greater",
+    "byBaseId": {
+      "1": [
+        {
+          "modId": "ChaosResist4",
+          "group": "ChaosResistance",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 56,
+          "weight": 1,
+          "name": "+#% to Chaos Resistance"
+        }
+      ],
+      "2": [
+        {
+          "modId": "ChaosResist4",
+          "group": "ChaosResistance",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 56,
+          "weight": 1,
+          "name": "+#% to Chaos Resistance"
+        }
+      ],
+      "3": [
+        {
+          "modId": "ChaosResist4",
+          "group": "ChaosResistance",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 56,
+          "weight": 1,
+          "name": "+#% to Chaos Resistance"
+        }
+      ],
+      "5": [
+        {
+          "modId": "ChaosResist4",
+          "group": "ChaosResistance",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 56,
+          "weight": 1,
+          "name": "+#% to Chaos Resistance"
+        }
+      ],
+      "6": [
+        {
+          "modId": "ChaosResist4",
+          "group": "ChaosResistance",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 56,
+          "weight": 1,
+          "name": "+#% to Chaos Resistance"
+        }
+      ],
+      "8": [
+        {
+          "modId": "ChaosResist4",
+          "group": "ChaosResistance",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 56,
+          "weight": 1,
+          "name": "+#% to Chaos Resistance"
+        }
+      ],
+      "9": [
+        {
+          "modId": "ChaosResist4",
+          "group": "ChaosResistance",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 56,
+          "weight": 1,
+          "name": "+#% to Chaos Resistance"
+        }
+      ],
+      "33": [
+        {
+          "modId": "ChaosResist4",
+          "group": "ChaosResistance",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 56,
+          "weight": 1,
+          "name": "+#% to Chaos Resistance"
+        }
+      ],
+      "34": [
+        {
+          "modId": "ChaosResist4",
+          "group": "ChaosResistance",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 56,
+          "weight": 1,
+          "name": "+#% to Chaos Resistance"
+        }
+      ],
+      "35": [
+        {
+          "modId": "ChaosResist4",
+          "group": "ChaosResistance",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 56,
+          "weight": 1,
+          "name": "+#% to Chaos Resistance"
+        }
+      ],
+      "36": [
+        {
+          "modId": "ChaosResist4",
+          "group": "ChaosResistance",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 56,
+          "weight": 1,
+          "name": "+#% to Chaos Resistance"
+        }
+      ],
+      "37": [
+        {
+          "modId": "ChaosResist4",
+          "group": "ChaosResistance",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 56,
+          "weight": 1,
+          "name": "+#% to Chaos Resistance"
+        }
+      ],
+      "38": [
+        {
+          "modId": "ChaosResist4",
+          "group": "ChaosResistance",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 56,
+          "weight": 1,
+          "name": "+#% to Chaos Resistance"
+        }
+      ],
+      "39": [
+        {
+          "modId": "ChaosResist4",
+          "group": "ChaosResistance",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 56,
+          "weight": 1,
+          "name": "+#% to Chaos Resistance"
+        }
+      ],
+      "40": [
+        {
+          "modId": "ChaosResist4",
+          "group": "ChaosResistance",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 56,
+          "weight": 1,
+          "name": "+#% to Chaos Resistance"
+        }
+      ],
+      "41": [
+        {
+          "modId": "ChaosResist4",
+          "group": "ChaosResistance",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 56,
+          "weight": 1,
+          "name": "+#% to Chaos Resistance"
+        }
+      ],
+      "42": [
+        {
+          "modId": "ChaosResist4",
+          "group": "ChaosResistance",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 56,
+          "weight": 1,
+          "name": "+#% to Chaos Resistance"
+        }
+      ],
+      "43": [
+        {
+          "modId": "ChaosResist4",
+          "group": "ChaosResistance",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 56,
+          "weight": 1,
+          "name": "+#% to Chaos Resistance"
+        }
+      ],
+      "44": [
+        {
+          "modId": "ChaosResist4",
+          "group": "ChaosResistance",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 56,
+          "weight": 1,
+          "name": "+#% to Chaos Resistance"
+        }
+      ],
+      "45": [
+        {
+          "modId": "ChaosResist4",
+          "group": "ChaosResistance",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 56,
+          "weight": 1,
+          "name": "+#% to Chaos Resistance"
+        }
+      ],
+      "46": [
+        {
+          "modId": "ChaosResist4",
+          "group": "ChaosResistance",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 56,
+          "weight": 1,
+          "name": "+#% to Chaos Resistance"
+        }
+      ],
+      "47": [
+        {
+          "modId": "ChaosResist4",
+          "group": "ChaosResistance",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 56,
+          "weight": 1,
+          "name": "+#% to Chaos Resistance"
+        }
+      ],
+      "48": [
+        {
+          "modId": "ChaosResist4",
+          "group": "ChaosResistance",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 56,
+          "weight": 1,
+          "name": "+#% to Chaos Resistance"
+        }
+      ],
+      "49": [
+        {
+          "modId": "ChaosResist4",
+          "group": "ChaosResistance",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 56,
+          "weight": 1,
+          "name": "+#% to Chaos Resistance"
+        }
+      ],
+      "50": [
+        {
+          "modId": "ChaosResist4",
+          "group": "ChaosResistance",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 56,
+          "weight": 1,
+          "name": "+#% to Chaos Resistance"
+        }
+      ],
+      "52": [
+        {
+          "modId": "ChaosResist4",
+          "group": "ChaosResistance",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 56,
+          "weight": 1,
+          "name": "+#% to Chaos Resistance"
+        }
+      ],
+      "53": [
+        {
+          "modId": "ChaosResist4",
+          "group": "ChaosResistance",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 56,
+          "weight": 1,
+          "name": "+#% to Chaos Resistance"
+        }
+      ],
+      "54": [
+        {
+          "modId": "ChaosResist4",
+          "group": "ChaosResistance",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 56,
+          "weight": 1,
+          "name": "+#% to Chaos Resistance"
+        }
+      ],
+      "55": [
+        {
+          "modId": "ChaosResist4",
+          "group": "ChaosResistance",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 56,
+          "weight": 1,
+          "name": "+#% to Chaos Resistance"
+        }
+      ],
+      "56": [
+        {
+          "modId": "ChaosResist4",
+          "group": "ChaosResistance",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 56,
+          "weight": 1,
+          "name": "+#% to Chaos Resistance"
+        }
+      ],
+      "57": [
+        {
+          "modId": "ChaosResist4",
+          "group": "ChaosResistance",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 56,
+          "weight": 1,
+          "name": "+#% to Chaos Resistance"
+        }
+      ],
+      "229": [
+        {
+          "modId": "ChaosResist4",
+          "group": "ChaosResistance",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 56,
+          "weight": 1,
+          "name": "+#% to Chaos Resistance"
+        }
+      ]
+    }
+  },
+  "greater_essence_of_seeking": {
+    "id": "greater_essence_of_seeking",
+    "name": "Greater Essence of Seeking",
+    "tier": "greater",
+    "byBaseId": {
+      "12": [
+        {
+          "modId": "LocalCriticalStrikeChance4",
+          "group": "CriticalStrikeChanceIncrease",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 44,
+          "weight": 1,
+          "name": "+#% to Critical Hit Chance"
+        }
+      ],
+      "13": [
+        {
+          "modId": "LocalCriticalStrikeChance4",
+          "group": "CriticalStrikeChanceIncrease",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 44,
+          "weight": 1,
+          "name": "+#% to Critical Hit Chance"
+        }
+      ],
+      "15": [
+        {
+          "modId": "LocalCriticalStrikeChance4",
+          "group": "CriticalStrikeChanceIncrease",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 44,
+          "weight": 1,
+          "name": "+#% to Critical Hit Chance"
+        }
+      ],
+      "16": [
+        {
+          "modId": "LocalCriticalStrikeChance4",
+          "group": "CriticalStrikeChanceIncrease",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 44,
+          "weight": 1,
+          "name": "+#% to Critical Hit Chance"
+        }
+      ],
+      "18": [
+        {
+          "modId": "SpellCriticalStrikeChance4",
+          "group": "SpellCriticalStrikeChanceIncrease",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 41,
+          "weight": 1,
+          "name": "#% increased Critical Hit Chance for Spells"
+        }
+      ],
+      "20": [
+        {
+          "modId": "LocalCriticalStrikeChance4",
+          "group": "CriticalStrikeChanceIncrease",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 44,
+          "weight": 1,
+          "name": "+#% to Critical Hit Chance"
+        }
+      ],
+      "21": [
+        {
+          "modId": "SpellCriticalStrikeChanceTwoHand4",
+          "group": "SpellCriticalStrikeChanceIncrease",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 41,
+          "weight": 1,
+          "name": "#% increased Critical Hit Chance for Spells"
+        }
+      ],
+      "22": [
+        {
+          "modId": "LocalCriticalStrikeChance4",
+          "group": "CriticalStrikeChanceIncrease",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 44,
+          "weight": 1,
+          "name": "+#% to Critical Hit Chance"
+        }
+      ],
+      "23": [
+        {
+          "modId": "LocalCriticalStrikeChance4",
+          "group": "CriticalStrikeChanceIncrease",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 44,
+          "weight": 1,
+          "name": "+#% to Critical Hit Chance"
+        }
+      ],
+      "24": [
+        {
+          "modId": "LocalCriticalStrikeChance4",
+          "group": "CriticalStrikeChanceIncrease",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 44,
+          "weight": 1,
+          "name": "+#% to Critical Hit Chance"
+        }
+      ],
+      "25": [
+        {
+          "modId": "LocalCriticalStrikeChance4",
+          "group": "CriticalStrikeChanceIncrease",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 44,
+          "weight": 1,
+          "name": "+#% to Critical Hit Chance"
+        }
+      ],
+      "216": [
+        {
+          "modId": "LocalCriticalStrikeChance4",
+          "group": "CriticalStrikeChanceIncrease",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 44,
+          "weight": 1,
+          "name": "+#% to Critical Hit Chance"
+        }
+      ],
+      "217": [
+        {
+          "modId": "LocalCriticalStrikeChance4",
+          "group": "CriticalStrikeChanceIncrease",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 44,
+          "weight": 1,
+          "name": "+#% to Critical Hit Chance"
+        }
+      ],
+      "218": [
+        {
+          "modId": "SpellCriticalStrikeChance4",
+          "group": "SpellCriticalStrikeChanceIncrease",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 41,
+          "weight": 1,
+          "name": "#% increased Critical Hit Chance for Spells"
+        }
+      ],
+      "219": [
+        {
+          "modId": "SpellCriticalStrikeChance4",
+          "group": "SpellCriticalStrikeChanceIncrease",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 41,
+          "weight": 1,
+          "name": "#% increased Critical Hit Chance for Spells"
+        }
+      ],
+      "220": [
+        {
+          "modId": "SpellCriticalStrikeChance4",
+          "group": "SpellCriticalStrikeChanceIncrease",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 41,
+          "weight": 1,
+          "name": "#% increased Critical Hit Chance for Spells"
+        }
+      ],
+      "221": [
+        {
+          "modId": "SpellCriticalStrikeChance4",
+          "group": "SpellCriticalStrikeChanceIncrease",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 41,
+          "weight": 1,
+          "name": "#% increased Critical Hit Chance for Spells"
+        }
+      ],
+      "222": [
+        {
+          "modId": "SpellCriticalStrikeChance4",
+          "group": "SpellCriticalStrikeChanceIncrease",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 41,
+          "weight": 1,
+          "name": "#% increased Critical Hit Chance for Spells"
+        }
+      ],
+      "223": [
+        {
+          "modId": "SpellCriticalStrikeChanceTwoHand4",
+          "group": "SpellCriticalStrikeChanceIncrease",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 41,
+          "weight": 1,
+          "name": "#% increased Critical Hit Chance for Spells"
+        }
+      ],
+      "224": [
+        {
+          "modId": "SpellCriticalStrikeChanceTwoHand4",
+          "group": "SpellCriticalStrikeChanceIncrease",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 41,
+          "weight": 1,
+          "name": "#% increased Critical Hit Chance for Spells"
+        }
+      ],
+      "225": [
+        {
+          "modId": "SpellCriticalStrikeChanceTwoHand4",
+          "group": "SpellCriticalStrikeChanceIncrease",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 41,
+          "weight": 1,
+          "name": "#% increased Critical Hit Chance for Spells"
+        }
+      ],
+      "226": [
+        {
+          "modId": "SpellCriticalStrikeChanceTwoHand4",
+          "group": "SpellCriticalStrikeChanceIncrease",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 41,
+          "weight": 1,
+          "name": "#% increased Critical Hit Chance for Spells"
+        }
+      ],
+      "227": [
+        {
+          "modId": "SpellCriticalStrikeChanceTwoHand4",
+          "group": "SpellCriticalStrikeChanceIncrease",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 41,
+          "weight": 1,
+          "name": "#% increased Critical Hit Chance for Spells"
+        }
+      ],
+      "228": [
+        {
+          "modId": "LocalCriticalStrikeChance4",
+          "group": "CriticalStrikeChanceIncrease",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 44,
+          "weight": 1,
+          "name": "+#% to Critical Hit Chance"
+        }
+      ],
+      "229": [
+        {
+          "modId": "SpellCriticalStrikeChance4",
+          "group": "SpellCriticalStrikeChanceIncrease",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 41,
+          "weight": 1,
+          "name": "#% increased Critical Hit Chance for Spells"
+        }
+      ],
+      "244": [
+        {
+          "modId": "LocalCriticalStrikeChance4",
+          "group": "CriticalStrikeChanceIncrease",
+          "gen_type": "suffix",
+          "tier": 4,
+          "required_level": 44,
+          "weight": 1,
+          "name": "+#% to Critical Hit Chance"
+        }
+      ]
+    }
+  },
+  "greater_essence_of_sorcery": {
+    "id": "greater_essence_of_sorcery",
+    "name": "Greater Essence of Sorcery",
+    "tier": "greater",
+    "byBaseId": {
+      "18": [
+        {
+          "modId": "SpellDamageOnWeapon6",
+          "group": "WeaponCasterDamagePrefix",
+          "gen_type": "prefix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "#% increased Spell Damage"
+        }
+      ],
+      "21": [
+        {
+          "modId": "SpellDamageOnTwoHandWeapon6",
+          "group": "WeaponCasterDamagePrefix",
+          "gen_type": "prefix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "#% increased Spell Damage"
+        }
+      ],
+      "218": [
+        {
+          "modId": "SpellDamageOnWeapon6",
+          "group": "WeaponCasterDamagePrefix",
+          "gen_type": "prefix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "#% increased Spell Damage"
+        }
+      ],
+      "219": [
+        {
+          "modId": "SpellDamageOnWeapon6",
+          "group": "WeaponCasterDamagePrefix",
+          "gen_type": "prefix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "#% increased Spell Damage"
+        }
+      ],
+      "220": [
+        {
+          "modId": "SpellDamageOnWeapon6",
+          "group": "WeaponCasterDamagePrefix",
+          "gen_type": "prefix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "#% increased Spell Damage"
+        }
+      ],
+      "221": [
+        {
+          "modId": "SpellDamageOnWeapon6",
+          "group": "WeaponCasterDamagePrefix",
+          "gen_type": "prefix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "#% increased Spell Damage"
+        }
+      ],
+      "222": [
+        {
+          "modId": "SpellDamageOnWeapon6",
+          "group": "WeaponCasterDamagePrefix",
+          "gen_type": "prefix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "#% increased Spell Damage"
+        }
+      ],
+      "223": [
+        {
+          "modId": "SpellDamageOnTwoHandWeapon6",
+          "group": "WeaponCasterDamagePrefix",
+          "gen_type": "prefix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "#% increased Spell Damage"
+        }
+      ],
+      "224": [
+        {
+          "modId": "SpellDamageOnTwoHandWeapon6",
+          "group": "WeaponCasterDamagePrefix",
+          "gen_type": "prefix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "#% increased Spell Damage"
+        }
+      ],
+      "225": [
+        {
+          "modId": "SpellDamageOnTwoHandWeapon6",
+          "group": "WeaponCasterDamagePrefix",
+          "gen_type": "prefix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "#% increased Spell Damage"
+        }
+      ],
+      "226": [
+        {
+          "modId": "SpellDamageOnTwoHandWeapon6",
+          "group": "WeaponCasterDamagePrefix",
+          "gen_type": "prefix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "#% increased Spell Damage"
+        }
+      ],
+      "227": [
+        {
+          "modId": "SpellDamageOnTwoHandWeapon6",
+          "group": "WeaponCasterDamagePrefix",
+          "gen_type": "prefix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "#% increased Spell Damage"
+        }
+      ],
+      "229": [
+        {
+          "modId": "SpellDamageOnWeapon6",
+          "group": "WeaponCasterDamagePrefix",
+          "gen_type": "prefix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "#% increased Spell Damage"
+        }
+      ]
+    }
+  },
+  "greater_essence_of_thawing": {
+    "id": "greater_essence_of_thawing",
+    "name": "Greater Essence of Thawing",
+    "tier": "greater",
+    "byBaseId": {
+      "1": [
+        {
+          "modId": "ColdResist6",
+          "group": "ColdResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Cold Resistance"
+        }
+      ],
+      "2": [
+        {
+          "modId": "ColdResist6",
+          "group": "ColdResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Cold Resistance"
+        }
+      ],
+      "3": [
+        {
+          "modId": "ColdResist6",
+          "group": "ColdResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Cold Resistance"
+        }
+      ],
+      "5": [
+        {
+          "modId": "ColdResist6",
+          "group": "ColdResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Cold Resistance"
+        }
+      ],
+      "6": [
+        {
+          "modId": "ColdResist6",
+          "group": "ColdResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Cold Resistance"
+        }
+      ],
+      "8": [
+        {
+          "modId": "ColdResist6",
+          "group": "ColdResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Cold Resistance"
+        }
+      ],
+      "9": [
+        {
+          "modId": "ColdResist6",
+          "group": "ColdResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Cold Resistance"
+        }
+      ],
+      "33": [
+        {
+          "modId": "ColdResist6",
+          "group": "ColdResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Cold Resistance"
+        }
+      ],
+      "34": [
+        {
+          "modId": "ColdResist6",
+          "group": "ColdResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Cold Resistance"
+        }
+      ],
+      "35": [
+        {
+          "modId": "ColdResist6",
+          "group": "ColdResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Cold Resistance"
+        }
+      ],
+      "36": [
+        {
+          "modId": "ColdResist6",
+          "group": "ColdResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Cold Resistance"
+        }
+      ],
+      "37": [
+        {
+          "modId": "ColdResist6",
+          "group": "ColdResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Cold Resistance"
+        }
+      ],
+      "38": [
+        {
+          "modId": "ColdResist6",
+          "group": "ColdResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Cold Resistance"
+        }
+      ],
+      "39": [
+        {
+          "modId": "ColdResist6",
+          "group": "ColdResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Cold Resistance"
+        }
+      ],
+      "40": [
+        {
+          "modId": "ColdResist6",
+          "group": "ColdResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Cold Resistance"
+        }
+      ],
+      "41": [
+        {
+          "modId": "ColdResist6",
+          "group": "ColdResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Cold Resistance"
+        }
+      ],
+      "42": [
+        {
+          "modId": "ColdResist6",
+          "group": "ColdResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Cold Resistance"
+        }
+      ],
+      "43": [
+        {
+          "modId": "ColdResist6",
+          "group": "ColdResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Cold Resistance"
+        }
+      ],
+      "44": [
+        {
+          "modId": "ColdResist6",
+          "group": "ColdResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Cold Resistance"
+        }
+      ],
+      "45": [
+        {
+          "modId": "ColdResist6",
+          "group": "ColdResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Cold Resistance"
+        }
+      ],
+      "46": [
+        {
+          "modId": "ColdResist6",
+          "group": "ColdResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Cold Resistance"
+        }
+      ],
+      "47": [
+        {
+          "modId": "ColdResist6",
+          "group": "ColdResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Cold Resistance"
+        }
+      ],
+      "48": [
+        {
+          "modId": "ColdResist6",
+          "group": "ColdResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Cold Resistance"
+        }
+      ],
+      "49": [
+        {
+          "modId": "ColdResist6",
+          "group": "ColdResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Cold Resistance"
+        }
+      ],
+      "50": [
+        {
+          "modId": "ColdResist6",
+          "group": "ColdResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Cold Resistance"
+        }
+      ],
+      "52": [
+        {
+          "modId": "ColdResist6",
+          "group": "ColdResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Cold Resistance"
+        }
+      ],
+      "53": [
+        {
+          "modId": "ColdResist6",
+          "group": "ColdResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Cold Resistance"
+        }
+      ],
+      "54": [
+        {
+          "modId": "ColdResist6",
+          "group": "ColdResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Cold Resistance"
+        }
+      ],
+      "55": [
+        {
+          "modId": "ColdResist6",
+          "group": "ColdResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Cold Resistance"
+        }
+      ],
+      "56": [
+        {
+          "modId": "ColdResist6",
+          "group": "ColdResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Cold Resistance"
+        }
+      ],
+      "57": [
+        {
+          "modId": "ColdResist6",
+          "group": "ColdResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Cold Resistance"
+        }
+      ],
+      "229": [
+        {
+          "modId": "ColdResist6",
+          "group": "ColdResistance",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 60,
+          "weight": 1,
+          "name": "+#% to Cold Resistance"
+        }
+      ]
+    }
+  },
+  "greater_essence_of_the_body": {
+    "id": "greater_essence_of_the_body",
+    "name": "Greater Essence of the Body",
+    "tier": "greater",
+    "byBaseId": {
+      "2": [
+        {
+          "modId": "IncreasedLife7",
+          "group": "IncreasedLife",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 46,
+          "weight": 1,
+          "name": "+# to maximum Life"
+        }
+      ],
+      "3": [
+        {
+          "modId": "IncreasedLife8",
+          "group": "IncreasedLife",
+          "gen_type": "prefix",
+          "tier": 8,
+          "required_level": 54,
+          "weight": 1,
+          "name": "+# to maximum Life"
+        }
+      ],
+      "5": [
+        {
+          "modId": "IncreasedLife8",
+          "group": "IncreasedLife",
+          "gen_type": "prefix",
+          "tier": 8,
+          "required_level": 54,
+          "weight": 1,
+          "name": "+# to maximum Life"
+        }
+      ],
+      "6": [
+        {
+          "modId": "IncreasedLife8",
+          "group": "IncreasedLife",
+          "gen_type": "prefix",
+          "tier": 8,
+          "required_level": 54,
+          "weight": 1,
+          "name": "+# to maximum Life"
+        }
+      ],
+      "8": [
+        {
+          "modId": "IncreasedLife8",
+          "group": "IncreasedLife",
+          "gen_type": "prefix",
+          "tier": 8,
+          "required_level": 54,
+          "weight": 1,
+          "name": "+# to maximum Life"
+        }
+      ],
+      "9": [
+        {
+          "modId": "IncreasedLife8",
+          "group": "IncreasedLife",
+          "gen_type": "prefix",
+          "tier": 8,
+          "required_level": 54,
+          "weight": 1,
+          "name": "+# to maximum Life"
+        }
+      ],
+      "33": [
+        {
+          "modId": "IncreasedLife7",
+          "group": "IncreasedLife",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 46,
+          "weight": 1,
+          "name": "+# to maximum Life"
+        }
+      ],
+      "34": [
+        {
+          "modId": "IncreasedLife7",
+          "group": "IncreasedLife",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 46,
+          "weight": 1,
+          "name": "+# to maximum Life"
+        }
+      ],
+      "35": [
+        {
+          "modId": "IncreasedLife7",
+          "group": "IncreasedLife",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 46,
+          "weight": 1,
+          "name": "+# to maximum Life"
+        }
+      ],
+      "36": [
+        {
+          "modId": "IncreasedLife7",
+          "group": "IncreasedLife",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 46,
+          "weight": 1,
+          "name": "+# to maximum Life"
+        }
+      ],
+      "37": [
+        {
+          "modId": "IncreasedLife7",
+          "group": "IncreasedLife",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 46,
+          "weight": 1,
+          "name": "+# to maximum Life"
+        }
+      ],
+      "38": [
+        {
+          "modId": "IncreasedLife7",
+          "group": "IncreasedLife",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 46,
+          "weight": 1,
+          "name": "+# to maximum Life"
+        }
+      ],
+      "39": [
+        {
+          "modId": "IncreasedLife7",
+          "group": "IncreasedLife",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 46,
+          "weight": 1,
+          "name": "+# to maximum Life"
+        }
+      ],
+      "40": [
+        {
+          "modId": "IncreasedLife7",
+          "group": "IncreasedLife",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 46,
+          "weight": 1,
+          "name": "+# to maximum Life"
+        }
+      ],
+      "41": [
+        {
+          "modId": "IncreasedLife7",
+          "group": "IncreasedLife",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 46,
+          "weight": 1,
+          "name": "+# to maximum Life"
+        }
+      ],
+      "42": [
+        {
+          "modId": "IncreasedLife7",
+          "group": "IncreasedLife",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 46,
+          "weight": 1,
+          "name": "+# to maximum Life"
+        }
+      ],
+      "43": [
+        {
+          "modId": "IncreasedLife7",
+          "group": "IncreasedLife",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 46,
+          "weight": 1,
+          "name": "+# to maximum Life"
+        }
+      ],
+      "44": [
+        {
+          "modId": "IncreasedLife7",
+          "group": "IncreasedLife",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 46,
+          "weight": 1,
+          "name": "+# to maximum Life"
+        }
+      ],
+      "45": [
+        {
+          "modId": "IncreasedLife8",
+          "group": "IncreasedLife",
+          "gen_type": "prefix",
+          "tier": 8,
+          "required_level": 54,
+          "weight": 1,
+          "name": "+# to maximum Life"
+        }
+      ],
+      "46": [
+        {
+          "modId": "IncreasedLife8",
+          "group": "IncreasedLife",
+          "gen_type": "prefix",
+          "tier": 8,
+          "required_level": 54,
+          "weight": 1,
+          "name": "+# to maximum Life"
+        }
+      ],
+      "47": [
+        {
+          "modId": "IncreasedLife8",
+          "group": "IncreasedLife",
+          "gen_type": "prefix",
+          "tier": 8,
+          "required_level": 54,
+          "weight": 1,
+          "name": "+# to maximum Life"
+        }
+      ],
+      "48": [
+        {
+          "modId": "IncreasedLife8",
+          "group": "IncreasedLife",
+          "gen_type": "prefix",
+          "tier": 8,
+          "required_level": 54,
+          "weight": 1,
+          "name": "+# to maximum Life"
+        }
+      ],
+      "49": [
+        {
+          "modId": "IncreasedLife8",
+          "group": "IncreasedLife",
+          "gen_type": "prefix",
+          "tier": 8,
+          "required_level": 54,
+          "weight": 1,
+          "name": "+# to maximum Life"
+        }
+      ],
+      "50": [
+        {
+          "modId": "IncreasedLife8",
+          "group": "IncreasedLife",
+          "gen_type": "prefix",
+          "tier": 8,
+          "required_level": 54,
+          "weight": 1,
+          "name": "+# to maximum Life"
+        }
+      ],
+      "52": [
+        {
+          "modId": "IncreasedLife8",
+          "group": "IncreasedLife",
+          "gen_type": "prefix",
+          "tier": 8,
+          "required_level": 54,
+          "weight": 1,
+          "name": "+# to maximum Life"
+        }
+      ],
+      "53": [
+        {
+          "modId": "IncreasedLife8",
+          "group": "IncreasedLife",
+          "gen_type": "prefix",
+          "tier": 8,
+          "required_level": 54,
+          "weight": 1,
+          "name": "+# to maximum Life"
+        }
+      ],
+      "54": [
+        {
+          "modId": "IncreasedLife8",
+          "group": "IncreasedLife",
+          "gen_type": "prefix",
+          "tier": 8,
+          "required_level": 54,
+          "weight": 1,
+          "name": "+# to maximum Life"
+        }
+      ],
+      "55": [
+        {
+          "modId": "IncreasedLife8",
+          "group": "IncreasedLife",
+          "gen_type": "prefix",
+          "tier": 8,
+          "required_level": 54,
+          "weight": 1,
+          "name": "+# to maximum Life"
+        }
+      ],
+      "56": [
+        {
+          "modId": "IncreasedLife8",
+          "group": "IncreasedLife",
+          "gen_type": "prefix",
+          "tier": 8,
+          "required_level": 54,
+          "weight": 1,
+          "name": "+# to maximum Life"
+        }
+      ],
+      "57": [
+        {
+          "modId": "IncreasedLife8",
+          "group": "IncreasedLife",
+          "gen_type": "prefix",
+          "tier": 8,
+          "required_level": 54,
+          "weight": 1,
+          "name": "+# to maximum Life"
+        }
+      ]
+    }
+  },
+  "greater_essence_of_the_infinite": {
+    "id": "greater_essence_of_the_infinite",
+    "name": "Greater Essence of the Infinite",
+    "tier": "greater",
+    "byBaseId": {
+      "1": [
+        {
+          "modId": "Strength6",
+          "group": "Strength",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Strength"
+        },
+        {
+          "modId": "Dexterity6",
+          "group": "Dexterity",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Dexterity"
+        },
+        {
+          "modId": "Intelligence6",
+          "group": "Intelligence",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Intelligence"
+        }
+      ],
+      "2": [
+        {
+          "modId": "Strength6",
+          "group": "Strength",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Strength"
+        },
+        {
+          "modId": "Dexterity6",
+          "group": "Dexterity",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Dexterity"
+        },
+        {
+          "modId": "Intelligence6",
+          "group": "Intelligence",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Intelligence"
+        }
+      ],
+      "3": [
+        {
+          "modId": "Strength6",
+          "group": "Strength",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Strength"
+        }
+      ],
+      "4": [
+        {
+          "modId": "Dexterity6",
+          "group": "Dexterity",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Dexterity"
+        }
+      ],
+      "5": [
+        {
+          "modId": "Strength6",
+          "group": "Strength",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Strength"
+        }
+      ],
+      "6": [
+        {
+          "modId": "Dexterity6",
+          "group": "Dexterity",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Dexterity"
+        }
+      ],
+      "8": [
+        {
+          "modId": "Strength6",
+          "group": "Strength",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Strength"
+        },
+        {
+          "modId": "Dexterity6",
+          "group": "Dexterity",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Dexterity"
+        }
+      ],
+      "9": [
+        {
+          "modId": "Strength6",
+          "group": "Strength",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Strength"
+        },
+        {
+          "modId": "Intelligence6",
+          "group": "Intelligence",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Intelligence"
+        }
+      ],
+      "12": [
+        {
+          "modId": "Dexterity6",
+          "group": "Dexterity",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Dexterity"
+        },
+        {
+          "modId": "Intelligence6",
+          "group": "Intelligence",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Intelligence"
+        }
+      ],
+      "13": [
+        {
+          "modId": "Strength6",
+          "group": "Strength",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Strength"
+        },
+        {
+          "modId": "Dexterity6",
+          "group": "Dexterity",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Dexterity"
+        }
+      ],
+      "15": [
+        {
+          "modId": "Strength6",
+          "group": "Strength",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Strength"
+        }
+      ],
+      "16": [
+        {
+          "modId": "Strength6",
+          "group": "Strength",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Strength"
+        }
+      ],
+      "17": [
+        {
+          "modId": "Strength6",
+          "group": "Strength",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Strength"
+        },
+        {
+          "modId": "Intelligence6",
+          "group": "Intelligence",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Intelligence"
+        }
+      ],
+      "18": [
+        {
+          "modId": "Intelligence6",
+          "group": "Intelligence",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Intelligence"
+        }
+      ],
+      "20": [
+        {
+          "modId": "Dexterity6",
+          "group": "Dexterity",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Dexterity"
+        }
+      ],
+      "21": [
+        {
+          "modId": "Intelligence6",
+          "group": "Intelligence",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Intelligence"
+        }
+      ],
+      "22": [
+        {
+          "modId": "Strength6",
+          "group": "Strength",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Strength"
+        },
+        {
+          "modId": "Dexterity6",
+          "group": "Dexterity",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Dexterity"
+        }
+      ],
+      "23": [
+        {
+          "modId": "Strength6",
+          "group": "Strength",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Strength"
+        }
+      ],
+      "24": [
+        {
+          "modId": "Strength6",
+          "group": "Strength",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Strength"
+        }
+      ],
+      "25": [
+        {
+          "modId": "Dexterity6",
+          "group": "Dexterity",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Dexterity"
+        },
+        {
+          "modId": "Intelligence6",
+          "group": "Intelligence",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Intelligence"
+        }
+      ],
+      "33": [
+        {
+          "modId": "Strength6",
+          "group": "Strength",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Strength"
+        },
+        {
+          "modId": "Dexterity6",
+          "group": "Dexterity",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Dexterity"
+        }
+      ],
+      "34": [
+        {
+          "modId": "Dexterity6",
+          "group": "Dexterity",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Dexterity"
+        }
+      ],
+      "35": [
+        {
+          "modId": "Dexterity6",
+          "group": "Dexterity",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Dexterity"
+        },
+        {
+          "modId": "Intelligence6",
+          "group": "Intelligence",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Intelligence"
+        }
+      ],
+      "36": [
+        {
+          "modId": "Strength6",
+          "group": "Strength",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Strength"
+        },
+        {
+          "modId": "Dexterity6",
+          "group": "Dexterity",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Dexterity"
+        }
+      ],
+      "37": [
+        {
+          "modId": "Strength6",
+          "group": "Strength",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Strength"
+        },
+        {
+          "modId": "Dexterity6",
+          "group": "Dexterity",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Dexterity"
+        },
+        {
+          "modId": "Intelligence6",
+          "group": "Intelligence",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Intelligence"
+        }
+      ],
+      "38": [
+        {
+          "modId": "Dexterity6",
+          "group": "Dexterity",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Dexterity"
+        },
+        {
+          "modId": "Intelligence6",
+          "group": "Intelligence",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Intelligence"
+        }
+      ],
+      "39": [
+        {
+          "modId": "Strength6",
+          "group": "Strength",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Strength"
+        }
+      ],
+      "40": [
+        {
+          "modId": "Dexterity6",
+          "group": "Dexterity",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Dexterity"
+        }
+      ],
+      "41": [
+        {
+          "modId": "Intelligence6",
+          "group": "Intelligence",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Intelligence"
+        }
+      ],
+      "42": [
+        {
+          "modId": "Strength6",
+          "group": "Strength",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Strength"
+        },
+        {
+          "modId": "Dexterity6",
+          "group": "Dexterity",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Dexterity"
+        }
+      ],
+      "43": [
+        {
+          "modId": "Strength6",
+          "group": "Strength",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Strength"
+        },
+        {
+          "modId": "Intelligence6",
+          "group": "Intelligence",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Intelligence"
+        }
+      ],
+      "44": [
+        {
+          "modId": "Dexterity6",
+          "group": "Dexterity",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Dexterity"
+        },
+        {
+          "modId": "Intelligence6",
+          "group": "Intelligence",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Intelligence"
+        }
+      ],
+      "45": [
+        {
+          "modId": "Strength6",
+          "group": "Strength",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Strength"
+        }
+      ],
+      "46": [
+        {
+          "modId": "Dexterity6",
+          "group": "Dexterity",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Dexterity"
+        }
+      ],
+      "47": [
+        {
+          "modId": "Intelligence6",
+          "group": "Intelligence",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Intelligence"
+        }
+      ],
+      "48": [
+        {
+          "modId": "Strength6",
+          "group": "Strength",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Strength"
+        },
+        {
+          "modId": "Dexterity6",
+          "group": "Dexterity",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Dexterity"
+        }
+      ],
+      "49": [
+        {
+          "modId": "Strength6",
+          "group": "Strength",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Strength"
+        },
+        {
+          "modId": "Intelligence6",
+          "group": "Intelligence",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Intelligence"
+        }
+      ],
+      "50": [
+        {
+          "modId": "Dexterity6",
+          "group": "Dexterity",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Dexterity"
+        },
+        {
+          "modId": "Intelligence6",
+          "group": "Intelligence",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Intelligence"
+        }
+      ],
+      "52": [
+        {
+          "modId": "Strength6",
+          "group": "Strength",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Strength"
+        },
+        {
+          "modId": "Intelligence6",
+          "group": "Intelligence",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Intelligence"
+        }
+      ],
+      "53": [
+        {
+          "modId": "Dexterity6",
+          "group": "Dexterity",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Dexterity"
+        },
+        {
+          "modId": "Intelligence6",
+          "group": "Intelligence",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Intelligence"
+        }
+      ],
+      "54": [
+        {
+          "modId": "Intelligence6",
+          "group": "Intelligence",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Intelligence"
+        }
+      ],
+      "55": [
+        {
+          "modId": "Strength6",
+          "group": "Strength",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Strength"
+        },
+        {
+          "modId": "Dexterity6",
+          "group": "Dexterity",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Dexterity"
+        },
+        {
+          "modId": "Intelligence6",
+          "group": "Intelligence",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Intelligence"
+        }
+      ],
+      "56": [
+        {
+          "modId": "Strength6",
+          "group": "Strength",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Strength"
+        },
+        {
+          "modId": "Intelligence6",
+          "group": "Intelligence",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Intelligence"
+        }
+      ],
+      "57": [
+        {
+          "modId": "Dexterity6",
+          "group": "Dexterity",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Dexterity"
+        },
+        {
+          "modId": "Intelligence6",
+          "group": "Intelligence",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Intelligence"
+        }
+      ],
+      "216": [
+        {
+          "modId": "Strength6",
+          "group": "Strength",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Strength"
+        },
+        {
+          "modId": "Dexterity6",
+          "group": "Dexterity",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Dexterity"
+        }
+      ],
+      "217": [
+        {
+          "modId": "Strength6",
+          "group": "Strength",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Strength"
+        },
+        {
+          "modId": "Intelligence6",
+          "group": "Intelligence",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Intelligence"
+        }
+      ],
+      "218": [
+        {
+          "modId": "Intelligence6",
+          "group": "Intelligence",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Intelligence"
+        }
+      ],
+      "219": [
+        {
+          "modId": "Intelligence6",
+          "group": "Intelligence",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Intelligence"
+        }
+      ],
+      "220": [
+        {
+          "modId": "Intelligence6",
+          "group": "Intelligence",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Intelligence"
+        }
+      ],
+      "221": [
+        {
+          "modId": "Intelligence6",
+          "group": "Intelligence",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Intelligence"
+        }
+      ],
+      "222": [
+        {
+          "modId": "Intelligence6",
+          "group": "Intelligence",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Intelligence"
+        }
+      ],
+      "223": [
+        {
+          "modId": "Intelligence6",
+          "group": "Intelligence",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Intelligence"
+        }
+      ],
+      "224": [
+        {
+          "modId": "Intelligence6",
+          "group": "Intelligence",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Intelligence"
+        }
+      ],
+      "225": [
+        {
+          "modId": "Intelligence6",
+          "group": "Intelligence",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Intelligence"
+        }
+      ],
+      "226": [
+        {
+          "modId": "Intelligence6",
+          "group": "Intelligence",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Intelligence"
+        }
+      ],
+      "227": [
+        {
+          "modId": "Intelligence6",
+          "group": "Intelligence",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Intelligence"
+        }
+      ],
+      "228": [
+        {
+          "modId": "Strength6",
+          "group": "Strength",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Strength"
+        },
+        {
+          "modId": "Dexterity6",
+          "group": "Dexterity",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Dexterity"
+        }
+      ],
+      "229": [
+        {
+          "modId": "Intelligence6",
+          "group": "Intelligence",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Intelligence"
+        }
+      ],
+      "244": [
+        {
+          "modId": "Strength6",
+          "group": "Strength",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Strength"
+        },
+        {
+          "modId": "Intelligence6",
+          "group": "Intelligence",
+          "gen_type": "suffix",
+          "tier": 6,
+          "required_level": 55,
+          "weight": 1,
+          "name": "+# to Intelligence"
+        }
+      ]
+    }
+  },
+  "greater_essence_of_the_mind": {
+    "id": "greater_essence_of_the_mind",
+    "name": "Greater Essence of the Mind",
+    "tier": "greater",
+    "byBaseId": {
+      "1": [
+        {
+          "modId": "IncreasedMana8",
+          "group": "IncreasedMana",
+          "gen_type": "prefix",
+          "tier": 8,
+          "required_level": 54,
+          "weight": 1,
+          "name": "+# to maximum Mana"
+        }
+      ],
+      "2": [
+        {
+          "modId": "IncreasedMana8",
+          "group": "IncreasedMana",
+          "gen_type": "prefix",
+          "tier": 8,
+          "required_level": 54,
+          "weight": 1,
+          "name": "+# to maximum Mana"
+        }
+      ],
+      "3": [
+        {
+          "modId": "IncreasedMana7",
+          "group": "IncreasedMana",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 46,
+          "weight": 1,
+          "name": "+# to maximum Mana"
+        }
+      ],
+      "33": [
+        {
+          "modId": "IncreasedMana7",
+          "group": "IncreasedMana",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 46,
+          "weight": 1,
+          "name": "+# to maximum Mana"
+        }
+      ],
+      "34": [
+        {
+          "modId": "IncreasedMana7",
+          "group": "IncreasedMana",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 46,
+          "weight": 1,
+          "name": "+# to maximum Mana"
+        }
+      ],
+      "35": [
+        {
+          "modId": "IncreasedMana7",
+          "group": "IncreasedMana",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 46,
+          "weight": 1,
+          "name": "+# to maximum Mana"
+        }
+      ],
+      "36": [
+        {
+          "modId": "IncreasedMana7",
+          "group": "IncreasedMana",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 46,
+          "weight": 1,
+          "name": "+# to maximum Mana"
+        }
+      ],
+      "37": [
+        {
+          "modId": "IncreasedMana7",
+          "group": "IncreasedMana",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 46,
+          "weight": 1,
+          "name": "+# to maximum Mana"
+        }
+      ],
+      "38": [
+        {
+          "modId": "IncreasedMana7",
+          "group": "IncreasedMana",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 46,
+          "weight": 1,
+          "name": "+# to maximum Mana"
+        }
+      ],
+      "39": [
+        {
+          "modId": "IncreasedMana7",
+          "group": "IncreasedMana",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 46,
+          "weight": 1,
+          "name": "+# to maximum Mana"
+        }
+      ],
+      "40": [
+        {
+          "modId": "IncreasedMana7",
+          "group": "IncreasedMana",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 46,
+          "weight": 1,
+          "name": "+# to maximum Mana"
+        }
+      ],
+      "41": [
+        {
+          "modId": "IncreasedMana7",
+          "group": "IncreasedMana",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 46,
+          "weight": 1,
+          "name": "+# to maximum Mana"
+        }
+      ],
+      "42": [
+        {
+          "modId": "IncreasedMana7",
+          "group": "IncreasedMana",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 46,
+          "weight": 1,
+          "name": "+# to maximum Mana"
+        }
+      ],
+      "43": [
+        {
+          "modId": "IncreasedMana7",
+          "group": "IncreasedMana",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 46,
+          "weight": 1,
+          "name": "+# to maximum Mana"
+        }
+      ],
+      "44": [
+        {
+          "modId": "IncreasedMana7",
+          "group": "IncreasedMana",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 46,
+          "weight": 1,
+          "name": "+# to maximum Mana"
+        }
+      ],
+      "52": [
+        {
+          "modId": "IncreasedMana7",
+          "group": "IncreasedMana",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 46,
+          "weight": 1,
+          "name": "+# to maximum Mana"
+        }
+      ],
+      "53": [
+        {
+          "modId": "IncreasedMana7",
+          "group": "IncreasedMana",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 46,
+          "weight": 1,
+          "name": "+# to maximum Mana"
+        }
+      ],
+      "54": [
+        {
+          "modId": "IncreasedMana7",
+          "group": "IncreasedMana",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 46,
+          "weight": 1,
+          "name": "+# to maximum Mana"
+        }
+      ],
+      "55": [
+        {
+          "modId": "IncreasedMana7",
+          "group": "IncreasedMana",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 46,
+          "weight": 1,
+          "name": "+# to maximum Mana"
+        }
+      ],
+      "56": [
+        {
+          "modId": "IncreasedMana7",
+          "group": "IncreasedMana",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 46,
+          "weight": 1,
+          "name": "+# to maximum Mana"
+        }
+      ],
+      "57": [
+        {
+          "modId": "IncreasedMana7",
+          "group": "IncreasedMana",
+          "gen_type": "prefix",
+          "tier": 7,
+          "required_level": 46,
+          "weight": 1,
+          "name": "+# to maximum Mana"
+        }
+      ]
+    }
+  },
+  "perfect_essence_of_abrasion": {
+    "id": "perfect_essence_of_abrasion",
+    "name": "Perfect Essence of Abrasion",
+    "tier": "perfect",
+    "byBaseId": {
+      "12": [
+        {
+          "modId": "EssenceDamageasExtraPhysical1",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Physical Damage"
+        }
+      ],
+      "13": [
+        {
+          "modId": "EssenceDamageasExtraPhysical1",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Physical Damage"
+        }
+      ],
+      "15": [
+        {
+          "modId": "EssenceDamageasExtraPhysical1",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Physical Damage"
+        }
+      ],
+      "16": [
+        {
+          "modId": "EssenceDamageasExtraPhysical1",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Physical Damage"
+        }
+      ],
+      "20": [
+        {
+          "modId": "EssenceDamageasExtraPhysical1",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Physical Damage"
+        }
+      ],
+      "22": [
+        {
+          "modId": "EssenceDamageasExtraPhysical2H",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Physical Damage"
+        }
+      ],
+      "23": [
+        {
+          "modId": "EssenceDamageasExtraPhysical2H",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Physical Damage"
+        }
+      ],
+      "24": [
+        {
+          "modId": "EssenceDamageasExtraPhysical2H",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Physical Damage"
+        }
+      ],
+      "25": [
+        {
+          "modId": "EssenceDamageasExtraPhysical2H",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Physical Damage"
+        }
+      ],
+      "216": [
+        {
+          "modId": "EssenceDamageasExtraPhysical1",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Physical Damage"
+        }
+      ],
+      "217": [
+        {
+          "modId": "EssenceDamageasExtraPhysical1",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Physical Damage"
+        }
+      ],
+      "228": [
+        {
+          "modId": "EssenceDamageasExtraPhysical2H",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Physical Damage"
+        }
+      ],
+      "244": [
+        {
+          "modId": "EssenceDamageasExtraPhysical2H",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Physical Damage"
+        }
+      ]
+    }
+  },
+  "perfect_essence_of_alacrity": {
+    "id": "perfect_essence_of_alacrity",
+    "name": "Perfect Essence of Alacrity",
+    "tier": "perfect",
+    "byBaseId": {
+      "18": [
+        {
+          "modId": "EssenceManaCostReduction",
+          "group": "ManaCostEfficiency",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% increased Mana Cost Efficiency"
+        }
+      ],
+      "21": [
+        {
+          "modId": "EssenceManaCostReduction2H",
+          "group": "ManaCostEfficiency",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% increased Mana Cost Efficiency"
+        }
+      ],
+      "218": [
+        {
+          "modId": "EssenceManaCostReduction",
+          "group": "ManaCostEfficiency",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% increased Mana Cost Efficiency"
+        }
+      ],
+      "219": [
+        {
+          "modId": "EssenceManaCostReduction",
+          "group": "ManaCostEfficiency",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% increased Mana Cost Efficiency"
+        }
+      ],
+      "220": [
+        {
+          "modId": "EssenceManaCostReduction",
+          "group": "ManaCostEfficiency",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% increased Mana Cost Efficiency"
+        }
+      ],
+      "221": [
+        {
+          "modId": "EssenceManaCostReduction",
+          "group": "ManaCostEfficiency",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% increased Mana Cost Efficiency"
+        }
+      ],
+      "222": [
+        {
+          "modId": "EssenceManaCostReduction",
+          "group": "ManaCostEfficiency",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% increased Mana Cost Efficiency"
+        }
+      ],
+      "223": [
+        {
+          "modId": "EssenceManaCostReduction2H",
+          "group": "ManaCostEfficiency",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% increased Mana Cost Efficiency"
+        }
+      ],
+      "224": [
+        {
+          "modId": "EssenceManaCostReduction2H",
+          "group": "ManaCostEfficiency",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% increased Mana Cost Efficiency"
+        }
+      ],
+      "225": [
+        {
+          "modId": "EssenceManaCostReduction2H",
+          "group": "ManaCostEfficiency",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% increased Mana Cost Efficiency"
+        }
+      ],
+      "226": [
+        {
+          "modId": "EssenceManaCostReduction2H",
+          "group": "ManaCostEfficiency",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% increased Mana Cost Efficiency"
+        }
+      ],
+      "227": [
+        {
+          "modId": "EssenceManaCostReduction2H",
+          "group": "ManaCostEfficiency",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% increased Mana Cost Efficiency"
+        }
+      ],
+      "229": [
+        {
+          "modId": "EssenceManaCostReduction",
+          "group": "ManaCostEfficiency",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% increased Mana Cost Efficiency"
+        }
+      ]
+    }
+  },
+  "perfect_essence_of_battle": {
+    "id": "perfect_essence_of_battle",
+    "name": "Perfect Essence of Battle",
+    "tier": "perfect",
+    "byBaseId": {
+      "12": [
+        {
+          "modId": "EssenceAttackSkillLevel1H1",
+          "group": "IncreaseSocketedGemLevel",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "+# to Level of all Attack Skills"
+        }
+      ],
+      "13": [
+        {
+          "modId": "EssenceAttackSkillLevel1H1",
+          "group": "IncreaseSocketedGemLevel",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "+# to Level of all Attack Skills"
+        }
+      ],
+      "15": [
+        {
+          "modId": "EssenceAttackSkillLevel1H1",
+          "group": "IncreaseSocketedGemLevel",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "+# to Level of all Attack Skills"
+        }
+      ],
+      "16": [
+        {
+          "modId": "EssenceAttackSkillLevel1H1",
+          "group": "IncreaseSocketedGemLevel",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "+# to Level of all Attack Skills"
+        }
+      ],
+      "20": [
+        {
+          "modId": "EssenceAttackSkillLevel1H1",
+          "group": "IncreaseSocketedGemLevel",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "+# to Level of all Attack Skills"
+        }
+      ],
+      "22": [
+        {
+          "modId": "EssenceAttackSkillLevel2H1",
+          "group": "IncreaseSocketedGemLevel",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "+# to Level of all Attack Skills"
+        }
+      ],
+      "23": [
+        {
+          "modId": "EssenceAttackSkillLevel2H1",
+          "group": "IncreaseSocketedGemLevel",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "+# to Level of all Attack Skills"
+        }
+      ],
+      "24": [
+        {
+          "modId": "EssenceAttackSkillLevel2H1",
+          "group": "IncreaseSocketedGemLevel",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "+# to Level of all Attack Skills"
+        }
+      ],
+      "25": [
+        {
+          "modId": "EssenceAttackSkillLevel2H1",
+          "group": "IncreaseSocketedGemLevel",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "+# to Level of all Attack Skills"
+        }
+      ],
+      "216": [
+        {
+          "modId": "EssenceAttackSkillLevel1H1",
+          "group": "IncreaseSocketedGemLevel",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "+# to Level of all Attack Skills"
+        }
+      ],
+      "217": [
+        {
+          "modId": "EssenceAttackSkillLevel1H1",
+          "group": "IncreaseSocketedGemLevel",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "+# to Level of all Attack Skills"
+        }
+      ],
+      "228": [
+        {
+          "modId": "EssenceAttackSkillLevel2H1",
+          "group": "IncreaseSocketedGemLevel",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "+# to Level of all Attack Skills"
+        }
+      ],
+      "244": [
+        {
+          "modId": "EssenceAttackSkillLevel2H1",
+          "group": "IncreaseSocketedGemLevel",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "+# to Level of all Attack Skills"
+        }
+      ]
+    }
+  },
+  "perfect_essence_of_command": {
+    "id": "perfect_essence_of_command",
+    "name": "Perfect Essence of Command",
+    "tier": "perfect",
+    "byBaseId": {
+      "17": [
+        {
+          "modId": "EssenceAuraEffect1",
+          "group": "AuraEffect",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Aura Skills have #% increased Magnitudes"
+        }
+      ]
+    }
+  },
+  "perfect_essence_of_electricity": {
+    "id": "perfect_essence_of_electricity",
+    "name": "Perfect Essence of Electricity",
+    "tier": "perfect",
+    "byBaseId": {
+      "12": [
+        {
+          "modId": "EssenceDamageasExtraLightning1",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Lightning Damage"
+        }
+      ],
+      "13": [
+        {
+          "modId": "EssenceDamageasExtraLightning1",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Lightning Damage"
+        }
+      ],
+      "15": [
+        {
+          "modId": "EssenceDamageasExtraLightning1",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Lightning Damage"
+        }
+      ],
+      "16": [
+        {
+          "modId": "EssenceDamageasExtraLightning1",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Lightning Damage"
+        }
+      ],
+      "20": [
+        {
+          "modId": "EssenceDamageasExtraLightning1",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Lightning Damage"
+        }
+      ],
+      "22": [
+        {
+          "modId": "EssenceDamageasExtraLightning2H",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Lightning Damage"
+        }
+      ],
+      "23": [
+        {
+          "modId": "EssenceDamageasExtraLightning2H",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Lightning Damage"
+        }
+      ],
+      "24": [
+        {
+          "modId": "EssenceDamageasExtraLightning2H",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Lightning Damage"
+        }
+      ],
+      "25": [
+        {
+          "modId": "EssenceDamageasExtraLightning2H",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Lightning Damage"
+        }
+      ],
+      "216": [
+        {
+          "modId": "EssenceDamageasExtraLightning1",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Lightning Damage"
+        }
+      ],
+      "217": [
+        {
+          "modId": "EssenceDamageasExtraLightning1",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Lightning Damage"
+        }
+      ],
+      "228": [
+        {
+          "modId": "EssenceDamageasExtraLightning2H",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Lightning Damage"
+        }
+      ],
+      "244": [
+        {
+          "modId": "EssenceDamageasExtraLightning2H",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Lightning Damage"
+        }
+      ]
+    }
+  },
+  "perfect_essence_of_enhancement": {
+    "id": "perfect_essence_of_enhancement",
+    "name": "Perfect Essence of Enhancement",
+    "tier": "perfect",
+    "byBaseId": {
+      "2": [
+        {
+          "modId": "EssenceGlobalDefences1",
+          "group": "AllDefences",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% increased Global Defences"
+        }
+      ]
+    }
+  },
+  "perfect_essence_of_flames": {
+    "id": "perfect_essence_of_flames",
+    "name": "Perfect Essence of Flames",
+    "tier": "perfect",
+    "byBaseId": {
+      "12": [
+        {
+          "modId": "EssenceDamageasExtraFire1",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Fire Damage"
+        }
+      ],
+      "13": [
+        {
+          "modId": "EssenceDamageasExtraFire1",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Fire Damage"
+        }
+      ],
+      "15": [
+        {
+          "modId": "EssenceDamageasExtraFire1",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Fire Damage"
+        }
+      ],
+      "16": [
+        {
+          "modId": "EssenceDamageasExtraFire1",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Fire Damage"
+        }
+      ],
+      "20": [
+        {
+          "modId": "EssenceDamageasExtraFire1",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Fire Damage"
+        }
+      ],
+      "22": [
+        {
+          "modId": "EssenceDamageasExtraFire2H",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Fire Damage"
+        }
+      ],
+      "23": [
+        {
+          "modId": "EssenceDamageasExtraFire2H",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Fire Damage"
+        }
+      ],
+      "24": [
+        {
+          "modId": "EssenceDamageasExtraFire2H",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Fire Damage"
+        }
+      ],
+      "25": [
+        {
+          "modId": "EssenceDamageasExtraFire2H",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Fire Damage"
+        }
+      ],
+      "216": [
+        {
+          "modId": "EssenceDamageasExtraFire1",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Fire Damage"
+        }
+      ],
+      "217": [
+        {
+          "modId": "EssenceDamageasExtraFire1",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Fire Damage"
+        }
+      ],
+      "228": [
+        {
+          "modId": "EssenceDamageasExtraFire2H",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Fire Damage"
+        }
+      ],
+      "244": [
+        {
+          "modId": "EssenceDamageasExtraFire2H",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Fire Damage"
+        }
+      ]
+    }
+  },
+  "perfect_essence_of_grounding": {
+    "id": "perfect_essence_of_grounding",
+    "name": "Perfect Essence of Grounding",
+    "tier": "perfect",
+    "byBaseId": {
+      "33": [
+        {
+          "modId": "EssenceLightningRecoupLife1",
+          "group": "LightningDamageTakenRecoupedAsLife",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% of Lightning Damage taken Recouped as Life"
+        }
+      ],
+      "34": [
+        {
+          "modId": "EssenceLightningRecoupLife1",
+          "group": "LightningDamageTakenRecoupedAsLife",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% of Lightning Damage taken Recouped as Life"
+        }
+      ],
+      "35": [
+        {
+          "modId": "EssenceLightningRecoupLife1",
+          "group": "LightningDamageTakenRecoupedAsLife",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% of Lightning Damage taken Recouped as Life"
+        }
+      ],
+      "36": [
+        {
+          "modId": "EssenceLightningRecoupLife1",
+          "group": "LightningDamageTakenRecoupedAsLife",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% of Lightning Damage taken Recouped as Life"
+        }
+      ],
+      "37": [
+        {
+          "modId": "EssenceLightningRecoupLife1",
+          "group": "LightningDamageTakenRecoupedAsLife",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% of Lightning Damage taken Recouped as Life"
+        }
+      ],
+      "38": [
+        {
+          "modId": "EssenceLightningRecoupLife1",
+          "group": "LightningDamageTakenRecoupedAsLife",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% of Lightning Damage taken Recouped as Life"
+        }
+      ]
+    }
+  },
+  "perfect_essence_of_haste": {
+    "id": "perfect_essence_of_haste",
+    "name": "Perfect Essence of Haste",
+    "tier": "perfect",
+    "byBaseId": {
+      "12": [
+        {
+          "modId": "EssenceOnslaughtonKill1",
+          "group": "Onslaught",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% chance to gain Onslaught on Killing Hits with this Weapon"
+        }
+      ],
+      "13": [
+        {
+          "modId": "EssenceOnslaughtonKill1",
+          "group": "Onslaught",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% chance to gain Onslaught on Killing Hits with this Weapon"
+        }
+      ],
+      "15": [
+        {
+          "modId": "EssenceOnslaughtonKill1",
+          "group": "Onslaught",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% chance to gain Onslaught on Killing Hits with this Weapon"
+        }
+      ],
+      "16": [
+        {
+          "modId": "EssenceOnslaughtonKill1",
+          "group": "Onslaught",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% chance to gain Onslaught on Killing Hits with this Weapon"
+        }
+      ],
+      "20": [
+        {
+          "modId": "EssenceOnslaughtonKill1",
+          "group": "Onslaught",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% chance to gain Onslaught on Killing Hits with this Weapon"
+        }
+      ],
+      "22": [
+        {
+          "modId": "EssenceOnslaughtonKill1",
+          "group": "Onslaught",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% chance to gain Onslaught on Killing Hits with this Weapon"
+        }
+      ],
+      "23": [
+        {
+          "modId": "EssenceOnslaughtonKill1",
+          "group": "Onslaught",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% chance to gain Onslaught on Killing Hits with this Weapon"
+        }
+      ],
+      "24": [
+        {
+          "modId": "EssenceOnslaughtonKill1",
+          "group": "Onslaught",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% chance to gain Onslaught on Killing Hits with this Weapon"
+        }
+      ],
+      "25": [
+        {
+          "modId": "EssenceOnslaughtonKill1",
+          "group": "Onslaught",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% chance to gain Onslaught on Killing Hits with this Weapon"
+        }
+      ],
+      "216": [
+        {
+          "modId": "EssenceOnslaughtonKill1",
+          "group": "Onslaught",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% chance to gain Onslaught on Killing Hits with this Weapon"
+        }
+      ],
+      "217": [
+        {
+          "modId": "EssenceOnslaughtonKill1",
+          "group": "Onslaught",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% chance to gain Onslaught on Killing Hits with this Weapon"
+        }
+      ],
+      "228": [
+        {
+          "modId": "EssenceOnslaughtonKill1",
+          "group": "Onslaught",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% chance to gain Onslaught on Killing Hits with this Weapon"
+        }
+      ],
+      "244": [
+        {
+          "modId": "EssenceOnslaughtonKill1",
+          "group": "Onslaught",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% chance to gain Onslaught on Killing Hits with this Weapon"
+        }
+      ]
+    }
+  },
+  "perfect_essence_of_ice": {
+    "id": "perfect_essence_of_ice",
+    "name": "Perfect Essence of Ice",
+    "tier": "perfect",
+    "byBaseId": {
+      "12": [
+        {
+          "modId": "EssenceDamageasExtraCold1",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Cold Damage"
+        }
+      ],
+      "13": [
+        {
+          "modId": "EssenceDamageasExtraCold1",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Cold Damage"
+        }
+      ],
+      "15": [
+        {
+          "modId": "EssenceDamageasExtraCold1",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Cold Damage"
+        }
+      ],
+      "16": [
+        {
+          "modId": "EssenceDamageasExtraCold1",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Cold Damage"
+        }
+      ],
+      "20": [
+        {
+          "modId": "EssenceDamageasExtraCold1",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Cold Damage"
+        }
+      ],
+      "22": [
+        {
+          "modId": "EssenceDamageasExtraCold2H",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Cold Damage"
+        }
+      ],
+      "23": [
+        {
+          "modId": "EssenceDamageasExtraCold2H",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Cold Damage"
+        }
+      ],
+      "24": [
+        {
+          "modId": "EssenceDamageasExtraCold2H",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Cold Damage"
+        }
+      ],
+      "25": [
+        {
+          "modId": "EssenceDamageasExtraCold2H",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Cold Damage"
+        }
+      ],
+      "216": [
+        {
+          "modId": "EssenceDamageasExtraCold1",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Cold Damage"
+        }
+      ],
+      "217": [
+        {
+          "modId": "EssenceDamageasExtraCold1",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Cold Damage"
+        }
+      ],
+      "228": [
+        {
+          "modId": "EssenceDamageasExtraCold2H",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Cold Damage"
+        }
+      ],
+      "244": [
+        {
+          "modId": "EssenceDamageasExtraCold2H",
+          "group": "MartialWeaponGainedDamage",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Gain #% of Damage as Extra Cold Damage"
+        }
+      ]
+    }
+  },
+  "perfect_essence_of_insulation": {
+    "id": "perfect_essence_of_insulation",
+    "name": "Perfect Essence of Insulation",
+    "tier": "perfect",
+    "byBaseId": {
+      "3": [
+        {
+          "modId": "EssenceFireRecoupLife1",
+          "group": "FireDamageTakenRecoupedAsLife",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% of Fire Damage taken Recouped as Life"
+        }
+      ]
+    }
+  },
+  "perfect_essence_of_opulence": {
+    "id": "perfect_essence_of_opulence",
+    "name": "Perfect Essence of Opulence",
+    "tier": "perfect",
+    "byBaseId": {
+      "33": [
+        {
+          "modId": "EssenceGoldDropped1",
+          "group": "EssenceGoldDropped",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% increased Quantity of Gold Dropped by Slain Enemies"
+        }
+      ],
+      "34": [
+        {
+          "modId": "EssenceGoldDropped1",
+          "group": "EssenceGoldDropped",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% increased Quantity of Gold Dropped by Slain Enemies"
+        }
+      ],
+      "35": [
+        {
+          "modId": "EssenceGoldDropped1",
+          "group": "EssenceGoldDropped",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% increased Quantity of Gold Dropped by Slain Enemies"
+        }
+      ],
+      "36": [
+        {
+          "modId": "EssenceGoldDropped1",
+          "group": "EssenceGoldDropped",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% increased Quantity of Gold Dropped by Slain Enemies"
+        }
+      ],
+      "37": [
+        {
+          "modId": "EssenceGoldDropped1",
+          "group": "EssenceGoldDropped",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% increased Quantity of Gold Dropped by Slain Enemies"
+        }
+      ],
+      "38": [
+        {
+          "modId": "EssenceGoldDropped1",
+          "group": "EssenceGoldDropped",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% increased Quantity of Gold Dropped by Slain Enemies"
+        }
+      ]
+    }
+  },
+  "perfect_essence_of_ruin": {
+    "id": "perfect_essence_of_ruin",
+    "name": "Perfect Essence of Ruin",
+    "tier": "perfect",
+    "byBaseId": {
+      "45": [
+        {
+          "modId": "EssencePhysicalDamageTakenAsChaos1",
+          "group": "PhysicalDamageTakenAsChaos",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% of Physical Damage from Hits taken as Chaos Damage"
+        }
+      ],
+      "46": [
+        {
+          "modId": "EssencePhysicalDamageTakenAsChaos1",
+          "group": "PhysicalDamageTakenAsChaos",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% of Physical Damage from Hits taken as Chaos Damage"
+        }
+      ],
+      "47": [
+        {
+          "modId": "EssencePhysicalDamageTakenAsChaos1",
+          "group": "PhysicalDamageTakenAsChaos",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% of Physical Damage from Hits taken as Chaos Damage"
+        }
+      ],
+      "48": [
+        {
+          "modId": "EssencePhysicalDamageTakenAsChaos1",
+          "group": "PhysicalDamageTakenAsChaos",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% of Physical Damage from Hits taken as Chaos Damage"
+        }
+      ],
+      "49": [
+        {
+          "modId": "EssencePhysicalDamageTakenAsChaos1",
+          "group": "PhysicalDamageTakenAsChaos",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% of Physical Damage from Hits taken as Chaos Damage"
+        }
+      ],
+      "50": [
+        {
+          "modId": "EssencePhysicalDamageTakenAsChaos1",
+          "group": "PhysicalDamageTakenAsChaos",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% of Physical Damage from Hits taken as Chaos Damage"
+        }
+      ]
+    }
+  },
+  "perfect_essence_of_seeking": {
+    "id": "perfect_essence_of_seeking",
+    "name": "Perfect Essence of Seeking",
+    "tier": "perfect",
+    "byBaseId": {
+      "45": [
+        {
+          "modId": "EssenceReducedCriticalDamageAgainstYou1",
+          "group": "ReducedCriticalStrikeDamageTaken",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Hits against you have #% reduced Critical Damage Bonus"
+        }
+      ],
+      "46": [
+        {
+          "modId": "EssenceReducedCriticalDamageAgainstYou1",
+          "group": "ReducedCriticalStrikeDamageTaken",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Hits against you have #% reduced Critical Damage Bonus"
+        }
+      ],
+      "47": [
+        {
+          "modId": "EssenceReducedCriticalDamageAgainstYou1",
+          "group": "ReducedCriticalStrikeDamageTaken",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Hits against you have #% reduced Critical Damage Bonus"
+        }
+      ],
+      "48": [
+        {
+          "modId": "EssenceReducedCriticalDamageAgainstYou1",
+          "group": "ReducedCriticalStrikeDamageTaken",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Hits against you have #% reduced Critical Damage Bonus"
+        }
+      ],
+      "49": [
+        {
+          "modId": "EssenceReducedCriticalDamageAgainstYou1",
+          "group": "ReducedCriticalStrikeDamageTaken",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Hits against you have #% reduced Critical Damage Bonus"
+        }
+      ],
+      "50": [
+        {
+          "modId": "EssenceReducedCriticalDamageAgainstYou1",
+          "group": "ReducedCriticalStrikeDamageTaken",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "Hits against you have #% reduced Critical Damage Bonus"
+        }
+      ]
+    }
+  },
+  "perfect_essence_of_sorcery": {
+    "id": "perfect_essence_of_sorcery",
+    "name": "Perfect Essence of Sorcery",
+    "tier": "perfect",
+    "byBaseId": {
+      "18": [
+        {
+          "modId": "EssenceSpellSkillLevel1H1",
+          "group": "IncreaseSocketedGemLevel",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "+# to Level of all Spell Skills"
+        }
+      ],
+      "21": [
+        {
+          "modId": "EssenceSpellSkillLevel2H1",
+          "group": "IncreaseSocketedGemLevel",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "+# to Level of all Spell Skills"
+        }
+      ],
+      "218": [
+        {
+          "modId": "EssenceSpellSkillLevel1H1",
+          "group": "IncreaseSocketedGemLevel",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "+# to Level of all Spell Skills"
+        }
+      ],
+      "219": [
+        {
+          "modId": "EssenceSpellSkillLevel1H1",
+          "group": "IncreaseSocketedGemLevel",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "+# to Level of all Spell Skills"
+        }
+      ],
+      "220": [
+        {
+          "modId": "EssenceSpellSkillLevel1H1",
+          "group": "IncreaseSocketedGemLevel",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "+# to Level of all Spell Skills"
+        }
+      ],
+      "221": [
+        {
+          "modId": "EssenceSpellSkillLevel1H1",
+          "group": "IncreaseSocketedGemLevel",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "+# to Level of all Spell Skills"
+        }
+      ],
+      "222": [
+        {
+          "modId": "EssenceSpellSkillLevel1H1",
+          "group": "IncreaseSocketedGemLevel",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "+# to Level of all Spell Skills"
+        }
+      ],
+      "223": [
+        {
+          "modId": "EssenceSpellSkillLevel2H1",
+          "group": "IncreaseSocketedGemLevel",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "+# to Level of all Spell Skills"
+        }
+      ],
+      "224": [
+        {
+          "modId": "EssenceSpellSkillLevel2H1",
+          "group": "IncreaseSocketedGemLevel",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "+# to Level of all Spell Skills"
+        }
+      ],
+      "225": [
+        {
+          "modId": "EssenceSpellSkillLevel2H1",
+          "group": "IncreaseSocketedGemLevel",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "+# to Level of all Spell Skills"
+        }
+      ],
+      "226": [
+        {
+          "modId": "EssenceSpellSkillLevel2H1",
+          "group": "IncreaseSocketedGemLevel",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "+# to Level of all Spell Skills"
+        }
+      ],
+      "227": [
+        {
+          "modId": "EssenceSpellSkillLevel2H1",
+          "group": "IncreaseSocketedGemLevel",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "+# to Level of all Spell Skills"
+        }
+      ]
+    }
+  },
+  "perfect_essence_of_thawing": {
+    "id": "perfect_essence_of_thawing",
+    "name": "Perfect Essence of Thawing",
+    "tier": "perfect",
+    "byBaseId": {
+      "52": [
+        {
+          "modId": "EssenceColdRecoupLife1",
+          "group": "ColdDamageTakenRecoupedAsLife",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% of Cold Damage taken Recouped as Life"
+        }
+      ],
+      "53": [
+        {
+          "modId": "EssenceColdRecoupLife1",
+          "group": "ColdDamageTakenRecoupedAsLife",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% of Cold Damage taken Recouped as Life"
+        }
+      ],
+      "54": [
+        {
+          "modId": "EssenceColdRecoupLife1",
+          "group": "ColdDamageTakenRecoupedAsLife",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% of Cold Damage taken Recouped as Life"
+        }
+      ],
+      "55": [
+        {
+          "modId": "EssenceColdRecoupLife1",
+          "group": "ColdDamageTakenRecoupedAsLife",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% of Cold Damage taken Recouped as Life"
+        }
+      ],
+      "56": [
+        {
+          "modId": "EssenceColdRecoupLife1",
+          "group": "ColdDamageTakenRecoupedAsLife",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% of Cold Damage taken Recouped as Life"
+        }
+      ],
+      "57": [
+        {
+          "modId": "EssenceColdRecoupLife1",
+          "group": "ColdDamageTakenRecoupedAsLife",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% of Cold Damage taken Recouped as Life"
+        }
+      ]
+    }
+  },
+  "perfect_essence_of_the_body": {
+    "id": "perfect_essence_of_the_body",
+    "name": "Perfect Essence of the Body",
+    "tier": "perfect",
+    "byBaseId": {
+      "45": [
+        {
+          "modId": "EssenceIncreasedLifePercent1",
+          "group": "MaximumLifeIncreasePercent",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% increased maximum Life"
+        }
+      ],
+      "46": [
+        {
+          "modId": "EssenceIncreasedLifePercent1",
+          "group": "MaximumLifeIncreasePercent",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% increased maximum Life"
+        }
+      ],
+      "47": [
+        {
+          "modId": "EssenceIncreasedLifePercent1",
+          "group": "MaximumLifeIncreasePercent",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% increased maximum Life"
+        }
+      ],
+      "48": [
+        {
+          "modId": "EssenceIncreasedLifePercent1",
+          "group": "MaximumLifeIncreasePercent",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% increased maximum Life"
+        }
+      ],
+      "49": [
+        {
+          "modId": "EssenceIncreasedLifePercent1",
+          "group": "MaximumLifeIncreasePercent",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% increased maximum Life"
+        }
+      ],
+      "50": [
+        {
+          "modId": "EssenceIncreasedLifePercent1",
+          "group": "MaximumLifeIncreasePercent",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% increased maximum Life"
+        }
+      ]
+    }
+  },
+  "perfect_essence_of_the_infinite": {
+    "id": "perfect_essence_of_the_infinite",
+    "name": "Perfect Essence of the Infinite",
+    "tier": "perfect",
+    "byBaseId": {
+      "2": [
+        {
+          "modId": "EssencePercentDexterity1",
+          "group": "PercentageDexterity",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% increased Dexterity"
+        },
+        {
+          "modId": "EssencePercentStrength1",
+          "group": "PercentageStrength",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% increased Strength"
+        },
+        {
+          "modId": "EssencePercentIntelligence1",
+          "group": "PercentageIntelligence",
+          "gen_type": "suffix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% increased Intelligence"
+        }
+      ]
+    }
+  },
+  "perfect_essence_of_the_mind": {
+    "id": "perfect_essence_of_the_mind",
+    "name": "Perfect Essence of the Mind",
+    "tier": "perfect",
+    "byBaseId": {
+      "1": [
+        {
+          "modId": "EssenceIncreasedManaPercent1",
+          "group": "MaximumManaIncreasePercent",
+          "gen_type": "prefix",
+          "tier": 1,
+          "required_level": 72,
+          "weight": 1,
+          "name": "#% increased maximum Mana"
+        }
+      ]
+    }
+  }
+}

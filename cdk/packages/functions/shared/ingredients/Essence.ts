@@ -4,46 +4,54 @@ import { craftResult, rejectedResult } from "../domain/CraftResult";
 import type { CraftedItem } from "../domain/CraftedItem";
 import type { ModEntry } from "../types";
 
-export type EssenceTier = "lesser" | "normal" | "greater" | "perfect";
+export type EssenceTier = "greater" | "perfect";
+
+export interface EssenceDefinition {
+  id: string;
+  name: string;
+  tier: EssenceTier;
+  byBaseId: Record<string, ModEntry[]>;
+}
 
 export class Essence implements CraftingIngredient {
-  readonly displayName = "Essence";
-
   constructor(
     readonly id: string,
-    readonly guaranteedMod: ModEntry,
+    readonly displayName: string,
     readonly tier: EssenceTier,
+    private readonly guaranteedMods: readonly ModEntry[],
   ) {}
 
   apply(item: CraftedItem, ctx: CraftContext) {
+    const guaranteedMod = this.guaranteedMods[Math.floor(ctx.rng() * this.guaranteedMods.length)];
+    if (!guaranteedMod) return rejectedResult(item, `${this.displayName} is not applicable to this item type`);
     let next = item.clone();
 
     if (this.tier === "perfect") {
       if (item.rarity !== "rare") return rejectedResult(item, "Perfect Essence requires a rare item");
       if (item.nonFracturedMods().length === 0) return rejectedResult(item, "Rare item has no removable affix");
-      const room = makeRoomForGuaranteedMod(next, this.guaranteedMod, ctx);
+      const room = makeRoomForGuaranteedMod(next, guaranteedMod, ctx);
       next = room.item;
       const removed = room.removed ?? next.removeRandomAffix(ctx);
-      next = removed.item.addMod(this.guaranteedMod);
+      next = removed.item.addMod(guaranteedMod);
       return craftResult(next, { [this.id]: 1 }, [
         {
           type: "currency",
           message: this.displayName,
-          details: { tier: this.tier, removed: removed.removed?.modId ?? null, guaranteed: this.guaranteedMod.modId },
+          details: { tier: this.tier, removed: removed.removed?.modId ?? null, guaranteed: guaranteedMod.modId },
         },
       ]);
     }
 
     if (item.rarity === "normal") return rejectedResult(item, "Greater Essence requires a magic or rare item");
     next = next.setRarity("rare");
-    const room = makeRoomForGuaranteedMod(next, this.guaranteedMod, ctx);
-    next = room.item.addMod(this.guaranteedMod);
+    const room = makeRoomForGuaranteedMod(next, guaranteedMod, ctx);
+    next = room.item.addMod(guaranteedMod);
 
     return craftResult(next, { [this.id]: 1 }, [
       {
         type: "currency",
         message: this.displayName,
-        details: { tier: this.tier, guaranteed: this.guaranteedMod.modId, removed: room.removed?.removed?.modId ?? null },
+        details: { tier: this.tier, guaranteed: guaranteedMod.modId, removed: room.removed?.removed?.modId ?? null },
       },
     ]);
   }

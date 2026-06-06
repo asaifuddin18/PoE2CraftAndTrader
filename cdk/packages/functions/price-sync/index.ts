@@ -91,6 +91,10 @@ async function fetchCategory(catId: string, league: string, divineInExalt: numbe
 
 function resolveSolverPrices(all: CurrencyEntry[], divineInExalt: number): Record<string, number> {
   const prices: Record<string, number> = { ...DEFAULT_PRICES, exalt: 1, divine: divineInExalt };
+  for (const entry of all.filter(entry => entry.category === "essences")) {
+    const key = entry.name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");
+    prices[key] = entry.exaltValue;
+  }
   for (const [key, m] of Object.entries(SOLVER_KEY_MATCHERS)) {
     const hit =
       (m.apiIds && all.find(e => m.apiIds!.includes(e.apiId))) ||

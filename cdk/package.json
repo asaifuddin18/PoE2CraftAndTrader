@@ -4,7 +4,8 @@
   "main": "index.js",
   "scripts": {
     "test": "npm run test:rules",
-    "test:rules": "TS_NODE_TRANSPILE_ONLY=1 TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\",\"moduleResolution\":\"node\",\"esModuleInterop\":true,\"strict\":false,\"ignoreDeprecations\":\"6.0\"}' ts-node --skip-project packages/functions/shared/rules.test.ts"
+    "test:rules": "TS_NODE_TRANSPILE_ONLY=1 TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\",\"moduleResolution\":\"node\",\"esModuleInterop\":true,\"strict\":false,\"ignoreDeprecations\":\"6.0\"}' ts-node --skip-project packages/functions/shared/rules.test.ts",
+    "generate:essences": "node scripts/generate-essence-catalog.mjs"
   },
   "keywords": [],
   "author": "",

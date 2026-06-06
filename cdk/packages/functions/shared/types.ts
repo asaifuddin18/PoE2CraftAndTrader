@@ -81,8 +81,8 @@ export interface SolveRequest {
     group?:  string;
   }[];
   priceOverrides?: PriceTable;
-  // Optional essence anchor for the C2 pattern
-  essenceMod?: { modId: string; group: string; gen_type: "prefix" | "suffix"; tier: number; currency: string };
+  // Optional end-game essence anchor for the C2 pattern.
+  essenceId?: string;
 }
 
 /** A single point on the cost-vs-probability-of-success curve. */
@@ -144,7 +144,7 @@ export interface PatternJob {
     restart_threshold: number;
     whittling?:        boolean;       // B3
     anchor_groups?:    string[];      // A1 anchor mod groups
-    essence?:          { modId: string; group: string; gen_type: "prefix" | "suffix"; tier: number; currency: string }; // C2
+    essence?:          { id: string; baseId: string }; // C2
     anchor_group?:     string;        // E1 group to fracture
   };
 }

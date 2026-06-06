@@ -8,12 +8,12 @@ import type {
   PriceTable, CostSummary, CdfPoint, RawMod, SolveRequest,
 } from "./types";
 import { CraftedItem, draw as drawFromDomain } from "./domain/CraftedItem";
+import { EssenceCatalog } from "./domain/EssenceCatalog";
 import {
   AlchemyOrb,
   AnnulmentOrb,
   AugmentationOrb,
   ChaosOrb,
-  Essence,
   ExaltedOrb,
   FracturingOrb,
   RegalOrb,
@@ -131,11 +131,13 @@ export function act_fracture(s: ItemState, rng: () => number): ItemState {
 
 export function act_essence(
   s: ItemState, pool: ModPool, rng: () => number,
-  guaranteedMod: ModEntry,
-  tier_type: "lesser" | "normal" | "greater" | "perfect",
+  essenceId: string,
+  baseId: string,
   omen: OmenType = null,
 ): ItemState {
-  return applyWithOptionalOmen(new Essence("essence", guaranteedMod, tier_type), omen, s, pool, rng);
+  const essence = EssenceCatalog.create(essenceId, baseId);
+  if (!essence) return s;
+  return applyWithOptionalOmen(essence, omen, s, pool, rng);
 }
 
 function applyWithOptionalOmen(

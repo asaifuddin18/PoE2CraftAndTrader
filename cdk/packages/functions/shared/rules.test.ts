@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { CraftedItem } from "./domain/CraftedItem";
+import { EssenceCatalog } from "./domain/EssenceCatalog";
 import type { CraftContext } from "./domain/CraftContext";
 import {
   AlchemyOrb,
@@ -106,6 +107,10 @@ function modIds(i: CraftedItem): string[] {
 function countMods(i: CraftedItem): number {
   const s = i.toState();
   return s.prefixes.length + s.suffixes.length;
+}
+
+function testEssence(id: string, guaranteedMod: ModEntry, tier: "greater" | "perfect"): Essence {
+  return new Essence(id, id, tier, [guaranteedMod]);
 }
 
 function removedEventId(result: { events: { details?: Record<string, unknown> }[] }): string | null {
@@ -311,7 +316,7 @@ test("Fracturing Orb requires at least four mods and allows only one fractured a
 
 test("Greater Essence upgrades magic to rare and adds only the guaranteed mod", () => {
   const guaranteed = mod("guaranteed", "prefix", 1);
-  const result = new Essence("greater_essence_test", guaranteed, "greater")
+  const result = testEssence("greater_essence_test", guaranteed, "greater")
     .apply(magic([], [s1]), ctx(seededRng(9)));
   const state = result.item.toState();
   assert.equal(state.rarity, "rare");
@@ -323,7 +328,7 @@ test("Greater Essence upgrades magic to rare and adds only the guaranteed mod", 
 
 test("Greater Essence removes a same-side affix when the guaranteed side is full", () => {
   const guaranteed = mod("guaranteed_prefix", "prefix", 1);
-  const result = new Essence("greater_essence_test", guaranteed, "greater")
+  const result = testEssence("greater_essence_test", guaranteed, "greater")
     .apply(item([p1, p2, p3], [s1]), ctx(rngSequence([0])));
   const state = result.item.toState();
   assert.equal(state.prefixes.length, 3);
@@ -332,12 +337,39 @@ test("Greater Essence removes a same-side affix when the guaranteed side is full
   assert.equal(countMods(result.item), 4);
 });
 
+test("Essence catalog resolves different guaranteed mods by item type", () => {
+  const oneHanded = EssenceCatalog.create("greater_essence_of_flames", "13")!;
+  const twoHanded = EssenceCatalog.create("greater_essence_of_flames", "22")!;
+
+  const oneHandedResult = oneHanded.apply(magic([], [s1]), ctx(rngSequence([0])));
+  const twoHandedResult = twoHanded.apply(magic([], [s1]), ctx(rngSequence([0])));
+
+  assert.ok(modIds(oneHandedResult.item).includes("LocalAddedFireDamage7"));
+  assert.ok(modIds(twoHandedResult.item).includes("LocalAddedFireDamageTwoHand7"));
+});
+
+test("Essence catalog rejects unsupported item types and excludes lower-tier essences", () => {
+  assert.equal(EssenceCatalog.create("perfect_essence_of_the_body", "1"), null);
+  assert.ok(EssenceCatalog.create("perfect_essence_of_the_body", "45"));
+  assert.equal(EssenceCatalog.create("essence_of_flames", "13"), null);
+  assert.equal(EssenceCatalog.create("lesser_essence_of_flames", "13"), null);
+  assert.ok(EssenceCatalog.definitions().every(essence => essence.tier === "greater" || essence.tier === "perfect"));
+});
+
+test("Essence catalog supports item-type-specific random guaranteed choices", () => {
+  const essence = EssenceCatalog.create("greater_essence_of_the_infinite", "1")!;
+  const first = essence.apply(magic([], [s1]), ctx(rngSequence([0])));
+  const last = essence.apply(magic([], [s1]), ctx(rngSequence([0.999])));
+
+  assert.notEqual(modIds(first.item).find(id => id !== "s1"), modIds(last.item).find(id => id !== "s1"));
+});
+
 test("Perfect Essence replaces one removable affix and supports crystallisation omens", () => {
   const guaranteedPrefix = mod("guaranteed_prefix", "prefix", 1);
   const base = item([p1], [s1]);
 
   const sin = withModifiers(
-    new Essence("perfect_essence_test", guaranteedPrefix, "perfect"),
+    testEssence("perfect_essence_test", guaranteedPrefix, "perfect"),
     new OmenOfSinistralCrystallisation(),
   ).apply(base, ctx(rngSequence([0])));
   assert.ok(!sin.item.toState().prefixes.some(m => m.modId === "p1"));
@@ -346,7 +378,7 @@ test("Perfect Essence replaces one removable affix and supports crystallisation 
 
   const guaranteedSuffix = mod("guaranteed_suffix", "suffix", 1);
   const dex = withModifiers(
-    new Essence("perfect_essence_test", guaranteedSuffix, "perfect"),
+    testEssence("perfect_essence_test", guaranteedSuffix, "perfect"),
     new OmenOfDextralCrystallisation(),
   ).apply(base, ctx(rngSequence([0])));
   assert.ok(dex.item.toState().prefixes.some(m => m.modId === "p1"));
@@ -356,7 +388,7 @@ test("Perfect Essence replaces one removable affix and supports crystallisation 
 
 test("Perfect Essence removes a same-side affix when the guaranteed side is full", () => {
   const guaranteed = mod("guaranteed_prefix", "prefix", 1);
-  const result = new Essence("perfect_essence_test", guaranteed, "perfect")
+  const result = testEssence("perfect_essence_test", guaranteed, "perfect")
     .apply(item([p1, p2, p3], [s1]), ctx(rngSequence([0])));
   const state = result.item.toState();
   assert.equal(state.prefixes.length, 3);
@@ -398,8 +430,8 @@ test("Invalid Greater/Perfect Essence uses are rejected without cost", () => {
   const normal = CraftedItem.emptyNormal();
   const magicItem = magic([p1], [s1]);
 
-  assertRejected(new Essence("greater_essence_test", guaranteed, "greater").apply(normal, ctx()), normal);
-  assertRejected(new Essence("perfect_essence_test", guaranteed, "perfect").apply(magicItem, ctx()), magicItem);
+  assertRejected(testEssence("greater_essence_test", guaranteed, "greater").apply(normal, ctx()), normal);
+  assertRejected(testEssence("perfect_essence_test", guaranteed, "perfect").apply(magicItem, ctx()), magicItem);
 });
 
 test("An omen is not consumed when its ingredient use is rejected", () => {
