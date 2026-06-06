@@ -31,6 +31,7 @@ export class CraftedItem {
   get suffixes(): ModEntry[] { return [...this.s.suffixes]; }
   get fracturedModIds(): ReadonlySet<string> { return new Set(this.s.fractured_mod_ids); }
   get corrupted(): boolean { return this.s.corrupted; }
+  get catalyst(): ItemState["catalyst"] { return this.s.catalyst ? { ...this.s.catalyst } : undefined; }
 
   nMods(): number {
     return this.s.prefixes.length + this.s.suffixes.length;
@@ -69,6 +70,17 @@ export class CraftedItem {
     return next;
   }
 
+  setCatalyst(type: NonNullable<ItemState["catalyst"]>["type"], amount: number, maximum = 20): CraftedItem {
+    const next = this.clone();
+    next.s.catalyst = { type, amount, maximum };
+    return next;
+  }
+
+  consumeCatalystQuality(): CraftedItem {
+    if (!this.s.catalyst) return this.clone();
+    return this.setCatalyst(this.s.catalyst.type, 0, this.s.catalyst.maximum);
+  }
+
   addMod(mod: ModEntry): CraftedItem {
     const next = this.clone();
     if (mod.gen_type === "prefix") {
@@ -91,7 +103,10 @@ export class CraftedItem {
   addRandomAffix(ctx: CraftContext, hooks: CraftActionHooks | undefined = ctx.hooks): { item: CraftedItem; added: ModEntry | null } {
     const slot = this.chooseSlot(ctx, hooks);
     if (!slot) return { item: this.clone(), added: null };
-    const result = this.addRandomAffixIntoSlot(ctx.pool, slot, ctx.rng);
+    const transformedPool = hooks?.transformAddPool?.(this, ctx.pool, ctx) ?? ctx.pool;
+    const result = transformedPool
+      ? this.addRandomAffixIntoSlot(transformedPool, slot, ctx.rng)
+      : { item: this.clone(), added: null };
     if (result.added || !hooks?.allowAddSlotFallback) return result;
 
     const fallback = this.availableSlots().find(candidate => candidate !== slot);
@@ -166,6 +181,7 @@ export function cloneState(s: ItemState): ItemState {
     prefixes: [...s.prefixes],
     suffixes: [...s.suffixes],
     fractured_mod_ids: new Set(s.fractured_mod_ids),
+    catalyst: s.catalyst ? { ...s.catalyst } : undefined,
   };
 }
 

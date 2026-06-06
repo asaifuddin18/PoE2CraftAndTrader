@@ -19,3 +19,4 @@ export { AnnulmentOrb } from "./AnnulmentOrb";
 export { FracturingOrb } from "./FracturingOrb";
 export { Essence, type EssenceTier } from "./Essence";
 export { Alloy } from "./Alloy";
+export { Catalyst } from "./Catalyst";

@@ -31,11 +31,15 @@ const DEFAULT_PRICES: Record<string, number> = {
   runic_alloy: 1, adaptive_alloy: 1, protective_alloy: 1, expansive_alloy: 1, swift_alloy: 1,
   cyclonic_alloy: 1, prismatic_alloy: 1, mystic_alloy: 1, sovereign_alloy: 1, celestial_alloy: 1,
   transcendent_alloy: 1, the_runebinders_alloy: 1, the_runefathers_alloy: 1,
+  flesh_catalyst: 1, neural_catalyst: 1, carapace_catalyst: 1, uul_netols_catalyst: 1,
+  xophs_catalyst: 1, tuls_catalyst: 1, eshs_catalyst: 1, chayulas_catalyst: 1,
+  reaver_catalyst: 1, sibilant_catalyst: 1, skittering_catalyst: 1, adaptive_catalyst: 1,
   omen_whittling: 2, omen_greater_annulment: 1, omen_sinistral_alchemy: 1, omen_dextral_alchemy: 1,
   omen_sinistral_coronation: 1, omen_dextral_coronation: 1,
   omen_sinistral: 1, omen_dextral: 1, omen_greater: 1,
   omen_sinistral_erasure: 1, omen_dextral_erasure: 1,
   omen_sinistral_crystallisation: 1, omen_dextral_crystallisation: 1,
+  omen_catalysing_exaltation: 1,
 };
 
 const CURRENCY_CATS: { id: string; label: string }[] = [
@@ -90,6 +94,7 @@ const SOLVER_KEY_MATCHERS: Record<string, { apiIds?: string[]; name?: RegExp }> 
   omen_dextral_erasure: { name: /omen of dextral erasure/i },
   omen_sinistral_crystallisation: { name: /omen of sinistral crystallisation/i },
   omen_dextral_crystallisation: { name: /omen of dextral crystallisation/i },
+  omen_catalysing_exaltation: { name: /omen of catalysing exaltation/i },
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -121,8 +126,9 @@ async function fetchCategory(catId: string, league: string, divineInExalt: numbe
 
 function resolveSolverPrices(all: CurrencyEntry[], divineInExalt: number): Record<string, number> {
   const prices: Record<string, number> = { ...DEFAULT_PRICES, exalt: 1, divine: divineInExalt };
-  for (const entry of all.filter(entry => entry.category === "essences" || entry.category === "verisium")) {
-    const key = entry.name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");
+  for (const entry of all.filter(entry =>
+    entry.category === "essences" || entry.category === "verisium" || entry.category === "breach")) {
+    const key = entry.name.toLowerCase().replace(/['’]/g, "").replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");
     prices[key] = entry.exaltValue;
   }
   for (const [key, m] of Object.entries(SOLVER_KEY_MATCHERS)) {

@@ -11,6 +11,9 @@ export interface CraftActionHooks {
   selectRemoveAffix?(item: CraftedItem, candidates: ModEntry[], ctx: CraftContext): ModEntry | null;
   modifyAddCount?(ingredientId: string, baseCount: number): number;
   modifyRemoveCount?(ingredientId: string, baseCount: number): number;
+  transformAddPool?(item: CraftedItem, pool: ModPool, ctx: CraftContext): ModPool | null;
+  afterSuccessfulApply?(item: CraftedItem, ctx: CraftContext): CraftedItem;
+  rejectionReason?(item: CraftedItem, ctx: CraftContext): string | null;
 }
 
 export interface CraftContext {

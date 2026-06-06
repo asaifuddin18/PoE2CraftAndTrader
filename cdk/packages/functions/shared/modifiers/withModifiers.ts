@@ -53,12 +53,31 @@ function composeHooks(modifiers: CraftingModifier[]): CraftActionHooks {
   const addSelector = modifiers.find(modifier => modifier.selectAddSlot)?.selectAddSlot;
   const removeFilter = modifiers.find(modifier => modifier.filterRemoveCandidates)?.filterRemoveCandidates;
   const removeSelector = modifiers.find(modifier => modifier.selectRemoveAffix)?.selectRemoveAffix;
+  const poolTransforms = modifiers.flatMap(modifier => modifier.transformAddPool ? [modifier.transformAddPool.bind(modifier)] : []);
+  const afterApplyHooks = modifiers.flatMap(modifier => modifier.afterSuccessfulApply ? [modifier.afterSuccessfulApply.bind(modifier)] : []);
+  const rejectionHooks = modifiers.flatMap(modifier => modifier.rejectionReason ? [modifier.rejectionReason.bind(modifier)] : []);
 
   return {
     selectAddSlot: addSelector,
     allowAddSlotFallback: modifiers.some(modifier => modifier.allowAddSlotFallback),
     filterRemoveCandidates: removeFilter,
     selectRemoveAffix: removeSelector,
+    transformAddPool(item, pool, ctx) {
+      return poolTransforms.reduce<ReturnType<NonNullable<CraftActionHooks["transformAddPool"]>>>(
+        (current, transform) => current ? transform(item, current, ctx) : null,
+        pool,
+      );
+    },
+    afterSuccessfulApply(item, ctx) {
+      return afterApplyHooks.reduce((current, apply) => apply(current, ctx), item);
+    },
+    rejectionReason(item, ctx) {
+      for (const reject of rejectionHooks) {
+        const reason = reject(item, ctx);
+        if (reason) return reason;
+      }
+      return null;
+    },
     modifyAddCount(ingredientId, baseCount) {
       return modifiers.reduce(
         (count, modifier) => modifier.modifyAddCount?.(ingredientId, count) ?? count,

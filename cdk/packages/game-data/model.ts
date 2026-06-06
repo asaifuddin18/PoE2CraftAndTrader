@@ -86,6 +86,7 @@ export abstract class EquipmentType {
           required_level: tier.requiredLevel,
           weight: tier.weight,
           name: modifier.name,
+          tags: [...modifier.tags],
         })),
     );
   }

@@ -274,6 +274,18 @@ For a Perfect essence:
 
 ---
 
+### 4.4 Catalysts
+
+The end-game crafting solver models the 12 Catalysts usable on rings and amulets. An item can
+have one Catalyst quality type at a time. Applying another type replaces the previous type.
+Each Catalyst adds 5% quality to a Normal item, 2% to a Magic item, or 1% to a Rare item.
+The default maximum is 20%; Breach Rings can explicitly carry a 40% maximum.
+
+Omen of Catalysing Exaltation consumes all Catalyst quality after a successful Exalted Orb use
+and increases the spawn weight of modifiers matching that Catalyst's tags. The observed,
+community-tested multipliers are 5x at 20% quality and 7.5x at 40% quality. Intermediate
+quality multipliers are not considered verified and must be configured explicitly.
+
 ## 5. Omens
 
 Omens are single-use items that **modify the outcome of the next specific currency use**. They are activated by right-clicking (entering the player's inventory in an active state) and consumed automatically when their trigger condition fires.

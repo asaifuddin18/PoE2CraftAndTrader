@@ -15,6 +15,8 @@ export class ExaltedOrb implements CraftingIngredient {
   apply(item: CraftedItem, ctx: CraftContext) {
     const corrupted = rejectCorruptedItem(item);
     if (corrupted) return corrupted;
+    const rejectionReason = ctx.hooks?.rejectionReason?.(item, ctx);
+    if (rejectionReason) return rejectedResult(item, rejectionReason);
     if (item.rarity !== "rare") return rejectedResult(item, `${this.displayName} requires a rare item`);
     if (!item.openPrefix() && !item.openSuffix()) return rejectedResult(item, "Rare item has no open affix slot");
     let next = item.clone();
@@ -34,6 +36,7 @@ export class ExaltedOrb implements CraftingIngredient {
       added.push(result.added.modId);
     }
 
+    next = ctx.hooks?.afterSuccessfulApply?.(next, ctx) ?? next;
     return craftResult(next, { [this.id]: 1 }, [
       { type: "currency", message: this.displayName, details: { added, minimumRequiredLevel: this.minimumRequiredLevel } },
     ]);

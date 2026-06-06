@@ -5,6 +5,8 @@ import type { AffixSlot, CraftContext } from "../domain/CraftContext";
 import type { CraftedItem } from "../domain/CraftedItem";
 import type { ModEntry } from "../types";
 import { Essence } from "../ingredients/Essence";
+import { CatalystCatalog } from "../domain/CatalystCatalog";
+import type { ModPool } from "../types";
 
 abstract class OmenModifier implements CraftingModifier {
   abstract readonly id: string;
@@ -136,6 +138,43 @@ export class OmenOfGreaterExaltation extends OmenModifier {
 
   modifyAddCount(ingredientId: string, baseCount: number): number {
     return baseCount + 1;
+  }
+}
+
+export class OmenOfCatalysingExaltation extends OmenModifier {
+  readonly id = "omen_catalysing_exaltation";
+  readonly displayName = "Omen of Catalysing Exaltation";
+  readonly costKey = "omen_catalysing_exaltation";
+  readonly ingredientIds = ["exalt", "greater_exalt", "perfect_exalt"];
+
+  constructor(private readonly multipliers: Readonly<Record<number, number>> = { 20: 5, 40: 7.5 }) {
+    super();
+  }
+
+  rejectionReason(item: CraftedItem): string | null {
+    const quality = item.catalyst?.amount ?? 0;
+    if (quality === 0) return `${this.displayName} requires Catalyst Quality`;
+    if (!this.multipliers[quality]) {
+      return `${this.displayName} has no verified weight multiplier for ${quality}% Catalyst Quality`;
+    }
+    return null;
+  }
+
+  transformAddPool(item: CraftedItem, pool: ModPool): ModPool | null {
+    const catalyst = item.catalyst;
+    if (!catalyst) return null;
+    const multiplier = this.multipliers[catalyst.amount];
+    if (!multiplier) return null;
+    const matchingTags = new Set(CatalystCatalog.matchingTags(catalyst.type));
+    const boost = (mods: ModEntry[]) => mods.map(mod => ({
+      ...mod,
+      weight: mod.tags?.some(tag => matchingTags.has(tag)) ? mod.weight * multiplier : mod.weight,
+    }));
+    return { prefixes: boost(pool.prefixes), suffixes: boost(pool.suffixes) };
+  }
+
+  afterSuccessfulApply(item: CraftedItem): CraftedItem {
+    return item.consumeCatalystQuality();
   }
 }
 

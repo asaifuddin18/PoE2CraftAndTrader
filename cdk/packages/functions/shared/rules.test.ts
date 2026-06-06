@@ -3,6 +3,7 @@ import { CraftedItem } from "./domain/CraftedItem";
 import { applyCraftingIngredient } from "./domain/applyCraftingIngredient";
 import { EssenceCatalog } from "./domain/EssenceCatalog";
 import { AlloyCatalog } from "./domain/AlloyCatalog";
+import { CatalystCatalog } from "./domain/CatalystCatalog";
 import type { CraftContext } from "./domain/CraftContext";
 import {
   AlchemyOrb,
@@ -35,6 +36,7 @@ import {
   OmenOfDextralExaltation,
   OmenOfGreaterAnnulment,
   OmenOfGreaterExaltation,
+  OmenOfCatalysingExaltation,
   OmenOfSinistralAnnulment,
   OmenOfSinistralAlchemy,
   OmenOfSinistralCrystallisation,
@@ -1010,6 +1012,98 @@ test("Alloy requires rare, uncorrupted items and has no compatible omens", () =>
   assert.throws(() => withModifiers(alloy, new OmenOfWhittling()).apply(item([p1], [s1]), ctx()), /cannot apply/);
 });
 
+test("Catalysts add rarity-scaled quality and replace other Catalyst quality types", () => {
+  const flesh = CatalystCatalog.create("flesh_catalyst", "1")!;
+  const neural = CatalystCatalog.create("neural_catalyst", "1")!;
+
+  const normal = flesh.apply(CraftedItem.emptyNormal(), ctx()).item;
+  assert.deepEqual(normal.catalyst, { type: "life", amount: 5, maximum: 20 });
+  const magicResult = flesh.apply(magic([p1]), ctx()).item;
+  assert.deepEqual(magicResult.catalyst, { type: "life", amount: 2, maximum: 20 });
+  const rareResult = flesh.apply(item([p1], [s1]), ctx()).item;
+  assert.deepEqual(rareResult.catalyst, { type: "life", amount: 1, maximum: 20 });
+
+  const replaced = neural.apply(rareResult, ctx()).item;
+  assert.deepEqual(replaced.catalyst, { type: "mana", amount: 1, maximum: 20 });
+});
+
+test("Catalyst respects explicit quality caps and rejects use at maximum without cost", () => {
+  const catalyst = CatalystCatalog.create("adaptive_catalyst", "1")!;
+  const breachRing = item([p1], [s1]).setCatalyst("attribute", 39, 40);
+  const filled = catalyst.apply(breachRing, ctx());
+  assert.deepEqual(filled.item.catalyst, { type: "attribute", amount: 40, maximum: 40 });
+  assertRejected(catalyst.apply(filled.item, ctx()), filled.item);
+});
+
+test("Catalyst catalog includes 12 jewellery Catalysts and rejects unsupported equipment", () => {
+  assert.equal(CatalystCatalog.definitions().length, 12);
+  assert.ok(CatalystCatalog.create("flesh_catalyst", "1"));
+  assert.ok(CatalystCatalog.create("flesh_catalyst", "2"));
+  assert.equal(CatalystCatalog.create("flesh_catalyst", "25"), null);
+});
+
+test("Catalysing Exaltation boosts matching tagged modifiers and consumes quality after success", () => {
+  const life = { ...mod("life_mod", "prefix"), tags: ["Life"] };
+  const mana = { ...mod("mana_mod", "prefix"), tags: ["Mana"] };
+  const base = item([], [s1]).setCatalyst("life", 20, 20);
+  const result = withModifiers(new ExaltedOrb(), new OmenOfCatalysingExaltation())
+    .apply(base, ctxWithPool({ prefixes: [life, mana], suffixes: [] }, rngSequence([0, 0.7])));
+
+  assert.equal(result.applied, true);
+  assert.ok(modIds(result.item).includes("life_mod"));
+  assert.deepEqual(result.item.catalyst, { type: "life", amount: 0, maximum: 20 });
+  assert.deepEqual(result.cost, { exalt: 1, omen_catalysing_exaltation: 1 });
+});
+
+test("Catalysing Exaltation supports verified 40% quality and configurable intermediate multipliers", () => {
+  const life = { ...mod("life_mod", "prefix"), tags: ["Life"] };
+  const mana = { ...mod("mana_mod", "prefix"), tags: ["Mana"] };
+  const customPool = { prefixes: [life, mana], suffixes: [] };
+
+  const forty = item([], [s1]).setCatalyst("life", 40, 40);
+  assert.equal(
+    withModifiers(new ExaltedOrb(), new OmenOfCatalysingExaltation())
+      .apply(forty, ctxWithPool(customPool, rngSequence([0, 0.8]))).applied,
+    true,
+  );
+
+  const ten = item([], [s1]).setCatalyst("life", 10, 20);
+  assertRejected(
+    withModifiers(new ExaltedOrb(), new OmenOfCatalysingExaltation())
+      .apply(ten, ctxWithPool(customPool, rngSequence([0, 0.6]))),
+    ten,
+  );
+  assert.equal(
+    withModifiers(new ExaltedOrb(), new OmenOfCatalysingExaltation({ 10: 3 }))
+      .apply(ten, ctxWithPool(customPool, rngSequence([0, 0.6]))).applied,
+    true,
+  );
+});
+
+test("Catalysing Exaltation combines with Greater and side-specific Exaltation", () => {
+  const lifePrefix = { ...mod("life_prefix", "prefix"), tags: ["Life"] };
+  const otherPrefix = { ...mod("other_prefix", "prefix"), tags: ["Mana"] };
+  const base = item([p1], [s1, s2, s3]).setCatalyst("life", 20, 20);
+  const result = withModifiers(
+    new ExaltedOrb(),
+    new OmenOfCatalysingExaltation(),
+    new OmenOfGreaterExaltation(),
+    new OmenOfSinistralExaltation(),
+  ).apply(base, ctxWithPool({ prefixes: [lifePrefix, otherPrefix], suffixes: [] }, rngSequence([0, 0.7, 0, 0])));
+
+  assert.equal(result.applied, true);
+  assert.ok(modIds(result.item).includes("life_prefix"));
+  assert.ok(modIds(result.item).includes("other_prefix"));
+  assert.deepEqual(result.item.catalyst, { type: "life", amount: 0, maximum: 20 });
+});
+
+test("Failed Catalysing Exaltation consumes neither quality nor omen", () => {
+  const full = item([p1, p2, p3], [s1, s2, s3]).setCatalyst("life", 20, 20);
+  const result = withModifiers(new ExaltedOrb(), new OmenOfCatalysingExaltation()).apply(full, ctx());
+  assertRejected(result, full);
+  assert.deepEqual(result.item.catalyst, { type: "life", amount: 20, maximum: 20 });
+});
+
 test("Omens reject incompatible ingredients", () => {
   assert.throws(
     () => withModifiers(new TransmutationOrb(), new OmenOfWhittling()).apply(CraftedItem.emptyNormal(), ctx()),
@@ -1096,6 +1190,7 @@ test("All modeled crafting ingredients reject corrupted items without cost", () 
     { ingredient: new AnnulmentOrb(), item: rare },
     { ingredient: new FracturingOrb(), item: rare },
     { ingredient: new Alloy("alloy_corrupted_test", "Test Alloy", guaranteed), item: rare },
+    { ingredient: CatalystCatalog.create("flesh_catalyst", "1")!, item: rare },
     { ingredient: testEssence("greater_essence_corrupted_test", guaranteed, "greater"), item: magicItem },
     { ingredient: testEssence("perfect_essence_corrupted_test", guaranteed, "perfect"), item: rare },
   ];

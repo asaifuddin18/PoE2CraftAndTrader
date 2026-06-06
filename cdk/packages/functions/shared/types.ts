@@ -16,6 +16,17 @@ export interface ModEntry {
   required_level: number;             // ilvl gate
   weight:         number;             // spawn weight for this base
   name:           string;
+  tags?:          string[];
+}
+
+export type CatalystType =
+  | "life" | "mana" | "defences" | "physical" | "fire" | "cold"
+  | "lightning" | "chaos" | "attack" | "caster" | "speed" | "attribute";
+
+export interface CatalystQuality {
+  type: CatalystType;
+  amount: number;
+  maximum: number;
 }
 
 export interface TargetMod {
@@ -36,6 +47,7 @@ export interface ItemState {
   suffixes:          ModEntry[];
   fractured_mod_ids: Set<string>;
   corrupted:         boolean;
+  catalyst?:         CatalystQuality;
 }
 
 export type OmenType =

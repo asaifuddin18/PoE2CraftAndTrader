@@ -28,12 +28,16 @@ export const DEFAULT_PRICES: PriceTable = {
   runic_alloy: 1, adaptive_alloy: 1, protective_alloy: 1, expansive_alloy: 1, swift_alloy: 1,
   cyclonic_alloy: 1, prismatic_alloy: 1, mystic_alloy: 1, sovereign_alloy: 1, celestial_alloy: 1,
   transcendent_alloy: 1, the_runebinders_alloy: 1, the_runefathers_alloy: 1,
+  flesh_catalyst: 1, neural_catalyst: 1, carapace_catalyst: 1, uul_netols_catalyst: 1,
+  xophs_catalyst: 1, tuls_catalyst: 1, eshs_catalyst: 1, chayulas_catalyst: 1,
+  reaver_catalyst: 1, sibilant_catalyst: 1, skittering_catalyst: 1, adaptive_catalyst: 1,
   // Omens are separate one-per-use consumables, priced per use.
   omen_whittling: 2, omen_greater_annulment: 1, omen_sinistral_alchemy: 1, omen_dextral_alchemy: 1,
   omen_sinistral_coronation: 1, omen_dextral_coronation: 1,
   omen_sinistral: 1, omen_dextral: 1, omen_greater: 1,
   omen_sinistral_erasure: 1, omen_dextral_erasure: 1,
   omen_sinistral_crystallisation: 1, omen_dextral_crystallisation: 1,
+  omen_catalysing_exaltation: 1,
 };
 
 /** Load the mod pool for a base from DynamoDB and resolve it for this ilvl. */

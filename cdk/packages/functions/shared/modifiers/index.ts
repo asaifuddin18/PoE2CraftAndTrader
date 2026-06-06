@@ -11,6 +11,7 @@ export {
   OmenOfSinistralAlchemy,
   OmenOfDextralAlchemy,
   OmenOfGreaterExaltation,
+  OmenOfCatalysingExaltation,
   OmenOfGreaterAnnulment,
   OmenOfSinistralAnnulment,
   OmenOfDextralAnnulment,
