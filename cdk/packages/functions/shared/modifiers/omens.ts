@@ -4,6 +4,7 @@ import type { CraftingModifier } from "./CraftingModifier";
 import type { AffixSlot, CraftContext } from "../domain/CraftContext";
 import type { CraftedItem } from "../domain/CraftedItem";
 import type { ModEntry } from "../types";
+import { Essence } from "../ingredients/Essence";
 
 abstract class OmenModifier implements CraftingModifier {
   abstract readonly id: string;
@@ -12,7 +13,8 @@ abstract class OmenModifier implements CraftingModifier {
   abstract readonly ingredientIds: readonly string[];
 
   canApplyTo(ingredient: CraftingIngredient): boolean {
-    return this.ingredientIds.includes(ingredient.id);
+    return this.ingredientIds.includes(ingredient.id) ||
+      (this.ingredientIds.includes("essence") && ingredient instanceof Essence);
   }
 
   cost(): CurrencyBasket {
