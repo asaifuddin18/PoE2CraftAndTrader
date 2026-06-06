@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { CraftedItem } from "./domain/CraftedItem";
+import { applyCraftingIngredient } from "./domain/applyCraftingIngredient";
 import { EssenceCatalog } from "./domain/EssenceCatalog";
 import type { CraftContext } from "./domain/CraftContext";
 import {
@@ -241,18 +242,41 @@ test("Sinistral and Dextral Alchemy omens maximize prefixes and suffixes", () =>
   assert.deepEqual(dextral.cost, { alch: 1, omen_dextral_alchemy: 1 });
 });
 
-test("Alchemy omens fall back without rejecting when their preferred side has no eligible mods", () => {
+test("Alchemy and its omens fail atomically unless exactly four affixes can be added", () => {
   const suffixOnlyPool: ModPool = {
     prefixes: [],
     suffixes: [mod("only_s1", "suffix"), mod("only_s2", "suffix"), mod("only_s3", "suffix")],
   };
-  const result = withModifiers(new AlchemyOrb(), new OmenOfSinistralAlchemy())
-    .apply(CraftedItem.emptyNormal(), ctxWithPool(suffixOnlyPool, rngSequence([0])));
+  const normal = CraftedItem.emptyNormal();
+  assertRejected(
+    withModifiers(new AlchemyOrb(), new OmenOfSinistralAlchemy())
+      .apply(normal, ctxWithPool(suffixOnlyPool, rngSequence([0]))),
+    normal,
+  );
 
-  assert.equal(result.applied, true);
-  assert.equal(result.item.toState().prefixes.length, 0);
-  assert.equal(result.item.toState().suffixes.length, 3);
-  assert.deepEqual(result.cost, { alch: 1, omen_sinistral_alchemy: 1 });
+  const magicItem = magic([p1], [s1]);
+  assertRejected(
+    new AlchemyOrb().apply(magicItem, ctxWithPool(suffixOnlyPool, rngSequence([0]))),
+    magicItem,
+  );
+});
+
+test("Observable ingredient application logs rejected crafts", () => {
+  const messages: string[] = [];
+  const originalWarn = console.warn;
+  console.warn = message => messages.push(String(message));
+  try {
+    const rare = item([p1], [s1]);
+    assertRejected(applyCraftingIngredient(new AlchemyOrb(), rare, ctx()), rare);
+  } finally {
+    console.warn = originalWarn;
+  }
+
+  const logged = JSON.parse(messages[0]) as Record<string, unknown>;
+  assert.equal(logged.event, "craft_failure");
+  assert.equal(logged.ingredientId, "alch");
+  assert.equal(logged.rarity, "rare");
+  assert.match(String(logged.reason), /normal or magic/);
 });
 
 test("Exaltation omens are not Alchemy omens", () => {

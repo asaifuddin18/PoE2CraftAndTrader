@@ -21,6 +21,9 @@ export class AlchemyOrb implements CraftingIngredient {
       if (result.added) added.push(result.added.modId);
       else break;
     }
+    if (added.length !== 4) {
+      return rejectedResult(item, "Orb of Alchemy could not add exactly four eligible affixes");
+    }
 
     return craftResult(next, { [this.id]: 1 }, [
       { type: "currency", message: this.displayName, details: { added } },

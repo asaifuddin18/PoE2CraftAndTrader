@@ -8,6 +8,7 @@ import type {
   PriceTable, CostSummary, CdfPoint, RawMod, SolveRequest,
 } from "./types";
 import { CraftedItem, draw as drawFromDomain } from "./domain/CraftedItem";
+import { applyCraftingIngredient } from "./domain/applyCraftingIngredient";
 import { EssenceCatalog } from "./domain/EssenceCatalog";
 import {
   AlchemyOrb,
@@ -103,11 +104,11 @@ export function p_hit(pool: ModEntry[], g: string, min_tier: number, present: Se
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function act_transmute(s: ItemState, pool: ModPool, rng: () => number): ItemState {
-  return new TransmutationOrb().apply(CraftedItem.fromState(s), { pool, rng }).item.toState();
+  return applyCraftingIngredient(new TransmutationOrb(), CraftedItem.fromState(s), { pool, rng }).item.toState();
 }
 
 export function act_augment(s: ItemState, pool: ModPool, rng: () => number): ItemState {
-  return new AugmentationOrb().apply(CraftedItem.fromState(s), { pool, rng }).item.toState();
+  return applyCraftingIngredient(new AugmentationOrb(), CraftedItem.fromState(s), { pool, rng }).item.toState();
 }
 
 export function act_regal(s: ItemState, pool: ModPool, rng: () => number, omen: OmenType = null): ItemState {
@@ -131,7 +132,11 @@ export function act_annul(s: ItemState, rng: () => number, omen: OmenType = null
 }
 
 export function act_fracture(s: ItemState, rng: () => number): ItemState {
-  return new FracturingOrb().apply(CraftedItem.fromState(s), { pool: { prefixes: [], suffixes: [] }, rng }).item.toState();
+  return applyCraftingIngredient(
+    new FracturingOrb(),
+    CraftedItem.fromState(s),
+    { pool: { prefixes: [], suffixes: [] }, rng },
+  ).item.toState();
 }
 
 export function act_essence(
@@ -154,7 +159,7 @@ function applyWithOptionalOmen(
 ): ItemState {
   const modifier = modifierFromOmen(omen, ingredient.id);
   const applied = modifier ? withModifiers(ingredient, modifier) : ingredient;
-  return applied.apply(CraftedItem.fromState(state), { pool, rng }).item.toState();
+  return applyCraftingIngredient(applied, CraftedItem.fromState(state), { pool, rng }).item.toState();
 }
 
 function modifierFromOmen(omen: OmenType, ingredientId: string): CraftingModifier | null {

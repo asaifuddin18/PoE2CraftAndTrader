@@ -71,6 +71,15 @@ export class ApiStack extends cdk.Stack {
     const workerFn    = makeFn("WorkerFn",    "craft-worker",    { memorySize: 1769, timeout: cdk.Duration.seconds(120) });
     const aggregateFn = makeFn("AggregateFn", "craft-aggregate", { memorySize: 1769, timeout: cdk.Duration.seconds(120) });
 
+    new logs.MetricFilter(this, "CraftFailureMetric", {
+      logGroup: workerFn.logGroup,
+      filterPattern: logs.FilterPattern.literal('"craft_failure"'),
+      metricNamespace: "PoE2CraftSolver",
+      metricName: "CraftFailures",
+      metricValue: "1",
+      defaultValue: 0,
+    });
+
     // Grant data access
     table.grantReadData(prepareFn);
     table.grantReadData(aggregateFn);

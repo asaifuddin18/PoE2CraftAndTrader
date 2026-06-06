@@ -12,6 +12,7 @@ import {
   Policy, empty_normal, is_satisfied, mod_satisfied, open_prefix, open_suffix, p_hit,
 } from "./engine";
 import { CraftedItem } from "./domain/CraftedItem";
+import { applyCraftingIngredient } from "./domain/applyCraftingIngredient";
 import { EssenceCatalog } from "./domain/EssenceCatalog";
 import type { CurrencyBasket } from "./domain/CurrencyBasket";
 import { addCurrency, mergeCurrency } from "./domain/CurrencyBasket";
@@ -50,7 +51,7 @@ function applyIngredient(
   rng: () => number,
   basket: CurrencyBasket,
 ): { state: ModEntryState; basket: CurrencyBasket } {
-  const result = ingredient.apply(CraftedItem.fromState(state), { pool, rng });
+  const result = applyCraftingIngredient(ingredient, CraftedItem.fromState(state), { pool, rng });
   return { state: result.item.toState(), basket: addCost(basket, result.cost) };
 }
 
@@ -100,7 +101,7 @@ function policy_A1(anchors: TargetMod[], restart_threshold: number): Policy {
           ({ state, basket } = applyIngredient(state, new AugmentationOrb(), pool, rng, basket));
         } else {
           state = empty_normal();
-          const result = new TransmutationOrb().apply(CraftedItem.fromState(state), { pool, rng });
+          const result = applyCraftingIngredient(new TransmutationOrb(), CraftedItem.fromState(state), { pool, rng });
           state = result.item.toState();
           state.rarity = "magic";
           // Alteration is a modeling artifact for "reroll this magic item";
