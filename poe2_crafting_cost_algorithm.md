@@ -57,6 +57,9 @@ optimistic. Sampled real ingredient outcomes supply the practical correction.
 - Search samples per action: bounded.
 - Cached canonical states: bounded.
 - Craft actions per Monte Carlo run: bounded.
+- Worker and basket-display simulation counts are separately bounded so one
+  strategy cannot exhaust a Lambda invocation.
+- Aggregate does not rerun the winner because only one strategy currently exists.
 - Runs that exhaust the action budget are marked `solver_failure` and receive a
   prohibitive cost, so incomplete trajectories cannot appear artificially cheap.
 - The Step Functions pipeline currently emits exactly one strategy job.

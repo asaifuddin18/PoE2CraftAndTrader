@@ -29,7 +29,7 @@ export function runPolicy(job: PatternJob, scratch: ScratchBlob, N?: number): Pa
   const iterations = N ?? job.N;
 
   const cost = monte_carlo(policy, pool, target, prices, iterations, job.seed);
-  const basket_mean = mean_basket(policy, pool, target, prices, 2000, job.seed ^ 0x9e3779b9);
+  const basket_mean = mean_basket(policy, pool, target, prices, Math.min(50, iterations), job.seed ^ 0x9e3779b9);
   const steps = strategy.describe(context, cost.mean);
 
   return {

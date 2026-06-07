@@ -8,9 +8,9 @@ import { canonicalStateKey } from "./StateCanonicalizer";
 import { optimisticRemainingCost } from "./WeightHeuristic";
 import { basketPrice, REFINEMENT_ACTIONS, type RefinementAction } from "./RareRefinementActions";
 
-const MAX_ACTIONS = 500;
-const SEARCH_SAMPLES = 8;
-const MAX_CACHED_STATES = 4_000;
+const MAX_ACTIONS = 120;
+const SEARCH_SAMPLES = 4;
+const MAX_CACHED_STATES = 1_500;
 const RESTART_ID = "restart_alchemy";
 
 interface SelectedAction {
@@ -34,7 +34,7 @@ export class RareRefinementStrategy implements SolverStrategy {
       patternName: this.name,
       description: this.description,
       strategyId: this.id,
-      N: 2_000,
+      N: 300,
       seed: 0x5a17c0de,
     };
   }
