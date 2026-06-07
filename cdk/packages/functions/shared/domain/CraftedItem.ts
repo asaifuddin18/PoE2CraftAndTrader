@@ -53,6 +53,10 @@ export class CraftedItem {
     return this.allMods().filter(m => !this.s.fractured_mod_ids.has(m.modId));
   }
 
+  hasDesecratedModifier(): boolean {
+    return this.allMods().some(m => m.desecrated);
+  }
+
   presentGroups(): Set<string> {
     return new Set(this.allMods().map(m => m.group));
   }
@@ -128,8 +132,8 @@ export class CraftedItem {
   fractureRandomAffix(ctx: CraftContext): { item: CraftedItem; fractured: ModEntry | null } {
     const next = this.clone();
     if (next.s.fractured_mod_ids.size > 0) return { item: next, fractured: null };
-    const mods = next.allMods();
-    if (mods.length < 4) return { item: next, fractured: null };
+    const mods = next.allMods().filter(mod => !mod.desecrated);
+    if (mods.length === 0) return { item: next, fractured: null };
     const fractured = mods[Math.floor(ctx.rng() * mods.length)];
     next.s.fractured_mod_ids.add(fractured.modId);
     return { item: next, fractured };

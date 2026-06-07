@@ -4,6 +4,7 @@ import { applyCraftingIngredient } from "./domain/applyCraftingIngredient";
 import { EssenceCatalog } from "./domain/EssenceCatalog";
 import { AlloyCatalog } from "./domain/AlloyCatalog";
 import { CatalystCatalog } from "./domain/CatalystCatalog";
+import { DesecrationBoneCatalog } from "./domain/DesecrationBoneCatalog";
 import type { CraftContext } from "./domain/CraftContext";
 import {
   AlchemyOrb,
@@ -11,6 +12,7 @@ import {
   AnnulmentOrb,
   AugmentationOrb,
   ChaosOrb,
+  DesecrationBone,
   Essence,
   ExaltedOrb,
   FracturingOrb,
@@ -25,6 +27,7 @@ import {
   PerfectRegalOrb,
   PerfectTransmutationOrb,
   RegalOrb,
+  RevealDesecratedModifier,
   TransmutationOrb,
 } from "./ingredients";
 import {
@@ -37,6 +40,7 @@ import {
   OmenOfGreaterAnnulment,
   OmenOfGreaterExaltation,
   OmenOfCatalysingExaltation,
+  OmenOfLight,
   OmenOfSinistralAnnulment,
   OmenOfSinistralAlchemy,
   OmenOfSinistralCrystallisation,
@@ -1104,6 +1108,117 @@ test("Failed Catalysing Exaltation consumes neither quality nor omen", () => {
   assert.deepEqual(result.item.catalyst, { type: "life", amount: 20, maximum: 20 });
 });
 
+test("Desecration Bone adds a hidden Desecrated affix to a rare item", () => {
+  const result = new DesecrationBone("jawbone", "preserved")
+    .apply(item([p1], [s1]), ctx(rngSequence([0])));
+  const hidden = result.item.allMods().find(mod => mod.hidden);
+
+  assert.equal(result.applied, true);
+  assert.ok(hidden?.desecrated);
+  assert.equal(hidden?.gen_type, "prefix");
+  assert.deepEqual(result.cost, { preserved_jawbone: 1 });
+});
+
+test("Desecration Bone removes a same-side non-fractured affix on full items", () => {
+  const full = item([p1, p2, p3], [s1, s2, s3], [p1, p2, p3]);
+  const result = new DesecrationBone("rib", "preserved").apply(full, ctx(rngSequence([0])));
+  const hidden = result.item.allMods().find(mod => mod.hidden);
+
+  assert.equal(result.applied, true);
+  assert.equal(hidden?.gen_type, "suffix");
+  assert.ok(result.item.suffixes.some(mod => mod.hidden));
+  assert.deepEqual(result.item.prefixes.map(mod => mod.modId).sort(), ["p1", "p2", "p3"]);
+});
+
+test("Desecration Bone rejects invalid rarity, Gnawed ilvl, existing Desecration, and impossible removal", () => {
+  const magicItem = magic([p1]);
+  assertRejected(new DesecrationBone("jawbone", "gnawed").apply(magicItem, { ...ctx(), itemLevel: 64 }), magicItem);
+
+  const rare = item([p1], [s1]);
+  assertRejected(new DesecrationBone("jawbone", "gnawed").apply(rare, { ...ctx(), itemLevel: 65 }), rare);
+
+  const desecrated = item([{ ...p1, desecrated: true }], [s1]);
+  assertRejected(new DesecrationBone("jawbone", "preserved").apply(desecrated, ctx()), desecrated);
+
+  const fullAllFractured = item([p1, p2, p3], [s1, s2, s3], [p1, p2, p3, s1, s2, s3]);
+  assertRejected(new DesecrationBone("jawbone", "preserved").apply(fullAllFractured, ctx()), fullAllFractured);
+});
+
+test("Desecration Bone catalog resolves bone types by equipment category", () => {
+  assert.ok(DesecrationBoneCatalog.create("preserved", "jawbone", "25"));
+  assert.ok(DesecrationBoneCatalog.create("preserved", "rib", "45"));
+  assert.ok(DesecrationBoneCatalog.create("preserved", "collarbone", "1"));
+  assert.equal(DesecrationBoneCatalog.create("preserved", "jawbone", "1"), null);
+  assert.equal(DesecrationBoneCatalog.create("preserved", "cranium", "1"), null);
+});
+
+test("Reveal Desecrated Modifier offers three same-side options and chooses the target match", () => {
+  const hidden = new DesecrationBone("jawbone", "preserved")
+    .apply(item([], [s1]), ctx(rngSequence([0]))).item;
+  const target = { required_mods: [{ group: "target_group", min_tier: 1, gen_type: "prefix" as const, name: "Target" }], k_required: 1 };
+  const options = [
+    { ...p1, modId: "miss_one", group: "miss_one", tags: ["Life"] },
+    { ...p2, modId: "target_mod", group: "target_group", tags: ["Ulaman"] },
+    { ...p3, modId: "miss_two", group: "miss_two", tags: ["Mana"] },
+  ];
+  const result = new RevealDesecratedModifier()
+    .apply(hidden, { ...ctxWithPool({ prefixes: options, suffixes: [] }, rngSequence([0, 0, 0])), target });
+
+  assert.equal(result.applied, true);
+  assert.ok(modIds(result.item).includes("desecrated_target_mod"));
+  const selected = result.item.allMods().find(mod => mod.modId === "desecrated_target_mod");
+  assert.equal(selected?.desecrated, true);
+  assert.equal(selected?.hidden, false);
+  assert.equal(selected?.abyssFamily, "Ulaman");
+});
+
+test("Ancient Bone reveal only offers required-level 40+ modifiers", () => {
+  const hidden = new DesecrationBone("jawbone", "ancient")
+    .apply(item([], [s1]), ctx(rngSequence([0]))).item;
+  const options = [
+    { ...p1, modId: "low", group: "low", required_level: 39 },
+    { ...p2, modId: "high_one", group: "high_one", required_level: 40 },
+    { ...p3, modId: "high_two", group: "high_two", required_level: 50 },
+    { ...p4, modId: "high_three", group: "high_three", required_level: 60 },
+  ];
+  const result = new RevealDesecratedModifier()
+    .apply(hidden, ctxWithPool({ prefixes: options, suffixes: [] }, rngSequence([0, 0, 0])));
+
+  assert.equal(result.applied, true);
+  assert.ok(!modIds(result.item).includes("desecrated_low"));
+});
+
+test("Hidden Desecrated modifiers occupy slots and can be removed by ordinary crafting", () => {
+  const hidden = new DesecrationBone("jawbone", "preserved")
+    .apply(item([], [s1]), ctx(rngSequence([0]))).item;
+  assert.equal(hidden.prefixes.length, 1);
+
+  const annulled = new AnnulmentOrb().apply(hidden, ctx(rngSequence([0])));
+  assert.equal(annulled.applied, true);
+  assert.ok(!annulled.item.allMods().some(mod => mod.hidden));
+});
+
+test("Omen of Light restricts Annulment to Desecrated modifiers", () => {
+  const desecrated = { ...p2, desecrated: true };
+  const base = item([p1, desecrated], [s1]);
+  const result = withModifiers(new AnnulmentOrb(), new OmenOfLight()).apply(base, ctx(rngSequence([0])));
+
+  assert.equal(result.applied, true);
+  assert.ok(!modIds(result.item).includes("p2"));
+  assert.ok(modIds(result.item).includes("p1"));
+  assert.deepEqual(result.cost, { annul: 1, omen_light: 1 });
+});
+
+test("Fracturing Orb cannot select a Desecrated modifier", () => {
+  const desecrated = { ...p1, desecrated: true };
+  const base = item([desecrated, p2], [s1, s2]);
+  const result = new FracturingOrb().apply(base, ctx(rngSequence([0])));
+
+  assert.equal(result.applied, true);
+  assert.ok(!result.item.fracturedModIds.has("p1"));
+  assert.ok(result.item.fracturedModIds.has("p2"));
+});
+
 test("Omens reject incompatible ingredients", () => {
   assert.throws(
     () => withModifiers(new TransmutationOrb(), new OmenOfWhittling()).apply(CraftedItem.emptyNormal(), ctx()),
@@ -1169,6 +1284,9 @@ test("All modeled crafting ingredients reject corrupted items without cost", () 
   const magicItem = corrupted(magic([p1]));
   const rare = corrupted(item([p1, p2], [s1, s2]));
   const guaranteed = mod("guaranteed_corrupted_test", "prefix", 1);
+  const hiddenDesecrated = corrupted(
+    new DesecrationBone("jawbone", "preserved").apply(item([p1], [s1]), ctx(rngSequence([0]))).item,
+  );
 
   const cases = [
     { ingredient: new TransmutationOrb(), item: normal },
@@ -1191,6 +1309,8 @@ test("All modeled crafting ingredients reject corrupted items without cost", () 
     { ingredient: new FracturingOrb(), item: rare },
     { ingredient: new Alloy("alloy_corrupted_test", "Test Alloy", guaranteed), item: rare },
     { ingredient: CatalystCatalog.create("flesh_catalyst", "1")!, item: rare },
+    { ingredient: new DesecrationBone("jawbone", "preserved"), item: rare },
+    { ingredient: new RevealDesecratedModifier(), item: hiddenDesecrated },
     { ingredient: testEssence("greater_essence_corrupted_test", guaranteed, "greater"), item: magicItem },
     { ingredient: testEssence("perfect_essence_corrupted_test", guaranteed, "perfect"), item: rare },
   ];

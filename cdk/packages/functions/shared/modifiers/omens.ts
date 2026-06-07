@@ -211,6 +211,17 @@ export class OmenOfDextralAnnulment extends OmenModifier {
   }
 }
 
+export class OmenOfLight extends OmenModifier {
+  readonly id = "omen_light";
+  readonly displayName = "Omen of Light";
+  readonly costKey = "omen_light";
+  readonly ingredientIds = ["annul"];
+
+  filterRemoveCandidates(_item: CraftedItem, candidates: ModEntry[]): ModEntry[] {
+    return candidates.filter(mod => mod.desecrated);
+  }
+}
+
 export class OmenOfSinistralCrystallisation extends OmenModifier {
   readonly id = "omen_sinistral_crystallisation";
   readonly displayName = "Omen of Sinistral Crystallisation";

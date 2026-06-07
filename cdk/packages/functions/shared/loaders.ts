@@ -31,6 +31,10 @@ export const DEFAULT_PRICES: PriceTable = {
   flesh_catalyst: 1, neural_catalyst: 1, carapace_catalyst: 1, uul_netols_catalyst: 1,
   xophs_catalyst: 1, tuls_catalyst: 1, eshs_catalyst: 1, chayulas_catalyst: 1,
   reaver_catalyst: 1, sibilant_catalyst: 1, skittering_catalyst: 1, adaptive_catalyst: 1,
+  gnawed_jawbone: 1, preserved_jawbone: 1, ancient_jawbone: 1,
+  gnawed_rib: 1, preserved_rib: 1, ancient_rib: 1,
+  gnawed_collarbone: 1, preserved_collarbone: 1, ancient_collarbone: 1,
+  gnawed_cranium: 1, preserved_cranium: 1, ancient_cranium: 1,
   // Omens are separate one-per-use consumables, priced per use.
   omen_whittling: 2, omen_greater_annulment: 1, omen_sinistral_alchemy: 1, omen_dextral_alchemy: 1,
   omen_sinistral_coronation: 1, omen_dextral_coronation: 1,
@@ -38,6 +42,7 @@ export const DEFAULT_PRICES: PriceTable = {
   omen_sinistral_erasure: 1, omen_dextral_erasure: 1,
   omen_sinistral_crystallisation: 1, omen_dextral_crystallisation: 1,
   omen_catalysing_exaltation: 1,
+  omen_light: 1,
 };
 
 /** Load the mod pool for a base from DynamoDB and resolve it for this ilvl. */

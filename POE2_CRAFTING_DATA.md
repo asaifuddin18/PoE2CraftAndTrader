@@ -286,6 +286,30 @@ and increases the spawn weight of modifiers matching that Catalyst's tags. The o
 community-tested multipliers are 5x at 20% quality and 7.5x at 40% quality. Intermediate
 quality multipliers are not considered verified and must be configured explicitly.
 
+### 4.5 Desecration and Abyssal Bones
+
+Desecration is a two-step Abyss craft for rare items. First, an Abyssal Bone adds a hidden
+Desecrated modifier. The hidden modifier occupies a normal prefix or suffix slot. If the item
+already has six explicit modifiers, Desecration removes one random non-fractured modifier and
+adds a hidden Desecrated modifier on that same side. Items with an existing hidden or revealed
+Desecrated modifier cannot be Desecrated again.
+
+The supported Bone families are Jawbones for weapons and quivers, Ribs for armour, Collarbones
+for jewellery and belts, and Craniums for jewels. The current generated equipment catalog does
+not include jewel base IDs yet, so Craniums exist in the ingredient model but cannot currently
+be resolved through the base-ID catalog.
+
+Bone tiers:
+- Gnawed Bones can only be used on items up to item level 64.
+- Preserved Bones have no additional item-level restriction.
+- Ancient Bones reveal only modifiers with required level 40 or higher.
+
+The second Abyss step reveals the hidden modifier. Three same-side legal options are generated
+from the item class's mod pool, respecting item level, affix side, and exclusivity groups. The
+solver chooses the option that best matches the target. Revealed modifiers remain marked
+Desecrated for Omen of Light, ordinary crafting can remove hidden or revealed Desecrated
+modifiers, and Fracturing Orb cannot select a Desecrated modifier.
+
 ## 5. Omens
 
 Omens are single-use items that **modify the outcome of the next specific currency use**. They are activated by right-clicking (entering the player's inventory in an active state) and consumed automatically when their trigger condition fires.

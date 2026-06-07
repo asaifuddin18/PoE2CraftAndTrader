@@ -1,4 +1,4 @@
-import type { ModPool } from "../types";
+import type { ModPool, TargetSpec } from "../types";
 import type { CraftedItem } from "./CraftedItem";
 import type { ModEntry } from "../types";
 
@@ -20,4 +20,6 @@ export interface CraftContext {
   pool: ModPool;
   rng: () => number;
   hooks?: CraftActionHooks;
+  itemLevel?: number;
+  target?: TargetSpec;
 }

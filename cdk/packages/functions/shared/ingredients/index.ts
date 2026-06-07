@@ -20,3 +20,9 @@ export { FracturingOrb } from "./FracturingOrb";
 export { Essence, type EssenceTier } from "./Essence";
 export { Alloy } from "./Alloy";
 export { Catalyst } from "./Catalyst";
+export {
+  DesecrationBone,
+  RevealDesecratedModifier,
+  type DesecrationBoneKind,
+  type DesecrationBoneTier,
+} from "./Desecration";

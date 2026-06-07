@@ -17,6 +17,10 @@ export interface ModEntry {
   weight:         number;             // spawn weight for this base
   name:           string;
   tags?:          string[];
+  desecrated?:    boolean;
+  hidden?:        boolean;
+  abyssFamily?:   "Ulaman" | "Amanamu" | "Kurgal";
+  desecrationTier?: "gnawed" | "preserved" | "ancient";
 }
 
 export type CatalystType =
@@ -54,6 +58,7 @@ export type OmenType =
   | "sinistral" | "dextral" | "greater" | "greater_annulment" | "whittling"
   | "sinistral_erasure" | "dextral_erasure" | "sinistral_annulment" | "dextral_annulment"
   | "sinistral_crystallisation" | "dextral_crystallisation"
+  | "light"
   | null;
 
 export interface ModPool {

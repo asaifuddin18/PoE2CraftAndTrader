@@ -13,6 +13,7 @@ export {
   OmenOfGreaterExaltation,
   OmenOfCatalysingExaltation,
   OmenOfGreaterAnnulment,
+  OmenOfLight,
   OmenOfSinistralAnnulment,
   OmenOfDextralAnnulment,
   OmenOfSinistralCrystallisation,
