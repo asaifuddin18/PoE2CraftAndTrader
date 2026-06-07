@@ -1,6 +1,7 @@
 /**
- * Step 2 — craft-worker (Step Functions Map: one invocation per pattern instance).
- * Reads the scratch blob, runs Monte Carlo for ONE policy, returns a PatternResult.
+ * Step 2 — craft-worker (Step Functions Map: one invocation per solver strategy).
+ * Reads the scratch blob, runs Monte Carlo for one adaptive policy, and returns
+ * the existing PatternResult API shape.
  *
  * Input:  { scratchKey, job }
  * Output: PatternResult

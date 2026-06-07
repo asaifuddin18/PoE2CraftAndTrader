@@ -254,7 +254,8 @@ export function summarize(costs: number[]): CostSummary {
 }
 
 export function price_basket(basket: Record<string, number>, prices: PriceTable): number {
-  return Object.entries(basket).reduce((sum, [k, v]) => sum + v * (prices[k] ?? 0), 0);
+  return Object.entries(basket).reduce((sum, [k, v]) =>
+    sum + v * (k === "solver_failure" ? 1_000_000_000 : (prices[k] ?? 0)), 0);
 }
 
 export function monte_carlo(
@@ -299,6 +300,12 @@ export function check_feasibility(target: TargetSpec, pool: ModPool, ilvl: numbe
     if (available.length === 0) {
       return `Mod "${t.name}" (group: ${t.group}) at tier ≤ ${t.min_tier} cannot roll on this base at ilvl ${ilvl}`;
     }
+  }
+  const prefixGroups = new Set(target.required_mods.filter(mod => mod.gen_type === "prefix").map(mod => mod.group)).size;
+  const suffixGroups = new Set(target.required_mods.filter(mod => mod.gen_type === "suffix").map(mod => mod.group)).size;
+  const maximumSimultaneousTargets = Math.min(3, prefixGroups) + Math.min(3, suffixGroups);
+  if (target.k_required > maximumSimultaneousTargets) {
+    return `Target requires ${target.k_required} modifiers, but at most ${maximumSimultaneousTargets} can fit on one item`;
   }
   return null;
 }

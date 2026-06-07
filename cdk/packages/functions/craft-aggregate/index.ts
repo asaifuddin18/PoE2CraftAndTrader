@@ -1,7 +1,7 @@
 /**
  * Step 3 — craft-aggregate.
- * Ranks worker results, dedups by family, marks the best, re-runs the winner at
- * higher N for a sharper p99, then deletes the scratch object.
+ * Ranks solver results, marks the best, re-runs the winner at higher N for a
+ * sharper p99, then deletes the scratch object.
  *
  * Input:  { scratchKey, results: PatternResult[], jobs: PatternJob[], startedAt }
  * Output: SolverOutput
@@ -11,7 +11,7 @@ import { aggregate } from "../shared/aggregate";
 import { runPolicy } from "../shared/runPolicy";
 import { readScratch, deleteScratch } from "../shared/loaders";
 
-const N_FINAL = 20_000;
+const N_FINAL = 6_000;
 
 interface AggregateInput {
   scratchKey: string;

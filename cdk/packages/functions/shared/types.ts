@@ -100,7 +100,7 @@ export interface SolveRequest {
     group?:  string;
   }[];
   priceOverrides?: PriceTable;
-  // Optional end-game essence anchor for the C2 pattern.
+  // Reserved for future strategies that can deliberately choose an Essence.
   essenceId?: string;
 }
 
@@ -150,22 +150,15 @@ export interface SolverOutput {
 
 // ── Job descriptors (Step Functions Map fan-out) ──────────────────────────────
 
-export type PolicyKind = "B3" | "A1" | "C2" | "E1";
+export type StrategyId = "rare_refinement";
 
 export interface PatternJob {
-  patternId:    string;              // e.g. "B3_t15"
+  patternId:    string;
   patternName:  string;
   description:  string;
-  policyKind:   PolicyKind;
+  strategyId:   StrategyId;
   N:            number;              // Monte-Carlo iterations
   seed:         number;
-  params: {
-    restart_threshold: number;
-    whittling?:        boolean;       // B3
-    anchor_groups?:    string[];      // A1 anchor mod groups
-    essence?:          { id: string; baseId: string }; // C2
-    anchor_group?:     string;        // E1 group to fracture
-  };
 }
 
 /** S3 scratch blob written by craft-prepare, read by workers + aggregate. */

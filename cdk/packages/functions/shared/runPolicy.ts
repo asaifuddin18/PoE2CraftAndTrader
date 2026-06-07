@@ -1,9 +1,9 @@
 /**
- * Run one pattern instance (one worker = one PatternJob) and produce a PatternResult.
+ * Run one solver strategy job and produce the existing PatternResult API shape.
  */
 import type { PatternJob, PatternResult, ScratchBlob, ModPool, TargetSpec, PriceTable } from "./types";
 import { Policy, monte_carlo, summarize, price_basket } from "./engine";
-import { build_policy, describe_steps } from "./patterns";
+import { strategyFor } from "./strategies/StrategyRegistry";
 
 /** Average currency basket over a small sample (for display). */
 function mean_basket(
@@ -23,12 +23,14 @@ function mean_basket(
 
 export function runPolicy(job: PatternJob, scratch: ScratchBlob, N?: number): PatternResult {
   const { pool, prices, target } = scratch;
-  const policy = build_policy(job, target);
+  const strategy = strategyFor(job);
+  const context = { pool, prices, target };
+  const policy = strategy.buildPolicy(context);
   const iterations = N ?? job.N;
 
   const cost = monte_carlo(policy, pool, target, prices, iterations, job.seed);
   const basket_mean = mean_basket(policy, pool, target, prices, 2000, job.seed ^ 0x9e3779b9);
-  const steps = describe_steps(job, target, pool, prices, cost.mean);
+  const steps = strategy.describe(context, cost.mean);
 
   return {
     pattern_id:   job.patternId,
