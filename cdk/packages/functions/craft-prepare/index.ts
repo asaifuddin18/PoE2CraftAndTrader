@@ -38,6 +38,6 @@ export async function handler(event: PrepareInput): Promise<PrepareOutput> {
   const jobs = enumerateStrategies(event, target, pool);
   if (jobs.length === 0) return { feasible: false, error: "No applicable solver strategies found", ilvl };
 
-  const scratchKey = await writeScratch(event.executionName, { pool, prices: merged, target, ilvl });
+  const scratchKey = await writeScratch(event.executionName, { pool, prices: merged, target, ilvl, baseId: event.baseId });
   return { feasible: true, scratchKey, jobs, ilvl };
 }

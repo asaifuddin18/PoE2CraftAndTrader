@@ -2,9 +2,11 @@ import assert from "node:assert/strict";
 import { empty_normal, price_basket } from "../engine";
 import type { ModEntry, ModPool, PriceTable, SolveRequest, TargetSpec } from "../types";
 import { RareRefinementStrategy } from "./RareRefinementStrategy";
+import { generateRefinementActions } from "./RareRefinementActions";
 import { canonicalStateKey } from "./StateCanonicalizer";
 import { enumerateStrategies } from "./StrategyRegistry";
 import { optimisticRemainingCost } from "./WeightHeuristic";
+import { EssenceCatalog } from "../domain/EssenceCatalog";
 
 function mod(modId: string, gen_type: "prefix" | "suffix", weight: number): ModEntry {
   return { modId, group: modId, gen_type, tier: 1, required_level: 1, weight, name: modId };
@@ -63,7 +65,8 @@ const lowTierTargetState = {
 assert.ok(Number.isFinite(optimisticRemainingCost(lowTierTargetState, commonTarget, pool, prices)));
 
 const strategy = new RareRefinementStrategy();
-const policy = strategy.buildPolicy({ pool, target, prices });
+const context = { pool, target, prices, baseId: "test", ilvl: 84 };
+const policy = strategy.buildPolicy(context);
 let seed = 123;
 const basket = policy(() => {
   seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
@@ -73,5 +76,45 @@ assert.equal(basket.alteration, undefined);
 assert.ok((basket.white_base ?? 0) >= 1);
 assert.ok((basket.alch ?? 0) >= 1);
 assert.equal(price_basket({ solver_failure: 1 }, prices), 1_000_000_000);
+
+const fourAffixRare = {
+  ...normal,
+  rarity: "rare" as const,
+  prefixes: [targetPrefix, rarePrefix],
+  suffixes: [targetSuffix, pool.suffixes[1]],
+};
+const fractureActions = generateRefinementActions(fourAffixRare, context);
+assert.ok(fractureActions.some(action => action.id === "fracturing_orb"));
+
+const desecrationActions = generateRefinementActions(fourAffixRare, { ...context, baseId: "25" });
+assert.ok(desecrationActions.some(action => action.id.startsWith("desecrate_preserved_jawbone")));
+
+const hiddenDesecrated = {
+  ...fourAffixRare,
+  prefixes: [{ ...targetPrefix, modId: "hidden", hidden: true, desecrated: true }, rarePrefix],
+};
+const revealActions = generateRefinementActions(hiddenDesecrated, { ...context, baseId: "25" });
+assert.ok(revealActions.some(action => action.id === "desecration_reveal"));
+assert.ok(revealActions.some(action => action.id === "desecration_reveal_echoes"));
+
+const perfectDefinition = EssenceCatalog.definitions()
+  .find(definition => definition.tier === "perfect" && definition.byBaseId["25"]?.length);
+if (!perfectDefinition) throw new Error("Expected a Perfect Essence applicable to Quarterstaff");
+const essenceTargetMod = perfectDefinition.byBaseId["25"][0];
+const essenceContext = {
+  ...context,
+  baseId: "25",
+  target: {
+    required_mods: [{
+      group: essenceTargetMod.group,
+      min_tier: essenceTargetMod.tier,
+      gen_type: essenceTargetMod.gen_type,
+      name: essenceTargetMod.name,
+    }],
+    k_required: 1,
+  },
+};
+const essenceActions = generateRefinementActions(fourAffixRare, essenceContext);
+assert.ok(essenceActions.some(action => action.id === `essence_${perfectDefinition.id}`));
 
 console.log("Stochastic strategy tests passed");

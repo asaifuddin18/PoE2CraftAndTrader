@@ -2,11 +2,11 @@ import { AlchemyOrb } from "../ingredients";
 import { addCurrency, mergeCurrency, type CurrencyBasket } from "../domain/CurrencyBasket";
 import { CraftedItem } from "../domain/CraftedItem";
 import { empty_normal, is_satisfied, type Policy } from "../engine";
-import type { CraftStep, ItemState, ModPool, PatternJob, PriceTable, SolveRequest, TargetSpec } from "../types";
+import type { CraftStep, ItemState, ModPool, PatternJob, SolveRequest, TargetSpec } from "../types";
 import type { SolverStrategy, StrategyBuildContext } from "./SolverStrategy";
 import { canonicalStateKey } from "./StateCanonicalizer";
 import { optimisticRemainingCost } from "./WeightHeuristic";
-import { basketPrice, REFINEMENT_ACTIONS, type RefinementAction } from "./RareRefinementActions";
+import { basketPrice, generateRefinementActions, type RefinementAction } from "./RareRefinementActions";
 
 const MAX_ACTIONS = 120;
 const SEARCH_SAMPLES = 4;
@@ -34,12 +34,13 @@ export class RareRefinementStrategy implements SolverStrategy {
       patternName: this.name,
       description: this.description,
       strategyId: this.id,
-      N: 300,
+      N: 200,
       seed: 0x5a17c0de,
     };
   }
 
-  buildPolicy({ pool, target, prices }: StrategyBuildContext): Policy {
+  buildPolicy(context: StrategyBuildContext): Policy {
+    const { pool, target, prices, ilvl } = context;
     const actionCache = new Map<string, SelectedAction>();
 
     return rng => {
@@ -48,7 +49,7 @@ export class RareRefinementStrategy implements SolverStrategy {
 
       for (let actions = 0; actions < MAX_ACTIONS && !is_satisfied(state, target); actions++) {
         if (state.rarity !== "rare") {
-          const restarted = restartWithAlchemy(pool, rng);
+          const restarted = restartWithAlchemy(context, rng);
           if (!restarted) break;
           state = restarted.state;
           basket = mergeCurrency(basket, restarted.cost);
@@ -58,21 +59,21 @@ export class RareRefinementStrategy implements SolverStrategy {
         const key = canonicalStateKey(state, target);
         let selected = actionCache.get(key);
         if (!selected) {
-          selected = selectAction(state, pool, target, prices);
+          selected = selectAction(state, context);
           if (actionCache.size < MAX_CACHED_STATES) actionCache.set(key, selected);
         }
 
         if (selected.id === RESTART_ID) {
-          const restarted = restartWithAlchemy(pool, rng);
+          const restarted = restartWithAlchemy(context, rng);
           if (!restarted) break;
           state = restarted.state;
           basket = mergeCurrency(basket, restarted.cost);
           continue;
         }
 
-        const result = selected.action!.apply(CraftedItem.fromState(state), { pool, rng });
+        const result = selected.action!.apply(CraftedItem.fromState(state), { pool, rng, itemLevel: ilvl, target });
         if (!result.applied) {
-          const restarted = restartWithAlchemy(pool, rng);
+          const restarted = restartWithAlchemy(context, rng);
           if (!restarted) break;
           state = restarted.state;
           basket = mergeCurrency(basket, restarted.cost);
@@ -100,7 +101,7 @@ export class RareRefinementStrategy implements SolverStrategy {
         currency: "adaptive",
         probability: 1,
         expectedCost: 0,
-        branchCondition: "Uses modifier weights, currency prices, and sampled outcomes to choose Exalt, Chaos, Annulment, or restart.",
+        branchCondition: "Uses modifier weights, currency prices, and sampled outcomes to choose every legal target-relevant crafting family or restart.",
       },
       {
         action: "Repeat the selected policy action until the requested target is reached",
@@ -113,15 +114,16 @@ export class RareRefinementStrategy implements SolverStrategy {
   }
 }
 
-function selectAction(state: ItemState, pool: ModPool, target: TargetSpec, prices: PriceTable): SelectedAction {
+function selectAction(state: ItemState, context: StrategyBuildContext): SelectedAction {
+  const { pool, target, prices } = context;
   const candidates: { selected: SelectedAction; score: number }[] = [];
-  const restart = estimateRestart(pool, target, prices);
+  const restart = estimateRestart(context);
   if (Number.isFinite(restart)) {
     candidates.push({ selected: { id: RESTART_ID, name: "Restart with Orb of Alchemy" }, score: restart });
   }
 
-  for (const action of REFINEMENT_ACTIONS) {
-    const score = estimateAction(action, state, pool, target, prices);
+  for (const action of generateRefinementActions(state, context)) {
+    const score = estimateAction(action, state, context);
     if (Number.isFinite(score)) candidates.push({ selected: { id: action.id, name: action.name, action }, score });
   }
 
@@ -129,12 +131,13 @@ function selectAction(state: ItemState, pool: ModPool, target: TargetSpec, price
     ?? { id: RESTART_ID, name: "Restart with Orb of Alchemy" };
 }
 
-function estimateAction(action: RefinementAction, state: ItemState, pool: ModPool, target: TargetSpec, prices: PriceTable): number {
+function estimateAction(action: RefinementAction, state: ItemState, context: StrategyBuildContext): number {
+  const { pool, target, prices, ilvl } = context;
   const rng = seededRng(hash(`${canonicalStateKey(state, target)}|${action.id}`));
   let total = 0;
   let applied = 0;
   for (let i = 0; i < SEARCH_SAMPLES; i++) {
-    const result = action.apply(CraftedItem.fromState(state), { pool, rng });
+    const result = action.apply(CraftedItem.fromState(state), { pool, rng, itemLevel: ilvl, target });
     if (!result.applied) continue;
     total += basketPrice(result.cost, prices) + optimisticRemainingCost(result.item.toState(), target, pool, prices);
     applied++;
@@ -142,19 +145,21 @@ function estimateAction(action: RefinementAction, state: ItemState, pool: ModPoo
   return applied === SEARCH_SAMPLES ? total / applied : Number.POSITIVE_INFINITY;
 }
 
-function estimateRestart(pool: ModPool, target: TargetSpec, prices: PriceTable): number {
+function estimateRestart(context: StrategyBuildContext): number {
+  const { pool, target, prices } = context;
   const rng = seededRng(hash(`restart|${target.required_mods.map(mod => `${mod.group}:${mod.min_tier}`).sort().join("|")}`));
   let total = 0;
   for (let i = 0; i < SEARCH_SAMPLES; i++) {
-    const restarted = restartWithAlchemy(pool, rng);
+    const restarted = restartWithAlchemy(context, rng);
     if (!restarted) return Number.POSITIVE_INFINITY;
     total += basketPrice(restarted.cost, prices) + optimisticRemainingCost(restarted.state, target, pool, prices);
   }
   return total / SEARCH_SAMPLES;
 }
 
-function restartWithAlchemy(pool: ModPool, rng: () => number): { state: ItemState; cost: CurrencyBasket } | null {
-  const result = new AlchemyOrb().apply(CraftedItem.emptyNormal(), { pool, rng });
+function restartWithAlchemy(context: StrategyBuildContext, rng: () => number): { state: ItemState; cost: CurrencyBasket } | null {
+  const { pool, target, ilvl } = context;
+  const result = new AlchemyOrb().apply(CraftedItem.emptyNormal(), { pool, rng, itemLevel: ilvl, target });
   if (!result.applied) return null;
   return {
     state: result.item.toState(),

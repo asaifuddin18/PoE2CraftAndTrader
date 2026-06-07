@@ -167,4 +167,5 @@ export interface ScratchBlob {
   prices: PriceTable;
   target: TargetSpec;
   ilvl:   number;
+  baseId: string;
 }

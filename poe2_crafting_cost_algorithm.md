@@ -27,14 +27,20 @@ item state. Decisions are cached and reused across Monte Carlo simulations.
 
 ## Current Strategy
 
-`RareRefinementStrategy` starts from a normal base and can choose:
+`RareRefinementStrategy` contextually generates legal, target-relevant actions
+using the base type, item level, and current item state. It can choose:
 
-- restart with a new normal base and Orb of Alchemy;
+- Alchemy, Transmutation/Augmentation/Regal, and Greater Essence opening routes;
 - regular, Greater, or Perfect Exalted Orb;
 - Greater or side-specific Exaltation omens;
 - regular, Greater, or Perfect Chaos Orb;
 - Whittling or side-specific Erasure omens;
-- regular, Greater, or side-specific Orb of Annulment.
+- regular, Greater, side-specific, or Desecrated Orb of Annulment;
+- Fracturing Orb;
+- target-relevant Perfect Essences and Alloys;
+- Catalyst-weighted Exalted Orbs on jewellery;
+- applicable Desecration Bones, Necromancy/family/Putrefaction omens, and reveal
+  actions including Abyssal Echoes.
 
 The policy is reevaluated after every stochastic outcome. It can decide to fill
 an open slot, replace an affix, create a slot, or abandon the current item.

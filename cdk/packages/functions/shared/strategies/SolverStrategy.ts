@@ -5,6 +5,8 @@ export interface StrategyBuildContext {
   pool: ModPool;
   target: TargetSpec;
   prices: PriceTable;
+  baseId: string;
+  ilvl: number;
 }
 
 export interface SolverStrategy {
