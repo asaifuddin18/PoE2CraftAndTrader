@@ -20,6 +20,8 @@ export interface ModEntry {
   desecrated?:    boolean;
   hidden?:        boolean;
   abyssFamily?:   "Ulaman" | "Amanamu" | "Kurgal";
+  guaranteedAbyssFamily?: "Ulaman" | "Amanamu" | "Kurgal";
+  putrefiedDesecration?: boolean;
   desecrationTier?: "gnawed" | "preserved" | "ancient";
 }
 

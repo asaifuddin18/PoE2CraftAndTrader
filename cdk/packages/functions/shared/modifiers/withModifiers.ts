@@ -41,7 +41,18 @@ function assertComposable(modifiers: CraftingModifier[]): void {
     modifiers.findIndex(candidate => candidate.id === modifier.id) !== index);
   if (duplicate) throw new Error(`${duplicate.displayName} cannot be used more than once`);
 
-  for (const hook of ["selectAddSlot", "filterRemoveCandidates", "selectRemoveAffix"] as const) {
+  if (modifiers.some(modifier => modifier.putrefyDesecration) && modifiers.length > 1) {
+    throw new Error("Omen of Putrefaction cannot be combined with another omen");
+  }
+
+  for (const hook of [
+    "selectAddSlot",
+    "filterRemoveCandidates",
+    "selectRemoveAffix",
+    "selectDesecrationSlot",
+    "guaranteedDesecrationFamily",
+    "extraDesecrationRevealOptions",
+  ] as const) {
     const selectors = modifiers.filter(modifier => modifier[hook]);
     if (selectors.length > 1) {
       throw new Error(`${selectors.map(modifier => modifier.displayName).join(" and ")} cannot be combined`);
@@ -56,6 +67,9 @@ function composeHooks(modifiers: CraftingModifier[]): CraftActionHooks {
   const poolTransforms = modifiers.flatMap(modifier => modifier.transformAddPool ? [modifier.transformAddPool.bind(modifier)] : []);
   const afterApplyHooks = modifiers.flatMap(modifier => modifier.afterSuccessfulApply ? [modifier.afterSuccessfulApply.bind(modifier)] : []);
   const rejectionHooks = modifiers.flatMap(modifier => modifier.rejectionReason ? [modifier.rejectionReason.bind(modifier)] : []);
+  const desecrationSlotModifier = modifiers.find(modifier => modifier.selectDesecrationSlot);
+  const familyModifier = modifiers.find(modifier => modifier.guaranteedDesecrationFamily);
+  const revealOptionsModifier = modifiers.find(modifier => modifier.extraDesecrationRevealOptions);
 
   return {
     selectAddSlot: addSelector,
@@ -78,6 +92,10 @@ function composeHooks(modifiers: CraftingModifier[]): CraftActionHooks {
       }
       return null;
     },
+    selectDesecrationSlot: desecrationSlotModifier?.selectDesecrationSlot?.bind(desecrationSlotModifier),
+    guaranteedDesecrationFamily: familyModifier?.guaranteedDesecrationFamily?.bind(familyModifier),
+    extraDesecrationRevealOptions: revealOptionsModifier?.extraDesecrationRevealOptions?.bind(revealOptionsModifier),
+    putrefyDesecration: modifiers.some(modifier => modifier.putrefyDesecration),
     modifyAddCount(ingredientId, baseCount) {
       return modifiers.reduce(
         (count, modifier) => modifier.modifyAddCount?.(ingredientId, count) ?? count,

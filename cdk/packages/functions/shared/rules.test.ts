@@ -41,6 +41,13 @@ import {
   OmenOfGreaterExaltation,
   OmenOfCatalysingExaltation,
   OmenOfLight,
+  OmenOfAbyssalEchoes,
+  OmenOfDextralNecromancy,
+  OmenOfPutrefaction,
+  OmenOfSinistralNecromancy,
+  OmenOfTheBlackblooded,
+  OmenOfTheLiege,
+  OmenOfTheSovereign,
   OmenOfSinistralAnnulment,
   OmenOfSinistralAlchemy,
   OmenOfSinistralCrystallisation,
@@ -1150,6 +1157,8 @@ test("Desecration Bone catalog resolves bone types by equipment category", () =>
   assert.ok(DesecrationBoneCatalog.create("preserved", "collarbone", "1"));
   assert.equal(DesecrationBoneCatalog.create("preserved", "jawbone", "1"), null);
   assert.equal(DesecrationBoneCatalog.create("preserved", "cranium", "1"), null);
+  assert.throws(() => new DesecrationBone("cranium", "gnawed"), /Preserved tier/);
+  assert.throws(() => new DesecrationBone("cranium", "ancient"), /Preserved tier/);
 });
 
 test("Reveal Desecrated Modifier offers three same-side options and chooses the target match", () => {
@@ -1217,6 +1226,123 @@ test("Fracturing Orb cannot select a Desecrated modifier", () => {
   assert.equal(result.applied, true);
   assert.ok(!result.item.fracturedModIds.has("p1"));
   assert.ok(result.item.fracturedModIds.has("p2"));
+});
+
+test("Necromancy omens force Desecration prefix or suffix and cannot combine", () => {
+  const base = item([p1], [s1]);
+  const prefix = withModifiers(new DesecrationBone("rib", "preserved"), new OmenOfSinistralNecromancy())
+    .apply(base, ctx(rngSequence([0])));
+  const suffix = withModifiers(new DesecrationBone("rib", "preserved"), new OmenOfDextralNecromancy())
+    .apply(base, ctx(rngSequence([0])));
+
+  assert.equal(prefix.item.allMods().find(mod => mod.hidden)?.gen_type, "prefix");
+  assert.equal(suffix.item.allMods().find(mod => mod.hidden)?.gen_type, "suffix");
+  assert.throws(() => withModifiers(
+    new DesecrationBone("rib", "preserved"),
+    new OmenOfSinistralNecromancy(),
+    new OmenOfDextralNecromancy(),
+  ).apply(base, ctx()), /cannot be combined/);
+});
+
+test("Necromancy omen fails atomically when its side cannot be created", () => {
+  const full = item([p1, p2, p3], [s1, s2, s3], [p1, p2, p3]);
+  assertRejected(
+    withModifiers(new DesecrationBone("rib", "preserved"), new OmenOfSinistralNecromancy())
+      .apply(full, ctx(rngSequence([0]))),
+    full,
+  );
+});
+
+test("Abyssal Echoes lets reveal choose the best option across both sets", () => {
+  const hidden = new DesecrationBone("jawbone", "preserved").apply(item([], [s1]), ctx(rngSequence([0]))).item;
+  const target = { required_mods: [{ group: "target_group", min_tier: 1, gen_type: "prefix" as const, name: "Target" }], k_required: 1 };
+  const options = [
+    { ...p1, modId: "first_one", group: "first_one", weight: 1 },
+    { ...p2, modId: "first_two", group: "first_two", weight: 1 },
+    { ...p3, modId: "first_three", group: "first_three", weight: 1 },
+    { ...p4, modId: "target", group: "target_group", weight: 1 },
+    { ...p1, modId: "second_two", group: "second_two", weight: 1 },
+    { ...p2, modId: "second_three", group: "second_three", weight: 1 },
+  ];
+  const result = withModifiers(new RevealDesecratedModifier(), new OmenOfAbyssalEchoes())
+    .apply(hidden, { ...ctxWithPool({ prefixes: options, suffixes: [] }, rngSequence([0, 0, 0, 0.6, 0, 0])), target });
+
+  assert.equal(result.applied, true);
+  assert.ok(modIds(result.item).includes("desecrated_target"));
+  assert.deepEqual(result.cost, { omen_abyssal_echoes: 1 });
+});
+
+test("Family Desecration omens guarantee their family for weapons and jewellery", () => {
+  const families = [
+    { omen: new OmenOfTheSovereign(), family: "Ulaman" },
+    { omen: new OmenOfTheLiege(), family: "Amanamu" },
+    { omen: new OmenOfTheBlackblooded(), family: "Kurgal" },
+  ] as const;
+  const familyPool = {
+    prefixes: [
+      { ...p1, modId: "ulaman", group: "ulaman", tags: ["Ulaman"] },
+      { ...p2, modId: "amanamu", group: "amanamu", tags: ["Amanamu"] },
+      { ...p3, modId: "kurgal", group: "kurgal", tags: ["Kurgal"] },
+      { ...p4, modId: "ordinary", group: "ordinary", tags: [] },
+    ],
+    suffixes: [],
+  };
+
+  for (const { omen, family } of families) {
+    const hidden = withModifiers(new DesecrationBone("jawbone", "preserved"), omen)
+      .apply(item([], [s1]), ctx(rngSequence([0]))).item;
+    const result = new RevealDesecratedModifier().apply(hidden, ctxWithPool(familyPool, rngSequence([0, 0, 0])));
+    assert.equal(result.applied, true);
+    assert.ok(result.events[0].details?.options instanceof Array);
+    assert.ok((result.events[0].details?.options as string[]).some(id => id === `desecrated_${family.toLowerCase()}`));
+  }
+
+  assert.throws(
+    () => withModifiers(new DesecrationBone("rib", "preserved"), new OmenOfTheSovereign())
+      .apply(item([p1], [s1]), ctx()),
+    /cannot apply/,
+  );
+});
+
+test("Family Desecration reveal fails atomically when its family has no legal option", () => {
+  const hidden = withModifiers(new DesecrationBone("collarbone", "preserved"), new OmenOfTheSovereign())
+    .apply(item([], [s1]), ctx(rngSequence([0]))).item;
+  const noFamily = { prefixes: [p1, p2, p3], suffixes: [] };
+  assertRejected(new RevealDesecratedModifier().apply(hidden, ctxWithPool(noFamily, rngSequence([0]))), hidden);
+});
+
+test("Putrefaction fills three prefixes and suffixes, preserves fractures, and corrupts", () => {
+  const base = item([p1, p2], [s1], [p1]);
+  const result = withModifiers(new DesecrationBone("jawbone", "preserved"), new OmenOfPutrefaction())
+    .apply(base, ctx());
+
+  assert.equal(result.applied, true);
+  assert.equal(result.item.prefixes.length, 3);
+  assert.equal(result.item.suffixes.length, 3);
+  assert.equal(result.item.allMods().filter(mod => mod.hidden).length, 5);
+  assert.ok(result.item.fracturedModIds.has("p1"));
+  assert.equal(result.item.corrupted, true);
+  assert.deepEqual(result.cost, { preserved_jawbone: 1, omen_putrefaction: 1 });
+});
+
+test("Putrefaction-created hidden modifiers can be revealed after corruption", () => {
+  const base = item([p1, p2], [s1], [p1]);
+  const putrefied = withModifiers(new DesecrationBone("jawbone", "preserved"), new OmenOfPutrefaction())
+    .apply(base, ctx()).item;
+  const result = new RevealDesecratedModifier()
+    .apply(putrefied, ctxWithPool({ prefixes: [p2, p3, p4], suffixes: [s1, s2, s3] }, rngSequence([0, 0, 0])));
+
+  assert.equal(result.applied, true);
+  assert.equal(result.item.corrupted, true);
+  assert.equal(result.item.allMods().filter(mod => mod.hidden).length, 4);
+});
+
+test("Putrefaction cannot combine with other Desecration omens", () => {
+  assert.throws(() => withModifiers(
+    new DesecrationBone("jawbone", "preserved"),
+    new OmenOfPutrefaction(),
+    new OmenOfSinistralNecromancy(),
+  ).apply(item([p1], [s1]), ctx()), /cannot be combined/);
 });
 
 test("Omens reject incompatible ingredients", () => {
@@ -1310,7 +1436,6 @@ test("All modeled crafting ingredients reject corrupted items without cost", () 
     { ingredient: new Alloy("alloy_corrupted_test", "Test Alloy", guaranteed), item: rare },
     { ingredient: CatalystCatalog.create("flesh_catalyst", "1")!, item: rare },
     { ingredient: new DesecrationBone("jawbone", "preserved"), item: rare },
-    { ingredient: new RevealDesecratedModifier(), item: hiddenDesecrated },
     { ingredient: testEssence("greater_essence_corrupted_test", guaranteed, "greater"), item: magicItem },
     { ingredient: testEssence("perfect_essence_corrupted_test", guaranteed, "perfect"), item: rare },
   ];
@@ -1318,6 +1443,7 @@ test("All modeled crafting ingredients reject corrupted items without cost", () 
   for (const entry of cases) {
     assertRejected(entry.ingredient.apply(entry.item, ctx()), entry.item);
   }
+  assertRejected(new RevealDesecratedModifier().apply(hiddenDesecrated, ctx()), hiddenDesecrated);
 });
 
 test("An omen is not consumed when its ingredient use is rejected", () => {

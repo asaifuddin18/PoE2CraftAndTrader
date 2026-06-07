@@ -1,6 +1,5 @@
-import type { ModPool, TargetSpec } from "../types";
+import type { ModEntry, ModPool, TargetSpec } from "../types";
 import type { CraftedItem } from "./CraftedItem";
-import type { ModEntry } from "../types";
 
 export type AffixSlot = "prefix" | "suffix";
 
@@ -14,6 +13,10 @@ export interface CraftActionHooks {
   transformAddPool?(item: CraftedItem, pool: ModPool, ctx: CraftContext): ModPool | null;
   afterSuccessfulApply?(item: CraftedItem, ctx: CraftContext): CraftedItem;
   rejectionReason?(item: CraftedItem, ctx: CraftContext): string | null;
+  selectDesecrationSlot?(item: CraftedItem, candidateSlots: AffixSlot[], ctx: CraftContext): AffixSlot | null;
+  guaranteedDesecrationFamily?(): ModEntry["abyssFamily"] | null;
+  extraDesecrationRevealOptions?(item: CraftedItem, hidden: ModEntry, initial: ModEntry[], ctx: CraftContext, drawMore: () => ModEntry[]): ModEntry[];
+  putrefyDesecration?: boolean;
 }
 
 export interface CraftContext {

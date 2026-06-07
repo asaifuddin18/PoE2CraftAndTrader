@@ -7,6 +7,7 @@ const JEWEL_BASE_IDS = new Set<string>();
 
 export class DesecrationBoneCatalog {
   static create(tier: DesecrationBoneTier, kind: DesecrationBoneKind, baseId: string): DesecrationBone | null {
+    if (kind === "cranium" && tier !== "preserved") return null;
     if (!isApplicable(kind, baseId)) return null;
     return new DesecrationBone(kind, tier);
   }

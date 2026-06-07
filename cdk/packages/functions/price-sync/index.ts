@@ -37,7 +37,7 @@ const DEFAULT_PRICES: Record<string, number> = {
   gnawed_jawbone: 1, preserved_jawbone: 1, ancient_jawbone: 1,
   gnawed_rib: 1, preserved_rib: 1, ancient_rib: 1,
   gnawed_collarbone: 1, preserved_collarbone: 1, ancient_collarbone: 1,
-  gnawed_cranium: 1, preserved_cranium: 1, ancient_cranium: 1,
+  preserved_cranium: 1,
   omen_whittling: 2, omen_greater_annulment: 1, omen_sinistral_alchemy: 1, omen_dextral_alchemy: 1,
   omen_sinistral_coronation: 1, omen_dextral_coronation: 1,
   omen_sinistral: 1, omen_dextral: 1, omen_greater: 1,
@@ -45,6 +45,8 @@ const DEFAULT_PRICES: Record<string, number> = {
   omen_sinistral_crystallisation: 1, omen_dextral_crystallisation: 1,
   omen_catalysing_exaltation: 1,
   omen_light: 1,
+  omen_sinistral_necromancy: 1, omen_dextral_necromancy: 1, omen_abyssal_echoes: 1,
+  omen_sovereign: 1, omen_liege: 1, omen_blackblooded: 1, omen_putrefaction: 1,
 };
 
 const CURRENCY_CATS: { id: string; label: string }[] = [
@@ -101,6 +103,13 @@ const SOLVER_KEY_MATCHERS: Record<string, { apiIds?: string[]; name?: RegExp }> 
   omen_dextral_crystallisation: { name: /omen of dextral crystallisation/i },
   omen_catalysing_exaltation: { name: /omen of catalysing exaltation/i },
   omen_light: { name: /omen of light/i },
+  omen_sinistral_necromancy: { name: /omen of sinistral necromancy/i },
+  omen_dextral_necromancy: { name: /omen of dextral necromancy/i },
+  omen_abyssal_echoes: { name: /omen of abyssal echoes/i },
+  omen_sovereign: { name: /omen of the sovereign/i },
+  omen_liege: { name: /omen of the liege/i },
+  omen_blackblooded: { name: /omen of the blackblooded/i },
+  omen_putrefaction: { name: /omen of putrefaction/i },
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

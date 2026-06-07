@@ -295,14 +295,15 @@ adds a hidden Desecrated modifier on that same side. Items with an existing hidd
 Desecrated modifier cannot be Desecrated again.
 
 The supported Bone families are Jawbones for weapons and quivers, Ribs for armour, Collarbones
-for jewellery and belts, and Craniums for jewels. The current generated equipment catalog does
-not include jewel base IDs yet, so Craniums exist in the ingredient model but cannot currently
-be resolved through the base-ID catalog.
+for jewellery and belts, and Preserved Craniums for jewels. The current generated equipment
+catalog does not include jewel base IDs yet, so Craniums exist in the ingredient model but cannot
+currently be resolved through the base-ID catalog. Gnawed and Ancient Craniums are not modeled.
 
 Bone tiers:
 - Gnawed Bones can only be used on items up to item level 64.
 - Preserved Bones have no additional item-level restriction.
 - Ancient Bones reveal only modifiers with required level 40 or higher.
+- Craniums are Preserved-only.
 
 The second Abyss step reveals the hidden modifier. Three same-side legal options are generated
 from the item class's mod pool, respecting item level, affix side, and exclusivity groups. The
@@ -398,8 +399,8 @@ Omens are single-use items that **modify the outcome of the next specific curren
 |------|--------|
 | Omen of Sinistral Necromancy | Next Desecration attempt adds only **Prefix** modifiers |
 | Omen of Dextral Necromancy | Next Desecration attempt adds only **Suffix** modifiers |
-| Omen of Putrefaction | Next Desecration attempt replaces **all** modifiers, creating up to 6 Desecrated modifiers |
-| Omen of Abyssal Echoes | Reroll Desecrated modifier options once |
+| Omen of Putrefaction | Next Desecration attempt replaces non-fractured modifiers, fills the item with hidden Desecrated modifiers, preserves fractured modifiers, and corrupts the item |
+| Omen of Abyssal Echoes | Adds one extra set of three reveal options; the solver chooses across all six options |
 | Omen of the Blackblooded | Next Desecration attempt guarantees a random **Kurgal** modifier |
 | Omen of the Liege | Next Desecration attempt guarantees a random **Amanamu** modifier |
 | Omen of the Sovereign | Next Desecration attempt guarantees a random **Ulaman** modifier |

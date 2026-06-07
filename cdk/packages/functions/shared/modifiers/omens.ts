@@ -5,6 +5,7 @@ import type { AffixSlot, CraftContext } from "../domain/CraftContext";
 import type { CraftedItem } from "../domain/CraftedItem";
 import type { ModEntry } from "../types";
 import { Essence } from "../ingredients/Essence";
+import { DesecrationBone, RevealDesecratedModifier } from "../ingredients/Desecration";
 import { CatalystCatalog } from "../domain/CatalystCatalog";
 import type { ModPool } from "../types";
 
@@ -16,7 +17,9 @@ abstract class OmenModifier implements CraftingModifier {
 
   canApplyTo(ingredient: CraftingIngredient): boolean {
     return this.ingredientIds.includes(ingredient.id) ||
-      (this.ingredientIds.includes("essence") && ingredient instanceof Essence);
+      (this.ingredientIds.includes("essence") && ingredient instanceof Essence) ||
+      (this.ingredientIds.includes("desecration") && ingredient instanceof DesecrationBone) ||
+      (this.ingredientIds.includes("desecration_reveal") && ingredient instanceof RevealDesecratedModifier);
   }
 
   cost(): CurrencyBasket {
@@ -220,6 +223,89 @@ export class OmenOfLight extends OmenModifier {
   filterRemoveCandidates(_item: CraftedItem, candidates: ModEntry[]): ModEntry[] {
     return candidates.filter(mod => mod.desecrated);
   }
+}
+
+abstract class NecromancyOmen extends OmenModifier {
+  readonly ingredientIds = ["desecration"];
+  abstract readonly slot: AffixSlot;
+
+  selectDesecrationSlot(_item: CraftedItem, candidateSlots: AffixSlot[]): AffixSlot | null {
+    return candidateSlots.includes(this.slot) ? this.slot : null;
+  }
+}
+
+export class OmenOfSinistralNecromancy extends NecromancyOmen {
+  readonly id = "omen_sinistral_necromancy";
+  readonly displayName = "Omen of Sinistral Necromancy";
+  readonly costKey = "omen_sinistral_necromancy";
+  readonly slot = "prefix" as const;
+}
+
+export class OmenOfDextralNecromancy extends NecromancyOmen {
+  readonly id = "omen_dextral_necromancy";
+  readonly displayName = "Omen of Dextral Necromancy";
+  readonly costKey = "omen_dextral_necromancy";
+  readonly slot = "suffix" as const;
+}
+
+abstract class FamilyDesecrationOmen extends OmenModifier {
+  readonly ingredientIds = ["desecration"];
+  abstract readonly family: NonNullable<ModEntry["abyssFamily"]>;
+
+  canApplyTo(ingredient: CraftingIngredient): boolean {
+    return ingredient instanceof DesecrationBone &&
+      (ingredient.boneKind === "jawbone" || ingredient.boneKind === "collarbone");
+  }
+
+  guaranteedDesecrationFamily() {
+    return this.family;
+  }
+}
+
+export class OmenOfTheSovereign extends FamilyDesecrationOmen {
+  readonly id = "omen_sovereign";
+  readonly displayName = "Omen of the Sovereign";
+  readonly costKey = "omen_sovereign";
+  readonly family = "Ulaman" as const;
+}
+
+export class OmenOfTheLiege extends FamilyDesecrationOmen {
+  readonly id = "omen_liege";
+  readonly displayName = "Omen of the Liege";
+  readonly costKey = "omen_liege";
+  readonly family = "Amanamu" as const;
+}
+
+export class OmenOfTheBlackblooded extends FamilyDesecrationOmen {
+  readonly id = "omen_blackblooded";
+  readonly displayName = "Omen of the Blackblooded";
+  readonly costKey = "omen_blackblooded";
+  readonly family = "Kurgal" as const;
+}
+
+export class OmenOfAbyssalEchoes extends OmenModifier {
+  readonly id = "omen_abyssal_echoes";
+  readonly displayName = "Omen of Abyssal Echoes";
+  readonly costKey = "omen_abyssal_echoes";
+  readonly ingredientIds = ["desecration_reveal"];
+
+  extraDesecrationRevealOptions(
+    _item: CraftedItem,
+    _hidden: ModEntry,
+    initial: ModEntry[],
+    _ctx: CraftContext,
+    drawMore: () => ModEntry[],
+  ): ModEntry[] {
+    return [...initial, ...drawMore()];
+  }
+}
+
+export class OmenOfPutrefaction extends OmenModifier {
+  readonly id = "omen_putrefaction";
+  readonly displayName = "Omen of Putrefaction";
+  readonly costKey = "omen_putrefaction";
+  readonly ingredientIds = ["desecration"];
+  readonly putrefyDesecration = true;
 }
 
 export class OmenOfSinistralCrystallisation extends OmenModifier {

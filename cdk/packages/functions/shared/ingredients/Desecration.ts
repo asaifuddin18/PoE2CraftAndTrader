@@ -1,6 +1,6 @@
 import type { CraftContext } from "../domain/CraftContext";
 import { craftResult, rejectedResult } from "../domain/CraftResult";
-import type { CraftedItem } from "../domain/CraftedItem";
+import { CraftedItem } from "../domain/CraftedItem";
 import type { AffixSlot } from "../domain/CraftContext";
 import type { ModEntry, TargetSpec } from "../types";
 import type { CraftingIngredient } from "./CraftingIngredient";
@@ -17,6 +17,9 @@ export class DesecrationBone implements CraftingIngredient {
     readonly boneKind: DesecrationBoneKind,
     readonly tier: DesecrationBoneTier,
   ) {
+    if (boneKind === "cranium" && tier !== "preserved") {
+      throw new Error("Craniums only exist at the Preserved tier");
+    }
     this.id = `${tier}_${boneKind}`;
     this.displayName = `${title(tier)} ${title(boneKind)}`;
   }
@@ -28,6 +31,7 @@ export class DesecrationBone implements CraftingIngredient {
     if (this.tier === "gnawed" && (ctx.itemLevel ?? 64) > 64) {
       return rejectedResult(item, "Gnawed Bones can only be used on items up to item level 64");
     }
+    if (ctx.hooks?.putrefyDesecration) return putrefy(item, this, ctx);
     if (item.hasDesecratedModifier()) return rejectedResult(item, "Item already has a Desecrated modifier");
 
     const selectedSlot = chooseHiddenSlot(item, ctx);
@@ -51,7 +55,7 @@ export class DesecrationBone implements CraftingIngredient {
       next = removal.item;
     }
 
-    const hidden = hiddenDesecratedMod(selectedSlot, this.tier);
+    const hidden = hiddenDesecratedMod(selectedSlot, this.tier, ctx.hooks?.guaranteedDesecrationFamily?.() ?? undefined);
     return craftResult(next.addMod(hidden), { [this.id]: 1 }, [
       {
         type: "currency",
@@ -69,10 +73,11 @@ export class RevealDesecratedModifier implements CraftingIngredient {
   constructor(private readonly choose?: (options: readonly ModEntry[], item: CraftedItem, ctx: CraftContext) => ModEntry) {}
 
   apply(item: CraftedItem, ctx: CraftContext) {
-    const corrupted = rejectCorruptedItem(item);
-    if (corrupted) return corrupted;
     const hidden = item.allMods().find(mod => mod.desecrated && mod.hidden);
     if (!hidden) return rejectedResult(item, "Item has no hidden Desecrated modifier to reveal");
+    if (item.corrupted && !hidden.putrefiedDesecration) {
+      return rejectedResult(item, "Corrupted items can only reveal Putrefaction Desecrated modifiers");
+    }
 
     const options = revealOptions(item, hidden, ctx);
     if (options.length < 3) return rejectedResult(item, "Could not generate three Desecrated reveal options");
@@ -92,11 +97,21 @@ function chooseHiddenSlot(item: CraftedItem, ctx: CraftContext): AffixSlot | nul
   const open: AffixSlot[] = [];
   if (item.openPrefix()) open.push("prefix");
   if (item.openSuffix()) open.push("suffix");
-  if (open.length > 0) return open[Math.floor(ctx.rng() * open.length)];
+  if (open.length > 0) {
+    const selected = ctx.hooks?.selectDesecrationSlot?.(item, open, ctx);
+    if (selected) return selected;
+    if (ctx.hooks?.selectDesecrationSlot) return null;
+    return open[Math.floor(ctx.rng() * open.length)];
+  }
 
   const removable = item.nonFracturedMods();
   if (removable.length === 0) return null;
-  const selected = removable[Math.floor(ctx.rng() * removable.length)];
+  const sides = [...new Set(removable.map(mod => mod.gen_type))] as AffixSlot[];
+  const forcedSide = ctx.hooks?.selectDesecrationSlot?.(item, sides, ctx);
+  if (ctx.hooks?.selectDesecrationSlot && !forcedSide) return null;
+  const candidates = forcedSide ? removable.filter(mod => mod.gen_type === forcedSide) : removable;
+  if (candidates.length === 0) return null;
+  const selected = candidates[Math.floor(ctx.rng() * candidates.length)];
   return selected.gen_type;
 }
 
@@ -104,7 +119,12 @@ function hasOpenSlot(item: CraftedItem, slot: AffixSlot): boolean {
   return slot === "prefix" ? item.openPrefix() : item.openSuffix();
 }
 
-function hiddenDesecratedMod(slot: AffixSlot, tier: DesecrationBoneTier): ModEntry {
+function hiddenDesecratedMod(
+  slot: AffixSlot,
+  tier: DesecrationBoneTier,
+  guaranteedFamily?: ModEntry["abyssFamily"],
+  putrefiedDesecration = false,
+): ModEntry {
   return {
     modId: `hidden_desecrated_${slot}`,
     group: `hidden_desecrated_${slot}`,
@@ -117,10 +137,17 @@ function hiddenDesecratedMod(slot: AffixSlot, tier: DesecrationBoneTier): ModEnt
     hidden: true,
     tags: ["Desecrated"],
     desecrationTier: tier,
+    guaranteedAbyssFamily: guaranteedFamily,
+    putrefiedDesecration,
   };
 }
 
 function revealOptions(item: CraftedItem, hidden: ModEntry, ctx: CraftContext): ModEntry[] {
+  const first = drawRevealOptions(item, hidden, ctx);
+  return ctx.hooks?.extraDesecrationRevealOptions?.(item, hidden, first, ctx, () => drawRevealOptions(item, hidden, ctx)) ?? first;
+}
+
+function drawRevealOptions(item: CraftedItem, hidden: ModEntry, ctx: CraftContext): ModEntry[] {
   const pool = hidden.gen_type === "prefix" ? ctx.pool.prefixes : ctx.pool.suffixes;
   const present = item.presentGroups();
   present.delete(hidden.group);
@@ -131,6 +158,13 @@ function revealOptions(item: CraftedItem, hidden: ModEntry, ctx: CraftContext): 
     .filter(mod => mod.required_level >= ancientMinimum(hidden))
     .map(toDesecratedReveal);
 
+  if (hidden.guaranteedAbyssFamily) {
+    const familyCandidates = candidates.filter(mod => mod.abyssFamily === hidden.guaranteedAbyssFamily);
+    const guaranteed = drawUnique(familyCandidates, 1, ctx.rng)[0];
+    if (!guaranteed) return [];
+    const rest = drawUnique(candidates.filter(mod => mod.group !== guaranteed.group), 2, ctx.rng);
+    return rest.length === 2 ? [guaranteed, ...rest] : [];
+  }
   return drawUnique(candidates, 3, ctx.rng);
 }
 
@@ -173,4 +207,30 @@ function score(option: ModEntry, target: TargetSpec): number {
 
 function title(value: string): string {
   return value[0].toUpperCase() + value.slice(1);
+}
+
+function putrefy(item: CraftedItem, bone: DesecrationBone, ctx: CraftContext) {
+  if (item.hasDesecratedModifier()) return rejectedResult(item, "Item already has a Desecrated modifier");
+  const kept = item.allMods().filter(mod => item.fracturedModIds.has(mod.modId));
+  const prefixes = kept.filter(mod => mod.gen_type === "prefix");
+  const suffixes = kept.filter(mod => mod.gen_type === "suffix");
+  if (prefixes.length > 3 || suffixes.length > 3) {
+    return rejectedResult(item, "Fractured affixes leave no room for Putrefaction");
+  }
+
+  while (prefixes.length < 3) prefixes.push(hiddenDesecratedMod("prefix", bone.tier, undefined, true));
+  while (suffixes.length < 3) suffixes.push(hiddenDesecratedMod("suffix", bone.tier, undefined, true));
+
+  return craftResult(CraftedItem.fromState({
+    ...item.toState(),
+    prefixes,
+    suffixes,
+    corrupted: true,
+  }), { [bone.id]: 1 }, [
+    {
+      type: "currency",
+      message: bone.displayName,
+      details: { putrefaction: true, hidden: prefixes.length + suffixes.length - kept.length },
+    },
+  ]);
 }
