@@ -33,22 +33,33 @@ export default async function LandingPage() {
     <div className="flex flex-col min-h-screen" style={{ background: "var(--bg-base)" }}>
       {/* Nav */}
       <header
-        className="flex items-center justify-between px-8 h-14 border-b"
-        style={{ borderColor: "var(--border)", background: "var(--bg-surface)" }}
+        className="flex items-center justify-between px-6 border-b"
+        style={{ height: 64, borderColor: "var(--border)", background: "var(--bg-base)" }}
       >
-        <span className="text-base font-semibold" style={{ color: "var(--text-primary)" }}>
+        <span
+          className="flex items-center gap-2.5 font-medium"
+          style={{ color: "var(--text-primary)", letterSpacing: "-0.02em" }}
+        >
+          <span
+            className="inline-block rounded"
+            style={{ width: 18, height: 18, background: "var(--text-primary)" }}
+          />
           PoE2 Craft &amp; Trade
         </span>
-        <SignInButton />
+        <SignInButton variant="secondary" />
       </header>
 
       {/* Hero */}
       <main className="flex flex-col items-center justify-center flex-1 px-6 py-24 text-center">
-        <h1
-          className="text-4xl font-semibold mb-4 leading-tight"
-          style={{ color: "var(--text-primary)" }}
+        <p
+          className="font-mono text-xs mb-5"
+          style={{ color: "var(--text-secondary)", letterSpacing: "0.04em" }}
         >
-          Craft smarter.<br />Trade better.
+          PATH OF EXILE 2 · ENDGAME TOOLKIT
+        </p>
+        <h1 className="display-lg sm:text-5xl mb-5" style={{ color: "var(--text-primary)" }}>
+          Craft smarter.<br />
+          <span className="text-gradient">Trade better.</span>
         </h1>
         <p
           className="text-lg mb-10 max-w-xl"
@@ -62,18 +73,14 @@ export default async function LandingPage() {
         {/* Feature grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-20 max-w-3xl w-full text-left">
           {FEATURES.map((f) => (
-            <div
-              key={f.title}
-              className="rounded-lg p-5 border"
-              style={{ background: "var(--bg-surface)", borderColor: "var(--border)" }}
-            >
+            <div key={f.title} className="card-elevated card-elevated--hover p-6 transition-shadow">
               <h3
-                className="text-sm font-semibold mb-2"
-                style={{ color: "var(--text-primary)" }}
+                className="font-medium mb-2"
+                style={{ color: "var(--text-primary)", letterSpacing: "-0.02em" }}
               >
                 {f.title}
               </h3>
-              <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+              <p className="text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
                 {f.description}
               </p>
             </div>

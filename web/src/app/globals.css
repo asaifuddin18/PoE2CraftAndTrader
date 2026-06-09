@@ -1,20 +1,25 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=JetBrains+Mono&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400&display=swap');
 @import "tailwindcss";
 
 :root {
-  --bg-base: #0E0F13;
-  --bg-surface: #16181F;
-  --bg-elevated: #1E2029;
-  --border: #2A2D3A;
-  --text-primary: #E8E9EE;
-  --text-secondary: #8B8FA8;
-  --text-disabled: #4A4D5E;
-  --accent: #7B68EE;
-  --accent-hover: #9B8FFF;
+  /* Vercel dark-ink palette */
+  --bg-base: #000000;
+  --bg-surface: #0A0A0A;
+  --bg-elevated: #171717;
+  --border: #2E2E2E;
+  --border-strong: #454545;
+  --text-primary: #EDEDED;
+  --text-secondary: #A1A1A1;
+  --text-disabled: #666666;
+  --accent: #7928CA;
+  --accent-hover: #9542E0;
+  /* signature preview gradient */
+  --grad-from: #7928CA;
+  --grad-to: #FF0080;
   --status-positive: #4ADE80;
-  --status-warning: #FBBF24;
-  --status-negative: #F87171;
-  --status-info: #60A5FA;
+  --status-warning: #F5A623;
+  --status-negative: #EE5C5C;
+  --status-info: #0070F3;
 }
 
 @theme inline {
@@ -22,6 +27,7 @@
   --color-bg-surface: var(--bg-surface);
   --color-bg-elevated: var(--bg-elevated);
   --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
   --color-text-primary: var(--text-primary);
   --color-text-secondary: var(--text-secondary);
   --color-text-disabled: var(--text-disabled);
@@ -31,8 +37,8 @@
   --color-status-warning: var(--status-warning);
   --color-status-negative: var(--status-negative);
   --color-status-info: var(--status-info);
-  --font-sans: 'Inter', sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-sans: 'Geist', system-ui, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, monospace;
 }
 
 html {
@@ -43,4 +49,31 @@ body {
   background-color: var(--bg-base);
   color: var(--text-primary);
   font-family: var(--font-sans);
+  /* Geist reads best slightly tightened */
+  letter-spacing: -0.011em;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Display headings carry aggressive negative tracking — part of the voice */
+.display-xl { font-weight: 600; font-size: 48px; line-height: 1; letter-spacing: -0.05em; }
+.display-lg { font-weight: 600; font-size: 32px; line-height: 1.25; letter-spacing: -0.04em; }
+.display-md { font-weight: 600; font-size: 24px; line-height: 1.33; letter-spacing: -0.04em; }
+.display-sm { font-weight: 600; font-size: 20px; line-height: 1.4; letter-spacing: -0.03em; }
+
+/* The one moment of colour: violet → pink clipped to text */
+.text-gradient {
+  background: linear-gradient(90deg, var(--grad-from), var(--grad-to));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Elevated card: on pure black, an inset hairline defines the surface */
+.card-elevated {
+  background: var(--bg-surface);
+  border-radius: 8px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+.card-elevated--hover:hover {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
 }

@@ -15,9 +15,9 @@ export default async function SignInPage({
 
   return (
     <div className="flex min-h-screen items-center justify-center" style={{ background: "var(--bg-base)" }}>
-      <div className="w-full max-w-sm rounded-xl border p-8 flex flex-col items-center gap-6"
-        style={{ background: "var(--bg-surface)", borderColor: "var(--border)" }}>
-        <h1 className="text-lg font-semibold" style={{ color: "var(--text-primary)" }}>
+      <div className="card-elevated w-full max-w-sm p-8 flex flex-col items-center gap-6"
+        style={{ borderRadius: 12 }}>
+        <h1 className="display-sm" style={{ color: "var(--text-primary)" }}>
           PoE2 Craft &amp; Trade
         </h1>
 
