@@ -128,7 +128,6 @@ modifiers cannot coexist on one item.
 |---|---|
 | Expected quality | Mean weighted tier-quality score across 5,000 outcomes |
 | Expected spend | Mean Exalted-equivalent spend, always within budget |
-| Per-mod tier probabilities | Marginal probability of each preferred modifier and tier |
 | Desired-mod-count distribution | Distribution of how many preferred modifiers appear |
 | Joint outcome histogram | Compact exact outcome buckets for client-side filtering |
 | Representative final items | Common high-quality final states |

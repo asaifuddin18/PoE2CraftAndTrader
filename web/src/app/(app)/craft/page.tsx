@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { OptimizerOutput, OutcomeBucket } from "@/lib/craft-types";
-import { countMatchingJointOutcomes, eligibleTiers, formatCurrency } from "@/lib/craft-results";
+import { countMatchingJointOutcomes, eligibleTiers, formatCurrency, matchesOutcomeMods } from "@/lib/craft-results";
 
 interface ModTier { tier: number; ilvl: number; weight: number; }
 interface ModDef { modId: string; name: string; affix: "prefix" | "suffix"; modgroups: string[]; tiers: ModTier[]; }
@@ -52,14 +52,19 @@ export default function CraftPage() {
     setClassId(next);
     setBaseId(cls?.baseIds[0] ?? "");
     setStarting({ ...emptyStart, catalystType: "", catalystAmount: 0 });
-    setPreferences([]);
-    setResult(null);
+    replacePreferences([]);
   }
 
   function addPreference(modId: string) {
     const mod = mods.find(candidate => candidate.modId === modId);
     if (!mod || preferences.some(candidate => candidate.modId === modId)) return;
-    setPreferences(current => [...current, { modId, name: mod.name, affix: mod.affix, weight: 50 }]);
+    replacePreferences([...preferences, { modId, name: mod.name, affix: mod.affix, weight: 50 }]);
+  }
+
+  function replacePreferences(next: Preference[]) {
+    setPreferences(next);
+    setFilters({});
+    setResult(null);
   }
 
   function addStarting(affix: "prefix" | "suffix", modId: string) {
@@ -115,6 +120,8 @@ export default function CraftPage() {
   }
 
   const matching = result ? countMatchingJointOutcomes(result.jointOutcomes, preferences, filters) : 0;
+  const activeFilterCount = Object.values(filters).filter(Boolean).length;
+  const filteredOutcomes = result?.outcomes.filter(outcome => matchesOutcomeMods(outcome.mods, filters)) ?? [];
   const div = result?.prices?.divine ?? 90;
 
   return (
@@ -130,7 +137,7 @@ export default function CraftPage() {
           </select>
         </Field>
         <Field label="Equipment type">
-          <select value={baseId} onChange={event => { setBaseId(event.target.value); setPreferences([]); setStarting({ ...emptyStart, catalystType:"", catalystAmount:0 }); }} style={inputStyle}>
+          <select value={baseId} onChange={event => { setBaseId(event.target.value); replacePreferences([]); setStarting({ ...emptyStart, catalystType:"", catalystAmount:0 }); }} style={inputStyle}>
             {currentClass?.baseIds.map(id => <option key={id} value={id}>{data?.equipmentTypes?.find(type => type.id === id)?.label ?? `Type ${id}`}</option>)}
           </select>
         </Field>
@@ -148,8 +155,8 @@ export default function CraftPage() {
         <Field label="Desired modifier">
           <select value="" onChange={event => addPreference(event.target.value)} style={inputStyle}><option value="">Add a weighted modifier...</option>{mods.filter(mod => !preferences.some(pref => pref.modId === mod.modId)).map(mod => <option key={mod.modId} value={mod.modId}>{mod.affix === "prefix" ? "P" : "S"} · {mod.name}</option>)}</select>
         </Field>
-        <PreferenceList title="Prefixes" values={prefixes} onChange={setPreferences} all={preferences}/>
-        <PreferenceList title="Suffixes" values={suffixes} onChange={setPreferences} all={preferences}/>
+        <PreferenceList title="Prefixes" values={prefixes} onChange={replacePreferences} all={preferences}/>
+        <PreferenceList title="Suffixes" values={suffixes} onChange={replacePreferences} all={preferences}/>
         <div className="grid grid-cols-[1fr_90px] gap-2 mt-4">
           <input type="number" min={0.01} step={0.1} value={budget} onChange={event => setBudget(Number(event.target.value))} style={inputStyle}/>
           <select value={unit} onChange={event => setUnit(event.target.value as typeof unit)} style={inputStyle}><option value="exalt">Exalts</option><option value="divine">Divines</option></select>
@@ -165,17 +172,29 @@ export default function CraftPage() {
             <Metric label="Expected quality" value={`${result.expectedScore.toFixed(1)} / ${maxScore}`}/>
             <Metric label="Expected spend" value={formatCurrency(result.expectedSpend, div)}/>
             <Metric label="Outcomes simulated" value={result.iterations.toLocaleString()}/>
-            <Metric label="Observed matches" value={`${((matching / result.iterations) * 100).toFixed(1)}%`}/>
+            <Metric label="Filtered matches" value={`${((matching / result.iterations) * 100).toFixed(1)}%`}/>
           </div>
           <section className="mb-6">
-            <Header title="Outcome explorer" detail="Set tier limits to measure combinations across observed outcomes."/>
-            <div className="grid grid-cols-2 gap-x-5 gap-y-2 mb-4">
-              {preferences.map(preference => <div key={preference.modId} className="grid grid-cols-[1fr_110px] items-center gap-2 text-xs"><span className="truncate">{preference.name}</span><select value={filters[preference.modId] ?? 0} onChange={event => setFilters(current => ({ ...current, [preference.modId]:Number(event.target.value) }))} style={inputStyle}><option value={0}>Ignore</option>{eligibleTiers(mods, preference.modId, ilvl).map(tier => <option key={tier} value={tier}>T{tier} or better</option>)}</select></div>)}
+            <div className="flex items-end justify-between mb-3">
+              <Header title="Outcome filter" detail="Require any combination of modifiers and minimum tiers."/>
+              {activeFilterCount > 0 && <button className="text-xs mb-3" style={{ color:"var(--status-info)" }} onClick={()=>setFilters({})}>Clear filter</button>}
             </div>
-            <div className="h-190px h-52"><ResponsiveContainer><BarChart data={Object.entries(result.desiredModCount).map(([mods,count]) => ({ mods:`${mods} mods`, count }))}><CartesianGrid stroke="var(--border)" vertical={false}/><XAxis dataKey="mods" tick={{ fill:"var(--text-disabled)", fontSize:11 }}/><YAxis tick={{ fill:"var(--text-disabled)", fontSize:11 }}/><Tooltip/><Bar dataKey="count" fill="var(--accent)" radius={[3,3,0,0]}/></BarChart></ResponsiveContainer></div>
+            <div className="grid grid-cols-[minmax(0,1fr)_220px] gap-5">
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                {preferences.map(preference => <OutcomeFilterRow key={preference.modId} preference={preference} tiers={eligibleTiers(mods, preference.modId, ilvl)} value={filters[preference.modId] ?? 0} onChange={value=>setFilters(current=>({...current,[preference.modId]:value}))}/>)}
+              </div>
+              <div className="border-l pl-5 flex flex-col justify-center" style={{ borderColor:"var(--border)" }}>
+                <p className="text-xs" style={{ color:"var(--text-disabled)" }}>{activeFilterCount ? `${activeFilterCount} required modifier${activeFilterCount === 1 ? "" : "s"}` : "All simulated outcomes"}</p>
+                <p className="text-4xl font-semibold mt-1" style={{ color:"var(--status-info)" }}>{((matching/result.iterations)*100).toFixed(1)}%</p>
+                <p className="text-xs mt-1" style={{ color:"var(--text-secondary)" }}>{matching.toLocaleString()} of {result.iterations.toLocaleString()} items matched</p>
+              </div>
+            </div>
+            <div className="mt-5">
+              <Header title="Matching representative items" detail={filteredOutcomes.length ? "Common observed outcomes satisfying the current filter." : "No representative outcome satisfied this filter."}/>
+              <div className="flex flex-col gap-1">{filteredOutcomes.slice(0,12).map(outcome => <OutcomeRow key={outcome.signature} outcome={outcome} total={result.iterations} div={div}/>)}</div>
+            </div>
           </section>
-          <section className="mb-6"><Header title="Per-mod tier outcomes" detail="Marginal probability for each desired modifier."/><div className="grid grid-cols-2 gap-3">{preferences.map(preference => <TierPanel key={preference.modId} preference={preference} counts={result.modTierCounts[mods.find(mod => mod.modId === preference.modId)?.modgroups[0] ?? preference.modId] ?? {}} total={result.iterations}/>)}</div></section>
-          <section className="mb-6"><Header title="Most common final items" detail="Representative observed combinations."/><div className="flex flex-col gap-1">{result.outcomes.slice(0,12).map(outcome => <OutcomeRow key={outcome.signature} outcome={outcome} total={result.iterations} div={div}/>)}</div></section>
+          <section className="mb-6"><Header title="Desired modifier count" detail="How many preferred modifiers appeared on final items, regardless of tier."/><div className="h-52"><ResponsiveContainer><BarChart data={Object.entries(result.desiredModCount).map(([mods,count]) => ({ mods:`${mods} mods`, count }))}><CartesianGrid stroke="var(--border)" vertical={false}/><XAxis dataKey="mods" tick={{ fill:"var(--text-disabled)", fontSize:11 }}/><YAxis tick={{ fill:"var(--text-disabled)", fontSize:11 }}/><Tooltip/><Bar dataKey="count" fill="var(--accent)" radius={[3,3,0,0]}/></BarChart></ResponsiveContainer></div></section>
           <section><Header title="Adaptive policy" detail="Most frequently visited decisions and actions."/><div className="grid grid-cols-2 gap-4"><div>{result.policy.slice(0,12).map(decision => <p key={decision.stateKey} className="text-xs py-1.5 border-b" style={{ borderColor:"var(--border)" }}><strong>{decision.actionName}</strong><span style={{ color:"var(--text-disabled)" }}> · {decision.visits} visits</span></p>)}</div><div>{Object.entries(result.actionCounts).sort((a,b)=>b[1]-a[1]).slice(0,12).map(([action,count]) => <p key={action} className="text-xs py-1.5 border-b flex justify-between" style={{ borderColor:"var(--border)" }}><span>{action}</span><strong>{count}</strong></p>)}</div></div></section>
         </>}
       </main>
@@ -191,7 +210,7 @@ function Field({ label, children }: { label:string; children:React.ReactNode }) 
 function Header({ title, detail }: { title:string; detail:string }) { return <div className="mb-3"><h2 className="text-sm font-semibold">{title}</h2><p className="text-xs" style={{ color:"var(--text-disabled)" }}>{detail}</p></div>; }
 function Metric({ label, value }: { label:string; value:string|number }) { return <div className="px-4 border-r last:border-r-0" style={{ borderColor:"var(--border)" }}><p className="text-xs" style={{ color:"var(--text-disabled)" }}>{label}</p><p className="text-lg font-semibold mt-1">{value}</p></div>; }
 function EmptyState({ solving }: { solving:boolean }) { return <div className="h-full flex items-center justify-center text-center"><div><p className="text-lg font-semibold">{solving?"Searching the craft space":"Configure a budgeted craft"}</p><p className="text-xs mt-1" style={{ color:"var(--text-disabled)" }}>{solving?"The browser will update when all 5,000 outcomes are aggregated.":"Choose the item you own, assign value to desired mods, and set your maximum spend."}</p></div></div>; }
-function TierPanel({ preference, counts, total }: { preference:Preference; counts:Record<string,number>; total:number }) { return <div className="border p-3 rounded-md" style={{ borderColor:"var(--border)", background:"var(--bg-surface)" }}><p className="text-xs font-semibold truncate mb-2">{preference.name}</p>{Object.entries(counts).sort().map(([tier,count])=><div key={tier} className="flex justify-between text-xs py-0.5"><span style={{ color:tier==="missing"?"var(--text-disabled)":"var(--status-info)" }}>{tier}</span><span>{((count/total)*100).toFixed(1)}%</span></div>)}</div>; }
+function OutcomeFilterRow({ preference, tiers, value, onChange }: { preference:Preference; tiers:number[]; value:number; onChange:(value:number)=>void }) { const enabled=Boolean(value); const anyTier=Math.max(...tiers); return <div className="grid grid-cols-[22px_minmax(0,1fr)_120px] items-center gap-2 py-1.5 border-b" style={{ borderColor:"var(--border)" }}><input type="checkbox" checked={enabled} onChange={event=>onChange(event.target.checked?anyTier:0)} aria-label={`Require ${preference.name}`}/><span className="text-xs truncate" style={{ color:enabled?"var(--text-primary)":"var(--text-disabled)" }}>{preference.name}</span><select value={value||anyTier} disabled={!enabled} onChange={event=>onChange(Number(event.target.value))} style={{...inputStyle,opacity:enabled?1:0.45}}><option value={anyTier}>Any tier</option>{tiers.filter(tier=>tier!==anyTier).map(tier=><option key={tier} value={tier}>T{tier} or better</option>)}</select></div>; }
 function OutcomeRow({ outcome,total,div }: { outcome:OutcomeBucket; total:number; div:number }) { return <div className="grid grid-cols-[90px_1fr_100px] gap-3 py-2 border-b text-xs" style={{ borderColor:"var(--border)" }}><strong>{((outcome.count/total)*100).toFixed(1)}%</strong><span>{outcome.mods.length?outcome.mods.map(mod=>`${mod.name} T${mod.tier}`).join(" · "):"No desired modifiers"}</span><span className="text-right" style={{ color:"var(--text-disabled)" }}>{formatCurrency(outcome.spendSum/outcome.count,div)}</span></div>; }
 async function requestJson<T>(url:string, init:RequestInit|undefined, label:string):Promise<T> {
   let response:Response;

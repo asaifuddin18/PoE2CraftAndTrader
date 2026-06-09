@@ -26,8 +26,8 @@ affordable action improves expected score.
    state-to-action policy to S3.
 3. Step Functions fans out ten `craft-worker` Lambdas. Each evaluates 500
    outcomes against the same learned policy and writes a partial histogram to S3.
-4. `craft-aggregate` combines exactly 5,000 outcomes into marginal tier counts,
-   desired-mod counts, a sparse joint tier histogram, representative final
+4. `craft-aggregate` combines exactly 5,000 outcomes into desired-mod counts,
+   a sparse joint tier histogram, representative final
    items, spend/score summaries, and frequently visited policy decisions.
 
 The audited crafting ingredient classes remain the source of truth for game

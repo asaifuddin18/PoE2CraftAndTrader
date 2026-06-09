@@ -184,7 +184,6 @@ export interface OptimizerOutput {
   fallbackCount: number;
   outcomes: OutcomeBucket[];
   jointOutcomes: string;
-  modTierCounts: Record<string, Record<string, number>>;
   desiredModCount: Record<string, number>;
   policy: PolicyDecision[];
   actionCounts: Record<string, number>;

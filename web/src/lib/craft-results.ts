@@ -7,6 +7,11 @@ export interface FilterPreference {
   modId: string;
 }
 
+export interface FilterOutcomeMod {
+  modId: string;
+  tier: number;
+}
+
 export function eligibleTiers(mods: TieredMod[], modId: string, ilvl: number): number[] {
   return [
     ...new Set(
@@ -45,6 +50,17 @@ export function matchesJoint(
     const maximumTier = filters[preference.modId] ?? 0;
     const rolledTier = tiers.get(preferenceIndex);
     return !maximumTier || Boolean(rolledTier && rolledTier <= maximumTier);
+  });
+}
+
+export function matchesOutcomeMods(
+  mods: FilterOutcomeMod[],
+  filters: Record<string, number>,
+): boolean {
+  return Object.entries(filters).every(([modId, maximumTier]) => {
+    if (!maximumTier) return true;
+    const rolled = mods.find(mod => mod.modId === modId);
+    return Boolean(rolled && rolled.tier <= maximumTier);
   });
 }
 

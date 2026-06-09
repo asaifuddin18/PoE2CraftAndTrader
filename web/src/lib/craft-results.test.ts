@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { countMatchingJointOutcomes, eligibleTiers, formatCurrency, matchesJoint } from "./craft-results";
+import { countMatchingJointOutcomes, eligibleTiers, formatCurrency, matchesJoint, matchesOutcomeMods } from "./craft-results";
 
 const mods = [{
   modId: "life",
@@ -20,6 +20,9 @@ assert.equal(matchesJoint(
   { choice_7: 1 },
 ), true);
 assert.equal(countMatchingJointOutcomes("0.2=a;0.3=5;=2", [{ modId: "life" }], { life: 2 }), 10);
+assert.equal(matchesOutcomeMods([{ modId: "life", tier: 2 }], { life: 2 }), true);
+assert.equal(matchesOutcomeMods([{ modId: "life", tier: 3 }], { life: 2 }), false);
+assert.equal(matchesOutcomeMods([], { life: 2 }), false);
 assert.equal(formatCurrency(45, 90), "45.0 ex");
 assert.equal(formatCurrency(180, 90), "2.00 div");
 

@@ -44,16 +44,9 @@ export async function handler(event: AggregateInput): Promise<OptimizerOutput> {
     throw new Error(`Budget invariant violated: ${overspendCount} overspends, maximum spend ${maxSpend}`);
   }
 
-  const modTierCounts: Record<string, Record<string, number>> = {};
   const desiredModCount: Record<string, number> = {};
-  for (const preference of scratch.preferences) modTierCounts[preference.group] = { missing: 0 };
   for (const outcome of buckets.values()) {
     desiredModCount[String(outcome.mods.length)] = (desiredModCount[String(outcome.mods.length)] ?? 0) + outcome.count;
-    for (const preference of scratch.preferences) {
-      const mod = outcome.mods.find(candidate => candidate.group === preference.group);
-      const key = mod ? `T${mod.tier}` : "missing";
-      modTierCounts[preference.group][key] = (modTierCounts[preference.group][key] ?? 0) + outcome.count;
-    }
   }
 
   await Promise.all([
@@ -81,7 +74,6 @@ export async function handler(event: AggregateInput): Promise<OptimizerOutput> {
     fallbackCount,
     outcomes,
     jointOutcomes,
-    modTierCounts,
     desiredModCount,
     policy: Object.values(policy.decisions).sort((a, b) => b.visits - a.visits).slice(0, 30),
     actionCounts,
