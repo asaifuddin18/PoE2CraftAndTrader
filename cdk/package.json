@@ -6,7 +6,7 @@
     "test": "npm run test:rules && npm run test:optimizer && npm run test:ui && npm run test:game-data && npm run test:game-data-types",
     "test:rules": "TS_NODE_TRANSPILE_ONLY=1 TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\",\"moduleResolution\":\"node\",\"esModuleInterop\":true,\"strict\":false,\"ignoreDeprecations\":\"6.0\"}' ts-node --skip-project packages/functions/shared/rules.test.ts",
     "test:optimizer": "TS_NODE_TRANSPILE_ONLY=1 TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\",\"moduleResolution\":\"node\",\"esModuleInterop\":true,\"resolveJsonModule\":true,\"strict\":false,\"ignoreDeprecations\":\"6.0\"}' ts-node --skip-project packages/functions/shared/budgetOptimizer.test.ts",
-    "test:ui": "TS_NODE_TRANSPILE_ONLY=1 TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\",\"moduleResolution\":\"node\",\"esModuleInterop\":true,\"strict\":false}' ts-node --skip-project ../web/src/lib/craft-results.test.ts",
+    "test:ui": "TS_NODE_TRANSPILE_ONLY=1 TS_NODE_COMPILER_OPTIONS='{\"module\":\"Node16\",\"moduleResolution\":\"Node16\",\"esModuleInterop\":true,\"strict\":false}' ts-node --skip-project ../web/src/lib/craft-results.test.ts",
     "test:game-data": "TS_NODE_TRANSPILE_ONLY=1 TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\",\"moduleResolution\":\"node\",\"esModuleInterop\":true,\"resolveJsonModule\":true,\"strict\":false,\"ignoreDeprecations\":\"6.0\"}' ts-node --skip-project packages/game-data/game-data.test.ts",
     "test:game-data-types": "tsc -p tsconfig.game-data.json",
     "generate:essences": "node scripts/generate-essence-catalog.mjs",
