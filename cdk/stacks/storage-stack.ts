@@ -23,6 +23,7 @@ export class StorageStack extends cdk.Stack {
      *   USER#{userId}            PROFILE                  User profile
      *   USER#{userId}            BOOKMARK#{listingId}     Bookmarked trade listing
      *   USER#{userId}            QUERY#{queryId}          Saved trade query
+     *   USER#{userId}            CRAFT_QUERY#{queryId}    Saved craft optimizer configuration
      *   USER#{userId}            IDEAL#{idealId}          Ideal item definition
      *   USER#{userId}            SESSION#{sessionId}      Crafting session
      *   CACHE#TRADE#{hash}       RESULT                   Trade API cache (60s TTL)

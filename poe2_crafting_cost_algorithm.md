@@ -9,6 +9,10 @@ Preference lists may contain more than six modifiers. Only six affixes can
 appear on a final item, but additional preferences give the policy alternate
 valuable outcomes.
 
+Users can persist named optimizer configurations containing the complete
+starting item, base, item level, budget, and weighted preference lists. Results
+are intentionally not stored because they can be reproduced from a saved input.
+
 ```text
 item score = sum(preference weight * rolled tier quality)
 ```

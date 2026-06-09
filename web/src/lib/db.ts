@@ -47,6 +47,7 @@ export function userPK(userId: string)      { return `USER#${userId}`; }
 export function bookmarkSK(listingId: string) { return `BOOKMARK#${listingId}`; }
 export function querySK(queryId: string)    { return `QUERY#${queryId}`; }
 export function idealSK(idealId: string)    { return `IDEAL#${idealId}`; }
+export function craftQuerySK(craftQueryId: string) { return `CRAFT_QUERY#${craftQueryId}`; }
 export function sessionSK(sessionId: string){ return `SESSION#${sessionId}`; }
 
 // ── Generic helpers ───────────────────────────────────────────────────────────

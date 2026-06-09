@@ -14,10 +14,28 @@ interface ItemData {
 }
 interface SelectedMod { modId: string; tier: number; fractured?: boolean; }
 interface Preference { modId: string; name: string; affix: "prefix" | "suffix"; weight: number; }
+interface StartingState {
+  rarity: "normal" | "magic" | "rare";
+  prefixes: SelectedMod[];
+  suffixes: SelectedMod[];
+  corrupted: boolean;
+  catalystType: string;
+  catalystAmount: number;
+}
+interface CraftConfig {
+  classId: string;
+  baseId: string;
+  ilvl: number;
+  budget: number;
+  unit: "exalt" | "divine";
+  starting: StartingState;
+  preferences: Preference[];
+}
+interface SavedCraftQuery { craftQueryId:string; name:string; config:CraftConfig; createdAt:string; }
 
 const API = process.env.NEXT_PUBLIC_CRAFT_API_URL ?? "";
 const CATALYSTS = ["life","mana","defences","physical","fire","cold","lightning","chaos","attack","caster","speed","attribute"];
-const emptyStart = { rarity: "normal" as const, prefixes: [] as SelectedMod[], suffixes: [] as SelectedMod[], corrupted: false };
+const emptyStart: Omit<StartingState, "catalystType" | "catalystAmount"> = { rarity: "normal", prefixes: [], suffixes: [], corrupted: false };
 
 export default function CraftPage() {
   const [data, setData] = useState<ItemData | null>(null);
@@ -26,12 +44,18 @@ export default function CraftPage() {
   const [ilvl, setIlvl] = useState(84);
   const [budget, setBudget] = useState(10);
   const [unit, setUnit] = useState<"exalt" | "divine">("divine");
-  const [starting, setStarting] = useState({ ...emptyStart, catalystType: "", catalystAmount: 0 });
+  const [starting, setStarting] = useState<StartingState>({ ...emptyStart, catalystType: "", catalystAmount: 0 });
   const [preferences, setPreferences] = useState<Preference[]>([]);
   const [filters, setFilters] = useState<Record<string, number>>({});
   const [result, setResult] = useState<OptimizerOutput | null>(null);
   const [solving, setSolving] = useState(false);
   const [error, setError] = useState("");
+  const [savedQueries, setSavedQueries] = useState<SavedCraftQuery[]>([]);
+  const [selectedQueryId, setSelectedQueryId] = useState("");
+  const [saveOpen, setSaveOpen] = useState(false);
+  const [saveName, setSaveName] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [savedMessage, setSavedMessage] = useState("");
 
   useEffect(() => {
     fetch("/ideal-item-data.json").then(response => response.json()).then((next: ItemData) => {
@@ -39,6 +63,7 @@ export default function CraftPage() {
       setClassId(next.classes[0]?.id ?? "");
       setBaseId(next.classes[0]?.baseIds[0] ?? "");
     });
+    loadSavedQueries();
   }, []);
 
   const currentClass = data?.classes.find(candidate => candidate.id === classId);
@@ -72,6 +97,64 @@ export default function CraftPage() {
     const tier = mod?.tiers.filter(candidate => candidate.ilvl <= ilvl && candidate.weight > 0).sort((a, b) => a.tier - b.tier)[0]?.tier;
     if (!mod || !tier) return;
     setStarting(current => ({ ...current, [affix === "prefix" ? "prefixes" : "suffixes"]: [...current[affix === "prefix" ? "prefixes" : "suffixes"], { modId, tier }] }));
+  }
+
+  function currentConfig(): CraftConfig {
+    return { classId, baseId, ilvl, budget, unit, starting, preferences };
+  }
+
+  async function loadSavedQueries() {
+    try {
+      const response = await requestJson<{ craftQueries: SavedCraftQuery[] }>("/api/craft-queries", undefined, "Saved craft queries");
+      setSavedQueries(response.craftQueries);
+    } catch { /* craft page remains usable if persistence is unavailable */ }
+  }
+
+  function loadSavedQuery() {
+    const saved = savedQueries.find(query => query.craftQueryId === selectedQueryId);
+    if (!saved) return;
+    setClassId(saved.config.classId);
+    setBaseId(saved.config.baseId);
+    setIlvl(saved.config.ilvl);
+    setBudget(saved.config.budget);
+    setUnit(saved.config.unit);
+    setStarting(saved.config.starting);
+    replacePreferences(saved.config.preferences);
+  }
+
+  async function saveQuery() {
+    if (!saveName.trim()) return;
+    setSaving(true);
+    try {
+      const saved = await requestJson<{ craftQueryId:string; createdAt:string }>("/api/craft-queries", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body:JSON.stringify({ name:saveName.trim(), config:currentConfig() }),
+      }, "Save craft query");
+      setSavedQueries(current => [{ craftQueryId:saved.craftQueryId, name:saveName.trim(), config:currentConfig(), createdAt:saved.createdAt }, ...current]);
+      setSelectedQueryId(saved.craftQueryId);
+      setSaveOpen(false);
+      setSaveName("");
+      setSavedMessage("Saved");
+      setTimeout(()=>setSavedMessage(""),2000);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : String(caught));
+    } finally { setSaving(false); }
+  }
+
+  async function deleteSavedQuery() {
+    if (!selectedQueryId) return;
+    try {
+      await requestJson("/api/craft-queries", {
+        method:"DELETE",
+        headers:{ "Content-Type":"application/json" },
+        body:JSON.stringify({ craftQueryId:selectedQueryId }),
+      }, "Delete craft query");
+      setSavedQueries(current=>current.filter(query=>query.craftQueryId!==selectedQueryId));
+      setSelectedQueryId("");
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : String(caught));
+    }
   }
 
   async function solve() {
@@ -131,6 +214,14 @@ export default function CraftPage() {
           <p className="text-xs uppercase font-semibold tracking-wider" style={{ color: "var(--status-info)" }}>Budget optimizer</p>
           <h1 className="text-xl font-semibold mt-1">Build the best item this budget can reach</h1>
         </div>
+        <div className="grid grid-cols-[minmax(0,1fr)_auto_auto] gap-1 mb-4">
+          <select value={selectedQueryId} onChange={event=>setSelectedQueryId(event.target.value)} style={inputStyle}>
+            <option value="">Saved configurations...</option>
+            {savedQueries.map(query=><option key={query.craftQueryId} value={query.craftQueryId}>{query.name}</option>)}
+          </select>
+          <button onClick={loadSavedQuery} disabled={!selectedQueryId} className="px-2 text-xs border rounded disabled:opacity-40" style={{ borderColor:"var(--border)" }}>Load</button>
+          <button onClick={deleteSavedQuery} disabled={!selectedQueryId} className="px-2 text-xs border rounded disabled:opacity-40" style={{ borderColor:"var(--border)",color:"var(--status-negative)" }} title="Delete saved configuration">×</button>
+        </div>
         <Field label="Item class">
           <select value={classId} onChange={event => changeClass(event.target.value)} style={inputStyle}>
             {data?.classes.map(cls => <option key={cls.id} value={cls.id}>{cls.label}</option>)}
@@ -161,7 +252,11 @@ export default function CraftPage() {
           <input type="number" min={0.01} step={0.1} value={budget} onChange={event => setBudget(Number(event.target.value))} style={inputStyle}/>
           <select value={unit} onChange={event => setUnit(event.target.value as typeof unit)} style={inputStyle}><option value="exalt">Exalts</option><option value="divine">Divines</option></select>
         </div>
-        <button onClick={solve} disabled={solving || !baseId || !preferences.length || budget <= 0} className="w-full mt-3 py-2.5 rounded-md text-sm font-semibold disabled:opacity-40" style={{ background:"var(--accent)", color:"#fff" }}>{solving ? "Searching and simulating..." : "Optimize craft"}</button>
+        <div className="grid grid-cols-[1fr_auto] gap-2 mt-3">
+          <button onClick={solve} disabled={solving || !baseId || !preferences.length || budget <= 0} className="py-2.5 rounded-md text-sm font-semibold disabled:opacity-40" style={{ background:"var(--accent)", color:"#fff" }}>{solving ? "Searching and simulating..." : "Optimize craft"}</button>
+          <button onClick={()=>setSaveOpen(true)} disabled={!baseId||!preferences.length} className="px-3 border rounded-md text-xs disabled:opacity-40" style={{ borderColor:"var(--border)" }}>Save</button>
+        </div>
+        {savedMessage&&<p className="text-xs mt-2" style={{ color:"var(--status-positive)" }}>{savedMessage}</p>}
         {error && <p className="text-xs mt-3 p-2 rounded" style={{ color:"var(--status-negative)", background:"#321818" }}>{error}</p>}
       </aside>
 
@@ -198,6 +293,7 @@ export default function CraftPage() {
           <section><Header title="Adaptive policy" detail="Most frequently visited decisions and actions."/><div className="grid grid-cols-2 gap-4"><div>{result.policy.slice(0,12).map(decision => <p key={decision.stateKey} className="text-xs py-1.5 border-b" style={{ borderColor:"var(--border)" }}><strong>{decision.actionName}</strong><span style={{ color:"var(--text-disabled)" }}> · {decision.visits} visits</span></p>)}</div><div>{Object.entries(result.actionCounts).sort((a,b)=>b[1]-a[1]).slice(0,12).map(([action,count]) => <p key={action} className="text-xs py-1.5 border-b flex justify-between" style={{ borderColor:"var(--border)" }}><span>{action}</span><strong>{count}</strong></p>)}</div></div></section>
         </>}
       </main>
+      {saveOpen&&<SaveQueryModal name={saveName} saving={saving} onName={setSaveName} onSave={saveQuery} onClose={()=>setSaveOpen(false)}/>}
     </div>
   );
 }
@@ -212,6 +308,7 @@ function Metric({ label, value }: { label:string; value:string|number }) { retur
 function EmptyState({ solving }: { solving:boolean }) { return <div className="h-full flex items-center justify-center text-center"><div><p className="text-lg font-semibold">{solving?"Searching the craft space":"Configure a budgeted craft"}</p><p className="text-xs mt-1" style={{ color:"var(--text-disabled)" }}>{solving?"The browser will update when all 5,000 outcomes are aggregated.":"Choose the item you own, assign value to desired mods, and set your maximum spend."}</p></div></div>; }
 function OutcomeFilterRow({ preference, tiers, value, onChange }: { preference:Preference; tiers:number[]; value:number; onChange:(value:number)=>void }) { const enabled=Boolean(value); const anyTier=Math.max(...tiers); return <div className="grid grid-cols-[22px_minmax(0,1fr)_120px] items-center gap-2 py-1.5 border-b" style={{ borderColor:"var(--border)" }}><input type="checkbox" checked={enabled} onChange={event=>onChange(event.target.checked?anyTier:0)} aria-label={`Require ${preference.name}`}/><span className="text-xs truncate" style={{ color:enabled?"var(--text-primary)":"var(--text-disabled)" }}>{preference.name}</span><select value={value||anyTier} disabled={!enabled} onChange={event=>onChange(Number(event.target.value))} style={{...inputStyle,opacity:enabled?1:0.45}}><option value={anyTier}>Any tier</option>{tiers.filter(tier=>tier!==anyTier).map(tier=><option key={tier} value={tier}>T{tier} or better</option>)}</select></div>; }
 function OutcomeRow({ outcome,total,div }: { outcome:OutcomeBucket; total:number; div:number }) { return <div className="grid grid-cols-[90px_1fr_100px] gap-3 py-2 border-b text-xs" style={{ borderColor:"var(--border)" }}><strong>{((outcome.count/total)*100).toFixed(1)}%</strong><span>{outcome.mods.length?outcome.mods.map(mod=>`${mod.name} T${mod.tier}`).join(" · "):"No desired modifiers"}</span><span className="text-right" style={{ color:"var(--text-disabled)" }}>{formatCurrency(outcome.spendSum/outcome.count,div)}</span></div>; }
+function SaveQueryModal({ name,saving,onName,onSave,onClose }:{ name:string;saving:boolean;onName:(value:string)=>void;onSave:()=>void;onClose:()=>void }) { return <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background:"rgba(0,0,0,.7)" }} onClick={event=>event.target===event.currentTarget&&onClose()}><div className="w-full max-w-sm border rounded-md p-4" style={{ background:"var(--bg-surface)",borderColor:"var(--border)" }}><h2 className="text-sm font-semibold mb-3">Save craft configuration</h2><input autoFocus placeholder="Configuration name" value={name} onChange={event=>onName(event.target.value)} onKeyDown={event=>event.key==="Enter"&&onSave()} style={inputStyle}/><div className="flex justify-end gap-2 mt-4"><button onClick={onClose} className="px-3 py-1.5 text-xs">Cancel</button><button onClick={onSave} disabled={saving||!name.trim()} className="px-3 py-1.5 text-xs rounded disabled:opacity-40" style={{ background:"var(--accent)",color:"#fff" }}>{saving?"Saving...":"Save"}</button></div></div></div>; }
 async function requestJson<T>(url:string, init:RequestInit|undefined, label:string):Promise<T> {
   let response:Response;
   try { response=await fetch(url,init); } catch { throw new Error(`${label} request could not reach the server`); }

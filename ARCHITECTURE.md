@@ -149,6 +149,7 @@ modifiers cannot coexist on one item.
 | REQ-CRAFT-10 | User can override individual currency prices before running the solver | P0 |
 | REQ-CRAFT-11 | Evaluation seeds are deterministic for the same prepared request | P0 |
 | REQ-CRAFT-12 | Solver runs asynchronously and exposes status polling | P0 |
+| REQ-CRAFT-13 | Save, load, and delete named optimizer configurations per user | P0 |
 
 ### 2.5 Crafting Step Recommendation
 
@@ -397,6 +398,10 @@ packages/
 | 5 | Step Functions Inline Map | Run 10 evaluation workers with 500 deterministic outcomes each |
 | 6 | Aggregate Lambda | Combine exactly 5,000 outcomes into compact histograms and summaries |
 | 7 | Frontend | Render expected quality/spend, probabilities, representative items, and policy guidance |
+
+Named optimizer configurations are persisted separately from simulation results.
+They contain the complete starting item, base/equipment selection, item level,
+budget, and weighted preference lists.
 
 ---
 
