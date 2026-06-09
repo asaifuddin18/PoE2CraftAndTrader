@@ -62,10 +62,13 @@ export async function handler(event: AggregateInput): Promise<OptimizerOutput> {
     ...(event.results ?? []).map(result => deleteScratch(result.resultKey)),
   ]);
   const allOutcomes = [...buckets.values()];
-  const jointOutcomes = allOutcomes.map(outcome => ({
-    tiers: scratch.preferences.map(preference => outcome.mods.find(mod => mod.group === preference.group)?.tier ?? 0),
-    count: outcome.count,
-  }));
+  const jointOutcomes = allOutcomes.map(outcome => {
+    const tiers = outcome.mods.flatMap(mod => {
+      const preferenceIndex = scratch.preferences.findIndex(preference => preference.group === mod.group);
+      return preferenceIndex < 0 ? [] : [`${preferenceIndex.toString(36)}.${mod.tier.toString(36)}`];
+    }).join(",");
+    return `${tiers}=${outcome.count.toString(36)}`;
+  }).join(";");
   const outcomes = allOutcomes
     .sort((a, b) => b.count - a.count || b.scoreSum / b.count - a.scoreSum / a.count)
     .slice(0, 20);

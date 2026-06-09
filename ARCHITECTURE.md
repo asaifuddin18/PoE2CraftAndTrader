@@ -104,6 +104,10 @@ The core analytical feature. Given the user's exact starting item, a hard budget
 | Preferred suffixes | Ordered weighted modifier preferences | No |
 | Budget cap | Maximum spend in Exalted Orbs or Divine Orbs equivalent | Yes |
 
+The preference lists are not limited to the item's six affix slots. Extra
+preferences give the optimizer alternate valuable outcomes when all desired
+modifiers cannot coexist on one item.
+
 #### Currency Pool
 
 | Currency Type | Effect on Item State | Solver Consideration |
@@ -616,13 +620,13 @@ All authenticated pages share:
 | Results table | Item name/base/ilvl, mod match score, listed price, est. craft cost, verdict badge |
 | Expanded row | Comparison panel + top-ranked crafting path inline |
 
-### 9.6 /craft — Craft Solver
+### 9.6 /craft — Craft Optimizer
 
 | Section | Content |
 |---|---|
-| Input panel | Starting state toggle, base type + ilvl, current mods, ideal item link, budget cap |
-| Currency prices | Compact table with poe2.ninja prices + override inputs |
-| Results | Top 3 path cards with step sequences and cost breakdowns |
+| Input panel | Exact starting item, base type + ilvl, unrestricted weighted prefix/suffix preferences, hard budget |
+| Outcome explorer | Filterable sparse joint histogram and desired-mod-count distribution |
+| Results | Expected quality/spend, per-mod tier probabilities, representative items, and adaptive policy guidance |
 
 ### 9.7 /simulate — Simulators
 

@@ -15,7 +15,6 @@ export async function handler(event: PrepareInput) {
   const pool = await loadPool(event.baseId, ilvl);
   if (!pool.prefixes.length && !pool.suffixes.length) return infeasible(`No mod pool found for base "${event.baseId}"`, ilvl);
   if (!event.preferences?.length) return infeasible("At least one weighted modifier preference is required", ilvl);
-  if (event.preferences.length > 6) return infeasible("At most six weighted modifier preferences are supported", ilvl);
   if (!event.budget || !(Number(event.budget.amount) > 0)) return infeasible("Budget must be greater than zero", ilvl);
 
   const prices = { ...(await loadPrices()), ...(event.priceOverrides ?? {}) };

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { eligibleTiers, formatCurrency, matchesJoint } from "./craft-results";
+import { countMatchingJointOutcomes, eligibleTiers, formatCurrency, matchesJoint } from "./craft-results";
 
 const mods = [{
   modId: "life",
@@ -11,9 +11,15 @@ const mods = [{
 }];
 
 assert.deepEqual(eligibleTiers(mods, "life", 70), [2]);
-assert.equal(matchesJoint([2, 0], [{ modId: "life" }, { modId: "res" }], { life: 2 }), true);
-assert.equal(matchesJoint([3], [{ modId: "life" }], { life: 2 }), false);
-assert.equal(matchesJoint([0], [{ modId: "life" }], { life: 2 }), false);
+assert.equal(matchesJoint("0.2", [{ modId: "life" }, { modId: "res" }], { life: 2 }), true);
+assert.equal(matchesJoint("0.3", [{ modId: "life" }], { life: 2 }), false);
+assert.equal(matchesJoint("", [{ modId: "life" }], { life: 2 }), false);
+assert.equal(matchesJoint(
+  "7.1",
+  Array.from({ length: 8 }, (_, index) => ({ modId: `choice_${index}` })),
+  { choice_7: 1 },
+), true);
+assert.equal(countMatchingJointOutcomes("0.2=a;0.3=5;=2", [{ modId: "life" }], { life: 2 }), 10);
 assert.equal(formatCurrency(45, 90), "45.0 ex");
 assert.equal(formatCurrency(180, 90), "2.00 div");
 

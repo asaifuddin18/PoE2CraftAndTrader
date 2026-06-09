@@ -30,6 +30,25 @@ assert.equal(scoreItem({ ...empty, rarity: "rare", prefixes: [t1] }, [preference
 assert.equal(scoreItem({ ...empty, rarity: "rare", prefixes: [t2] }, [preference]), 50);
 assert.ok(budgetStateKey(empty, 1).endsWith("b:1"));
 
+const choiceMods = Array.from({ length: 8 }, (_, index): ModEntry => ({
+  ...mod(`choice_${index}`, 1),
+  gen_type: index < 3 ? "prefix" : "suffix",
+}));
+const choices = choiceMods.map(entry => ({
+  modId: entry.modId,
+  group: entry.group,
+  name: entry.name,
+  affix: entry.gen_type,
+  weight: 10,
+  eligibleTiers: [1],
+}));
+assert.equal(scoreItem({
+  ...empty,
+  rarity: "rare",
+  prefixes: choiceMods.slice(0, 3),
+  suffixes: choiceMods.slice(3, 6),
+}, choices), 60);
+
 const policy = searchBudgetPolicy(scratch, 123);
 const first = evaluateBudgetPolicy(scratch, policy, 0, 500, 456);
 const second = evaluateBudgetPolicy(scratch, policy, 0, 500, 456);

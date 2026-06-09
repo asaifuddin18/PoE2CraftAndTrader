@@ -5,6 +5,10 @@ budget. The user assigns a weight from 1-100 to each desired prefix or suffix.
 Better eligible tiers earn a larger fraction of that weight; a missing modifier
 earns zero.
 
+Preference lists may contain more than six modifiers. Only six affixes can
+appear on a final item, but additional preferences give the policy alternate
+valuable outcomes.
+
 ```text
 item score = sum(preference weight * rolled tier quality)
 ```
@@ -23,7 +27,7 @@ affordable action improves expected score.
 3. Step Functions fans out ten `craft-worker` Lambdas. Each evaluates 500
    outcomes against the same learned policy and writes a partial histogram to S3.
 4. `craft-aggregate` combines exactly 5,000 outcomes into marginal tier counts,
-   desired-mod counts, a compact joint tier histogram, representative final
+   desired-mod counts, a sparse joint tier histogram, representative final
    items, spend/score summaries, and frequently visited policy decisions.
 
 The audited crafting ingredient classes remain the source of truth for game

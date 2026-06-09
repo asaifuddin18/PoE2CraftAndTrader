@@ -31,7 +31,7 @@ export interface OptimizerOutput {
   expectedSpend: number;
   fallbackCount: number;
   outcomes: OutcomeBucket[];
-  jointOutcomes: { tiers: number[]; count: number }[];
+  jointOutcomes: string;
   modTierCounts: Record<string, Record<string, number>>;
   desiredModCount: Record<string, number>;
   policy: PolicyDecision[];

@@ -18,14 +18,33 @@ export function eligibleTiers(mods: TieredMod[], modId: string, ilvl: number): n
   ].sort((a, b) => a - b);
 }
 
+export function countMatchingJointOutcomes(
+  encoded: string,
+  preferences: FilterPreference[],
+  filters: Record<string, number>,
+): number {
+  if (!encoded) return 0;
+  return encoded.split(";").reduce((total, row) => {
+    const [signature, count] = row.split("=");
+    return total + (matchesJoint(signature, preferences, filters) ? parseInt(count, 36) : 0);
+  }, 0);
+}
+
 export function matchesJoint(
-  tiers: number[],
+  signature: string,
   preferences: FilterPreference[],
   filters: Record<string, number>,
 ): boolean {
-  return preferences.every((preference, index) => {
+  const tiers = new Map(
+    signature
+      .split(",")
+      .filter(Boolean)
+      .map(pair => pair.split(".").map(value => parseInt(value, 36)) as [number, number]),
+  );
+  return preferences.every((preference, preferenceIndex) => {
     const maximumTier = filters[preference.modId] ?? 0;
-    return !maximumTier || Boolean(tiers[index] && tiers[index] <= maximumTier);
+    const rolledTier = tiers.get(preferenceIndex);
+    return !maximumTier || Boolean(rolledTier && rolledTier <= maximumTier);
   });
 }
 

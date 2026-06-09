@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { OptimizerOutput, OutcomeBucket } from "@/lib/craft-types";
-import { eligibleTiers, formatCurrency, matchesJoint } from "@/lib/craft-results";
+import { countMatchingJointOutcomes, eligibleTiers, formatCurrency } from "@/lib/craft-results";
 
 interface ModTier { tier: number; ilvl: number; weight: number; }
 interface ModDef { modId: string; name: string; affix: "prefix" | "suffix"; modgroups: string[]; tiers: ModTier[]; }
@@ -58,7 +58,7 @@ export default function CraftPage() {
 
   function addPreference(modId: string) {
     const mod = mods.find(candidate => candidate.modId === modId);
-    if (!mod || preferences.length >= 6 || preferences.some(candidate => candidate.modId === modId)) return;
+    if (!mod || preferences.some(candidate => candidate.modId === modId)) return;
     setPreferences(current => [...current, { modId, name: mod.name, affix: mod.affix, weight: 50 }]);
   }
 
@@ -72,13 +72,12 @@ export default function CraftPage() {
   async function solve() {
     setSolving(true); setError(""); setResult(null);
     try {
-      const tokenResponse = await fetch("/api/craft/token");
-      const token = await tokenResponse.json();
-      if (!tokenResponse.ok) throw new Error(token.error ?? "Could not obtain craft token");
+      if (!API) throw new Error("Craft API is not configured");
+      const token = await requestJson<{ token: string }>("/api/craft/token", undefined, "Craft token");
       const catalyst = starting.catalystType && starting.catalystAmount > 0
         ? { type: starting.catalystType, amount: starting.catalystAmount, maximum: 20 }
         : undefined;
-      const startResponse = await fetch(`${API}/solve`, {
+      const start = await requestJson<{ executionArn: string }>(`${API}/solve`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token.token}` },
         body: JSON.stringify({
@@ -86,16 +85,22 @@ export default function CraftPage() {
           startingItem: { ...starting, catalyst },
           preferences,
         }),
-      });
-      const start = await startResponse.json();
-      if (!startResponse.ok) throw new Error(start.error ?? "Solver failed to start");
+      }, "Start optimizer");
       const deadline = Date.now() + 5 * 60_000;
+      let pollFailures = 0;
       while (Date.now() < deadline) {
         await new Promise(resolve => setTimeout(resolve, 1500));
-        const response = await fetch(`${API}/status?executionArn=${encodeURIComponent(start.executionArn)}`, {
-          headers: { Authorization: `Bearer ${token.token}` },
-        });
-        const status = await response.json();
+        let status: { status?: string; output?: OptimizerOutput; error?: string };
+        try {
+          status = await requestJson(`${API}/status?executionArn=${encodeURIComponent(start.executionArn)}`, {
+            headers: { Authorization: `Bearer ${token.token}` },
+          }, "Optimizer status");
+          pollFailures = 0;
+        } catch (pollError) {
+          pollFailures++;
+          if (pollFailures <= 3) continue;
+          throw pollError;
+        }
         if (status.status === "SUCCEEDED") {
           if (!status.output?.feasible) throw new Error(status.output?.error ?? "Request is not feasible");
           setResult(status.output);
@@ -109,7 +114,7 @@ export default function CraftPage() {
     } finally { setSolving(false); }
   }
 
-  const matching = result?.jointOutcomes.reduce((sum, outcome) => sum + (matchesJoint(outcome.tiers, preferences, filters) ? outcome.count : 0), 0) ?? 0;
+  const matching = result ? countMatchingJointOutcomes(result.jointOutcomes, preferences, filters) : 0;
   const div = result?.prices?.divine ?? 90;
 
   return (
@@ -141,7 +146,7 @@ export default function CraftPage() {
           <Field label="Quality"><input type="number" min={0} max={20} value={starting.catalystAmount} onChange={event => setStarting(current => ({ ...current, catalystAmount:Number(event.target.value) }))} style={inputStyle}/></Field>
         </div>
         <Field label="Desired modifier">
-          <select value="" disabled={preferences.length >= 6} onChange={event => addPreference(event.target.value)} style={inputStyle}><option value="">{preferences.length >= 6 ? "Six modifier limit reached" : "Add a weighted modifier..."}</option>{mods.filter(mod => !preferences.some(pref => pref.modId === mod.modId)).map(mod => <option key={mod.modId} value={mod.modId}>{mod.affix === "prefix" ? "P" : "S"} · {mod.name}</option>)}</select>
+          <select value="" onChange={event => addPreference(event.target.value)} style={inputStyle}><option value="">Add a weighted modifier...</option>{mods.filter(mod => !preferences.some(pref => pref.modId === mod.modId)).map(mod => <option key={mod.modId} value={mod.modId}>{mod.affix === "prefix" ? "P" : "S"} · {mod.name}</option>)}</select>
         </Field>
         <PreferenceList title="Prefixes" values={prefixes} onChange={setPreferences} all={preferences}/>
         <PreferenceList title="Suffixes" values={suffixes} onChange={setPreferences} all={preferences}/>
@@ -188,4 +193,15 @@ function Metric({ label, value }: { label:string; value:string|number }) { retur
 function EmptyState({ solving }: { solving:boolean }) { return <div className="h-full flex items-center justify-center text-center"><div><p className="text-lg font-semibold">{solving?"Searching the craft space":"Configure a budgeted craft"}</p><p className="text-xs mt-1" style={{ color:"var(--text-disabled)" }}>{solving?"The browser will update when all 5,000 outcomes are aggregated.":"Choose the item you own, assign value to desired mods, and set your maximum spend."}</p></div></div>; }
 function TierPanel({ preference, counts, total }: { preference:Preference; counts:Record<string,number>; total:number }) { return <div className="border p-3 rounded-md" style={{ borderColor:"var(--border)", background:"var(--bg-surface)" }}><p className="text-xs font-semibold truncate mb-2">{preference.name}</p>{Object.entries(counts).sort().map(([tier,count])=><div key={tier} className="flex justify-between text-xs py-0.5"><span style={{ color:tier==="missing"?"var(--text-disabled)":"var(--status-info)" }}>{tier}</span><span>{((count/total)*100).toFixed(1)}%</span></div>)}</div>; }
 function OutcomeRow({ outcome,total,div }: { outcome:OutcomeBucket; total:number; div:number }) { return <div className="grid grid-cols-[90px_1fr_100px] gap-3 py-2 border-b text-xs" style={{ borderColor:"var(--border)" }}><strong>{((outcome.count/total)*100).toFixed(1)}%</strong><span>{outcome.mods.length?outcome.mods.map(mod=>`${mod.name} T${mod.tier}`).join(" · "):"No desired modifiers"}</span><span className="text-right" style={{ color:"var(--text-disabled)" }}>{formatCurrency(outcome.spendSum/outcome.count,div)}</span></div>; }
+async function requestJson<T>(url:string, init:RequestInit|undefined, label:string):Promise<T> {
+  let response:Response;
+  try { response=await fetch(url,init); } catch { throw new Error(`${label} request could not reach the server`); }
+  let body:unknown={};
+  try { body=await response.json(); } catch { /* error below includes HTTP status */ }
+  if (!response.ok) {
+    const message=typeof body==="object"&&body&&"error" in body?String((body as {error:unknown}).error):`${label} failed with HTTP ${response.status}`;
+    throw new Error(message);
+  }
+  return body as T;
+}
 const inputStyle:React.CSSProperties={ width:"100%",background:"var(--bg-elevated)",border:"1px solid var(--border)",borderRadius:5,color:"var(--text-primary)",padding:"6px 7px",fontSize:12,outline:"none" };
