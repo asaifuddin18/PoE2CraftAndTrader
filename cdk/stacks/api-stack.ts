@@ -68,6 +68,7 @@ export class ApiStack extends cdk.Stack {
     // Async (Standard) workflow → not bound by API Gateway's 30s; give the
     // compute-heavy Monte-Carlo Lambdas generous headroom.
     const prepareFn   = makeFn("PrepareFn",   "craft-prepare",   { memorySize: 1024, timeout: cdk.Duration.seconds(30) });
+    const searchFn    = makeFn("SearchFn",    "craft-search",    { memorySize: 1769, timeout: cdk.Duration.seconds(120) });
     const workerFn    = makeFn("WorkerFn",    "craft-worker",    { memorySize: 1769, timeout: cdk.Duration.seconds(120) });
     const aggregateFn = makeFn("AggregateFn", "craft-aggregate", { memorySize: 1769, timeout: cdk.Duration.seconds(120) });
 
@@ -79,12 +80,46 @@ export class ApiStack extends cdk.Stack {
       metricValue: "1",
       defaultValue: 0,
     });
+    new logs.MetricFilter(this, "OptimizerSearchMetric", {
+      logGroup: searchFn.logGroup,
+      filterPattern: logs.FilterPattern.stringValue("$.event", "=", "optimizer_search"),
+      metricNamespace: "PoE2CraftSolver",
+      metricName: "OptimizerSearchDurationMs",
+      metricValue: "$.durationMs",
+      defaultValue: 0,
+    });
+    new logs.MetricFilter(this, "OptimizerEvaluationMetric", {
+      logGroup: workerFn.logGroup,
+      filterPattern: logs.FilterPattern.stringValue("$.event", "=", "optimizer_evaluation"),
+      metricNamespace: "PoE2CraftSolver",
+      metricName: "OptimizerEvaluations",
+      metricValue: "$.iterations",
+      defaultValue: 0,
+    });
+    new logs.MetricFilter(this, "OptimizerFallbackMetric", {
+      logGroup: workerFn.logGroup,
+      filterPattern: logs.FilterPattern.stringValue("$.event", "=", "optimizer_evaluation"),
+      metricNamespace: "PoE2CraftSolver",
+      metricName: "OptimizerFallbacks",
+      metricValue: "$.fallbackCount",
+      defaultValue: 0,
+    });
+    new logs.MetricFilter(this, "BudgetOverspendMetric", {
+      logGroup: workerFn.logGroup,
+      filterPattern: logs.FilterPattern.stringValue("$.event", "=", "optimizer_evaluation"),
+      metricNamespace: "PoE2CraftSolver",
+      metricName: "BudgetOverspends",
+      metricValue: "$.budgetOverspends",
+      defaultValue: 0,
+    });
 
     // Grant data access
     table.grantReadData(prepareFn);
     table.grantReadData(aggregateFn);
     scratch.grantReadWrite(prepareFn);
+    scratch.grantReadWrite(searchFn);
     scratch.grantRead(workerFn);
+    scratch.grantWrite(workerFn);
     scratch.grantReadWrite(aggregateFn); // read for refinement + delete
 
     // ── price-sync: scheduled poe2scout → DynamoDB (single source of truth) ─────
@@ -125,10 +160,22 @@ export class ApiStack extends cdk.Stack {
       payloadResponseOnly: true,
     }).addRetry(lambdaRetry);
 
+    const searchTask = new tasks.LambdaInvoke(this, "SearchPolicy", {
+      lambdaFunction: searchFn,
+      payloadResponseOnly: true,
+      payload: sfn.TaskInput.fromObject({
+        scratchKey: sfn.JsonPath.stringAt("$.prep.scratchKey"),
+        executionName: sfn.JsonPath.stringAt("$.prep.executionName"),
+      }),
+      resultPath: "$.search",
+    }).addRetry(lambdaRetry);
+
     const mapState = new sfn.Map(this, "Fanout", {
       itemsPath: "$.prep.jobs",
       itemSelector: {
         scratchKey: sfn.JsonPath.stringAt("$.prep.scratchKey"),
+        policyKey: sfn.JsonPath.stringAt("$.search.policyKey"),
+        executionName: sfn.JsonPath.stringAt("$.prep.executionName"),
         job: sfn.JsonPath.objectAt("$$.Map.Item.Value"),
       },
       // Kept modest to stay under low account Lambda concurrency limits.
@@ -142,8 +189,8 @@ export class ApiStack extends cdk.Stack {
       payloadResponseOnly: true,
       payload: sfn.TaskInput.fromObject({
         scratchKey: sfn.JsonPath.stringAt("$.prep.scratchKey"),
+        policyKey: sfn.JsonPath.stringAt("$.search.policyKey"),
         results: sfn.JsonPath.objectAt("$.results"),
-        jobs: sfn.JsonPath.objectAt("$.prep.jobs"),
         startedAt: sfn.JsonPath.numberAt("$.startedAt"),
       }),
     }).addRetry(lambdaRetry);
@@ -152,15 +199,13 @@ export class ApiStack extends cdk.Stack {
       parameters: {
         feasible: false,
         error: sfn.JsonPath.stringAt("$.prep.error"),
-        best_pattern: null,
-        all_patterns: [],
         elapsed_ms: 0,
       },
     });
 
     const definition = prepareTask.next(
       new sfn.Choice(this, "Feasible?")
-        .when(sfn.Condition.booleanEquals("$.prep.feasible", true), mapState.next(aggregateTask))
+        .when(sfn.Condition.booleanEquals("$.prep.feasible", true), searchTask.next(mapState.next(aggregateTask)))
         .otherwise(infeasible),
     );
 

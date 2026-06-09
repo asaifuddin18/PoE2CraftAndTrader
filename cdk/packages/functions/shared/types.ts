@@ -87,85 +87,129 @@ export interface RawMod {
 // ── Solver I/O ────────────────────────────────────────────────────────────────
 
 export interface SolveRequest {
-  baseId:     string;                 // mod pool key (DynamoDB PK=MODS#{baseId})
-  ilvl:       number;
-  mode:       "exact" | "minTier";
-  k_required: number;
-  targetMods: {
-    modId:   string;
-    name:    string;
-    affix:   string;
-    tier:    number;
-    minTier: number;
-    group?:  string;
-  }[];
-  priceOverrides?: PriceTable;
-  // Reserved for future strategies that can deliberately choose an Essence.
-  essenceId?: string;
-}
-
-/** A single point on the cost-vs-probability-of-success curve. */
-export interface CdfPoint {
-  cost:    number;
-  cumProb: number;                    // P(total spend <= cost)
-}
-
-export interface CostSummary {
-  mean:   number;
-  p50:    number;
-  p90:    number;
-  p99:    number;
-  std:    number;
-  n:      number;
-  costCdf: CdfPoint[];                // ~60-point downsampled empirical CDF
-}
-
-/** Structured crafting step (spec / ARCHITECTURE §6.4, REQ-CRAFT-07). */
-export interface CraftStep {
-  action:          string;            // human-readable instruction
-  currency:        string;            // currency consumed (or "" for base/setup)
-  probability:     number;            // chance this step lands as intended (0..1)
-  expectedCost:    number;            // expected spend for this step, in exalts
-  branchCondition?: string;           // e.g. "if anchor hits → next, else repeat"
-}
-
-export interface PatternResult {
-  pattern_id:   string;
-  pattern_name: string;
-  description:  string;
-  cost:         CostSummary;
-  basket_mean:  Record<string, number>;
-  steps:        CraftStep[];
-  is_best:      boolean;
-}
-
-export interface SolverOutput {
-  feasible:     boolean;
-  error?:       string;
-  best_pattern: PatternResult | null;
-  all_patterns: PatternResult[];
-  elapsed_ms:   number;
-  prices?:      PriceTable;            // attached by aggregate for UI display
-}
-
-// ── Job descriptors (Step Functions Map fan-out) ──────────────────────────────
-
-export type StrategyId = "rare_refinement";
-
-export interface PatternJob {
-  patternId:    string;
-  patternName:  string;
-  description:  string;
-  strategyId:   StrategyId;
-  N:            number;              // Monte-Carlo iterations
-  seed:         number;
-}
-
-/** S3 scratch blob written by craft-prepare, read by workers + aggregate. */
-export interface ScratchBlob {
-  pool:   ModPool;
-  prices: PriceTable;
-  target: TargetSpec;
-  ilvl:   number;
   baseId: string;
+  ilvl: number;
+  budget: { amount: number; unit: "exalt" | "divine" };
+  startingItem: SerializedItemState;
+  preferences: WeightedModPreference[];
+  priceOverrides?: PriceTable;
+  mode?: "exact" | "minTier";
+  k_required?: number;
+  targetMods?: { modId: string; name: string; affix: string; tier: number; minTier: number; group?: string }[];
+}
+
+export interface SerializedItemState {
+  rarity: ItemState["rarity"];
+  prefixes: { modId: string; tier: number; fractured?: boolean }[];
+  suffixes: { modId: string; tier: number; fractured?: boolean }[];
+  corrupted: boolean;
+  catalyst?: CatalystQuality;
+}
+
+export interface WeightedModPreference {
+  modId: string;
+  group?: string;
+  name: string;
+  affix: "prefix" | "suffix";
+  weight: number;
+}
+
+export interface ResolvedPreference extends WeightedModPreference {
+  group: string;
+  eligibleTiers: number[];
+}
+
+export interface PolicyDecision {
+  stateKey: string;
+  actionId: string;
+  actionName: string;
+  visits: number;
+  expectedScore: number;
+}
+
+export interface LearnedPolicy {
+  decisions: Record<string, PolicyDecision>;
+  searchIterations: number;
+  searchDurationMs: number;
+}
+
+export interface EvaluationJob {
+  shard: number;
+  iterations: number;
+  seed: number;
+}
+
+export interface ScratchBlob {
+  pool: ModPool;
+  prices: PriceTable;
+  preferences: ResolvedPreference[];
+  startingItem: ItemState;
+  budgetExalts: number;
+  ilvl: number;
+  baseId: string;
+}
+
+export interface OutcomeBucket {
+  signature: string;
+  count: number;
+  scoreSum: number;
+  spendSum: number;
+  mods: { group: string; modId: string; name: string; affix: "prefix" | "suffix"; tier: number }[];
+}
+
+export interface EvaluationResult {
+  shard: number;
+  iterations: number;
+  scoreSum: number;
+  spendSum: number;
+  maxSpend: number;
+  overspendCount: number;
+  fallbackCount: number;
+  buckets: OutcomeBucket[];
+  actionCounts: Record<string, number>;
+}
+
+export interface EvaluationReference {
+  shard: number;
+  resultKey: string;
+}
+
+export interface OptimizerOutput {
+  feasible: boolean;
+  error?: string;
+  budgetExalts: number;
+  iterations: number;
+  expectedScore: number;
+  expectedSpend: number;
+  fallbackCount: number;
+  outcomes: OutcomeBucket[];
+  jointOutcomes: { tiers: number[]; count: number }[];
+  modTierCounts: Record<string, Record<string, number>>;
+  desiredModCount: Record<string, number>;
+  policy: PolicyDecision[];
+  actionCounts: Record<string, number>;
+  elapsed_ms: number;
+  prices?: PriceTable;
+}
+
+// Legacy strategy primitives retained while the audited ingredient compatibility
+// helpers are still used by rule tests.
+export interface CdfPoint { cost: number; cumProb: number; }
+export interface CostSummary {
+  mean: number; p50: number; p90: number; p99: number; std: number; n: number; costCdf: CdfPoint[];
+}
+export interface CraftStep {
+  action: string; currency: string; probability: number; expectedCost: number; branchCondition?: string;
+}
+export interface PatternResult {
+  pattern_id: string; pattern_name: string; description: string; cost: CostSummary;
+  basket_mean: Record<string, number>; steps: CraftStep[]; is_best: boolean;
+}
+export interface SolverOutput {
+  feasible: boolean; error?: string; best_pattern: PatternResult | null;
+  all_patterns: PatternResult[]; elapsed_ms: number; prices?: PriceTable;
+}
+export type StrategyId = "rare_refinement";
+export interface PatternJob {
+  patternId: string; patternName: string; description: string; strategyId: StrategyId; N: number; seed: number;
 }

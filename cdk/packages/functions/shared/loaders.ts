@@ -8,7 +8,7 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, QueryCommand, GetCommand } from "@aws-sdk/lib-dynamodb";
 import { S3Client, GetObjectCommand, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
-import type { RawMod, ModPool, PriceTable, ScratchBlob } from "./types";
+import type { RawMod, ModPool, PriceTable, ScratchBlob, LearnedPolicy, EvaluationResult } from "./types";
 import { build_pools } from "./engine";
 
 const REGION = process.env.AWS_REGION ?? "us-east-1";
@@ -100,7 +100,35 @@ export async function writeScratch(executionName: string, blob: ScratchBlob): Pr
 export async function readScratch(key: string): Promise<ScratchBlob> {
   const res = await s3.send(new GetObjectCommand({ Bucket: BUCKET, Key: key }));
   const text = await res.Body!.transformToString();
-  return JSON.parse(text) as ScratchBlob;
+  const parsed = JSON.parse(text) as ScratchBlob;
+  parsed.startingItem.fractured_mod_ids = new Set(parsed.startingItem.fractured_mod_ids as unknown as string[]);
+  return parsed;
+}
+
+export async function writePolicy(executionName: string, policy: LearnedPolicy): Promise<string> {
+  const key = `exec/${executionName}.policy.json`;
+  await s3.send(new PutObjectCommand({
+    Bucket: BUCKET, Key: key, ContentType: "application/json", Body: JSON.stringify(policy),
+  }));
+  return key;
+}
+
+export async function readPolicy(key: string): Promise<LearnedPolicy> {
+  const res = await s3.send(new GetObjectCommand({ Bucket: BUCKET, Key: key }));
+  return JSON.parse(await res.Body!.transformToString()) as LearnedPolicy;
+}
+
+export async function writeEvaluation(executionName: string, result: EvaluationResult): Promise<string> {
+  const key = `exec/${executionName}.evaluation-${result.shard}.json`;
+  await s3.send(new PutObjectCommand({
+    Bucket: BUCKET, Key: key, ContentType: "application/json", Body: JSON.stringify(result),
+  }));
+  return key;
+}
+
+export async function readEvaluation(key: string): Promise<EvaluationResult> {
+  const res = await s3.send(new GetObjectCommand({ Bucket: BUCKET, Key: key }));
+  return JSON.parse(await res.Body!.transformToString()) as EvaluationResult;
 }
 
 export async function deleteScratch(key: string): Promise<void> {

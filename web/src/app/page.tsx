@@ -4,9 +4,9 @@ import { SignInButton } from "@/components/sign-in-button";
 
 const FEATURES = [
   {
-    title: "Crafting Path Solver",
+    title: "Crafting Optimizer",
     description:
-      "Input a target item and your starting state. The solver evaluates every currency action and ranks the top 3 paths by expected cost.",
+      "Set your starting item, budget, and priorities. The optimizer learns an adaptive policy and shows the resulting item-quality distribution.",
   },
   {
     title: "Trade Search",

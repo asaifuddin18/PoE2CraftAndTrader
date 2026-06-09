@@ -280,7 +280,7 @@ export function monte_carlo(
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function build_target_spec(req: SolveRequest, pool: ModPool): TargetSpec {
-  const required_mods: TargetMod[] = req.targetMods.map(m => {
+  const required_mods: TargetMod[] = (req.targetMods ?? []).map(m => {
     const poolMod = [...pool.prefixes, ...pool.suffixes].find(p => p.modId === m.modId);
     const group = m.group ?? poolMod?.group ?? m.modId;
     return {
@@ -290,7 +290,7 @@ export function build_target_spec(req: SolveRequest, pool: ModPool): TargetSpec 
       name:     m.name,
     };
   });
-  return { required_mods, k_required: Math.min(req.k_required, required_mods.length) };
+  return { required_mods, k_required: Math.min(req.k_required ?? required_mods.length, required_mods.length) };
 }
 
 export function check_feasibility(target: TargetSpec, pool: ModPool, ilvl: number): string | null {

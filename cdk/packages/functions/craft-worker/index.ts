@@ -1,27 +1,17 @@
-/**
- * Step 2 — craft-worker (Step Functions Map: one invocation per solver strategy).
- * Reads the scratch blob, runs Monte Carlo for one adaptive policy, and returns
- * the existing PatternResult API shape.
- *
- * Input:  { scratchKey, job }
- * Output: PatternResult
- */
-import type { PatternJob, PatternResult, ScratchBlob } from "../shared/types";
-import { runPolicy } from "../shared/runPolicy";
-import { readScratch } from "../shared/loaders";
+import type { EvaluationJob } from "../shared/types";
+import { evaluateBudgetPolicy } from "../shared/budgetOptimizer";
+import { readPolicy, readScratch, writeEvaluation } from "../shared/loaders";
 
-// Memoize the scratch blob across warm invocations of the same execution.
-let cacheKey: string | null = null;
-let cacheBlob: ScratchBlob | null = null;
-
-interface WorkerInput { scratchKey: string; job: PatternJob; }
-
-export async function handler(event: WorkerInput): Promise<PatternResult> {
-  if (cacheKey !== event.scratchKey) {
-    cacheBlob = await readScratch(event.scratchKey);
-    cacheKey = event.scratchKey;
-  }
-  // Sets were serialized to arrays — engine only reads .fractured_mod_ids via Set ops,
-  // but the pool blob carries no Sets, so no rehydration is needed here.
-  return runPolicy(event.job, cacheBlob!);
+export async function handler(event: { scratchKey: string; policyKey: string; executionName: string; job: EvaluationJob }) {
+  const [scratch, policy] = await Promise.all([readScratch(event.scratchKey), readPolicy(event.policyKey)]);
+  const result = evaluateBudgetPolicy(scratch, policy, event.job.shard, event.job.iterations, event.job.seed);
+  console.log(JSON.stringify({
+    event: "optimizer_evaluation",
+    shard: result.shard,
+    iterations: result.iterations,
+    fallbackCount: result.fallbackCount,
+    budgetOverspends: result.overspendCount,
+    maxSpend: result.maxSpend,
+  }));
+  return { shard: result.shard, resultKey: await writeEvaluation(event.executionName, result) };
 }

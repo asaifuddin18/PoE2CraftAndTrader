@@ -1,47 +1,41 @@
-/**
- * Render-only types for the craft solver UI.
- * Mirrors the SolverOutput contract returned by the AWS craft API
- * (cdk/packages/functions/shared/types.ts). Keep the two in sync.
- */
-
-export interface CdfPoint {
-  cost:    number;
-  cumProb: number; // P(total spend <= cost)
+export interface OutcomeMod {
+  group: string;
+  modId: string;
+  name: string;
+  affix: "prefix" | "suffix";
+  tier: number;
 }
 
-export interface CostSummary {
-  mean:    number;
-  p50:     number;
-  p90:     number;
-  p99:     number;
-  std:     number;
-  n:       number;
-  costCdf: CdfPoint[];
+export interface OutcomeBucket {
+  signature: string;
+  count: number;
+  scoreSum: number;
+  spendSum: number;
+  mods: OutcomeMod[];
 }
 
-export interface CraftStep {
-  action:           string;
-  currency:         string;
-  probability:      number;
-  expectedCost:     number;
-  branchCondition?: string;
+export interface PolicyDecision {
+  stateKey: string;
+  actionId: string;
+  actionName: string;
+  visits: number;
+  expectedScore: number;
 }
 
-export interface PatternResult {
-  pattern_id:   string;
-  pattern_name: string;
-  description:  string;
-  cost:         CostSummary;
-  basket_mean:  Record<string, number>;
-  steps:        CraftStep[];
-  is_best:      boolean;
-}
-
-export interface SolverOutput {
-  feasible:     boolean;
-  error?:       string;
-  best_pattern: PatternResult | null;
-  all_patterns: PatternResult[];
-  elapsed_ms:   number;
-  prices?:      Record<string, number>;
+export interface OptimizerOutput {
+  feasible: boolean;
+  error?: string;
+  budgetExalts: number;
+  iterations: number;
+  expectedScore: number;
+  expectedSpend: number;
+  fallbackCount: number;
+  outcomes: OutcomeBucket[];
+  jointOutcomes: { tiers: number[]; count: number }[];
+  modTierCounts: Record<string, Record<string, number>>;
+  desiredModCount: Record<string, number>;
+  policy: PolicyDecision[];
+  actionCounts: Record<string, number>;
+  elapsed_ms: number;
+  prices?: Record<string, number>;
 }

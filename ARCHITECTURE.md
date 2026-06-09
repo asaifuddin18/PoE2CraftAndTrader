@@ -85,68 +85,67 @@ Users can define an 'ideal item' — a target they are trying to craft or buy to
 
 ### 2.4 Crafting Path Solver
 
-The core analytical feature. Rather than the user selecting a crafting method, the system acts as a solver: given a starting item state and a target mod combination, it evaluates all available currency actions and multi-step sequences to find and rank the top 3 optimal paths by expected cost.
+The core analytical feature. Given the user's exact starting item, a hard budget, and weighted prefix/suffix preferences, the optimizer learns an adaptive crafting policy and evaluates the quality distribution of items that policy can produce.
 
-> **Solver Model:** The problem is modelled as a weighted graph search:
-> - Nodes = item states (which mods are present, their tiers)
-> - Edges = currency actions that transition between states (each with a probability and cost)
-> - Goal = reach the target mod combination at minimum expected cost
+> **Optimizer Model:** The problem is modelled as a budget-constrained stochastic search:
+> - Nodes = complete item states plus remaining budget
+> - Edges = valid crafting ingredient actions with costs and stochastic transitions
+> - Reward = weighted tier quality of preferred modifiers
+> - Constraint = never exceed the supplied budget or replace the supplied item
 >
-> The solver uses heuristic search (beam search over most promising transitions) rather than brute-force, as full path enumeration across all currencies is computationally infeasible.
+> A bounded MCTS/UCB search builds a state-dependent policy. Ten deterministic evaluation workers then run 500 outcomes each and aggregate the result distribution.
 
 #### User Inputs
 
 | Input | Detail | Required |
 |---|---|---|
 | Starting item state | Blank base (item class + ilvl) OR existing item with current mods specified | Yes |
-| Target mods | Pulled from the user's linked ideal item — up to 6 mods with target roll values | Yes |
-| Budget cap | Optional maximum spend in Exalted Orbs or Divine Orbs equivalent | No |
+| Preferred prefixes | Ordered weighted modifier preferences | No |
+| Preferred suffixes | Ordered weighted modifier preferences | No |
+| Budget cap | Maximum spend in Exalted Orbs or Divine Orbs equivalent | Yes |
 
 #### Currency Pool
 
 | Currency Type | Effect on Item State | Solver Consideration |
 |---|---|---|
-| Chaos Orb | Rerolls all mods on a rare — full state reset | High variance; good when starting from scratch |
+| Chaos Orb | Removes one random affix, then adds one random eligible affix | High-variance refinement action |
 | Exalted Orb | Adds one random mod to an item with open affixes | Low cost per action; good for filling open slots |
 | Orb of Annulment | Removes one random mod | Probabilistic; solver models chance of removing right vs wrong mod |
 | Regal Orb | Upgrades a magic item to rare, adding one mod | Used in magic-to-rare transition paths |
-| Divine Orb | Rerolls values of existing modifiers within their tier range — cannot change tier | Useful when mods are present but rolls are sub-tier |
-| Orb of Chance | Converts a normal item to magic, rare, or unique (mostly destroys it) | High-risk gamble path; solver models expected cost accounting for destruction rate |
 | Fracturing Orb | Permanently locks one random existing modifier — survives all further crafting | Applied when one mod is already ideal |
 | Alloys (13 types) | Removes one random existing affix, applies a guaranteed crafted modifier unique to that alloy type | Each alloy targets a specific mod category |
 | Essences | Guarantee one specific mod, reroll the rest | Powerful when one target mod is high-weight |
 | Omens | Modify the outcome of the next currency use | Modelled as edge weight multiplier on the following action |
 | Orb of Augmentation | Adds a mod to a magic item with only one mod | Part of Aug/Regal magic crafting paths |
 
-#### Solver Output — Top 3 Paths
+#### Optimizer Output
 
 | Output Field | Detail |
 |---|---|
-| Path rank | 1st / 2nd / 3rd by expected cost |
-| Step sequence | Ordered list of currency actions with branching logic |
-| Per-step probability | Chance of the transition succeeding as intended |
-| Per-step cost | Expected currency spend for that action in chaos equivalent |
-| Total expected cost | Sum of all steps |
-| Best case cost | Minimum possible spend (everything goes right first try) |
-| Worst case cost (90th percentile) | Upper bound spend |
-| Budget warning | Flag if expected cost exceeds the user's optional budget cap |
+| Expected quality | Mean weighted tier-quality score across 5,000 outcomes |
+| Expected spend | Mean Exalted-equivalent spend, always within budget |
+| Per-mod tier probabilities | Marginal probability of each preferred modifier and tier |
+| Desired-mod-count distribution | Distribution of how many preferred modifiers appear |
+| Joint outcome histogram | Compact exact outcome buckets for client-side filtering |
+| Representative final items | Common high-quality final states |
+| Adaptive policy guidance | Common state-dependent actions learned by search |
 
 #### Requirements
 
 | Requirement | Detail | Priority |
 |---|---|---|
 | REQ-CRAFT-01 | Accept starting state: blank base (class + ilvl) or existing item with mods | P0 |
-| REQ-CRAFT-02 | Accept target mods from a linked ideal item | P0 |
-| REQ-CRAFT-03 | Accept optional budget cap in Exalted or Divine Orb equivalent | P0 |
+| REQ-CRAFT-02 | Accept weighted prefix and suffix preferences | P0 |
+| REQ-CRAFT-03 | Accept a hard budget in Exalted or Divine Orb equivalent | P0 |
 | REQ-CRAFT-04 | Load full PoE2 currency action rules and mod weight data from DynamoDB | P0 |
-| REQ-CRAFT-05 | Run heuristic path solver across all currencies — single and multi-step | P0 |
-| REQ-CRAFT-06 | Return top 3 paths ranked by expected chaos cost | P0 |
-| REQ-CRAFT-07 | Each path includes: step sequence, per-step probability, per-step cost, total expected cost, best case, 90th percentile cost | P0 |
-| REQ-CRAFT-08 | Flag paths that exceed the user's budget cap | P0 |
+| REQ-CRAFT-05 | Build an adaptive hard-budget policy using existing ingredient implementations | P0 |
+| REQ-CRAFT-06 | Evaluate exactly 5,000 deterministic policy outcomes | P0 |
+| REQ-CRAFT-07 | Return quality, spend, tier, desired-count, joint-outcome, representative-item, and policy summaries | P0 |
+| REQ-CRAFT-08 | No simulated outcome may exceed the user's budget | P0 |
 | REQ-CRAFT-09 | Currency prices sourced from poe2.ninja, refreshed every 10 minutes | P0 |
 | REQ-CRAFT-10 | User can override individual currency prices before running the solver | P0 |
-| REQ-CRAFT-11 | Solver result is deterministic for the same inputs — results are cacheable | P0 |
-| REQ-CRAFT-12 | Solver must complete within 10 seconds for P0 | P0 |
+| REQ-CRAFT-11 | Evaluation seeds are deterministic for the same prepared request | P0 |
+| REQ-CRAFT-12 | Solver runs asynchronously and exposes status polling | P0 |
 
 ### 2.5 Crafting Step Recommendation
 
@@ -292,7 +291,7 @@ Vercel-hosted Next.js frontend + AWS backend. All GGG API calls are proxied thro
 | Trade Query Builder | UI for constructing and saving trade filters |
 | Results Feed | Renders GGG API listing results with deal scoring |
 | Ideal Item Editor | UI for defining target mod combinations |
-| Crafting Panel | Probability table + step-by-step recommendation display |
+| Crafting Optimizer | Starting-item editor, weighted preferences, outcome distributions, and adaptive policy guidance |
 | Tailwind CSS | Styling — dark tool-first UI |
 | Recharts | Probability distribution charts |
 
@@ -302,7 +301,7 @@ Vercel-hosted Next.js frontend + AWS backend. All GGG API calls are proxied thro
 |---|---|
 | API Gateway | Single entry point for all frontend → backend requests |
 | Lambda: trade-proxy | Forwards trade searches to GGG API, enforces rate limits, caches results in DynamoDB (60s TTL) |
-| Lambda: craft-engine | Loads mod weights from DynamoDB, computes probabilities and expected costs |
+| Step Functions crafting optimizer | Prepares requests, builds policies, evaluates 5,000 outcomes, and aggregates results |
 | Lambda: price-sync | Fetches poe2.ninja currency prices on a 10-minute EventBridge schedule |
 | Mod data | Code-owned equipment/mod catalog projected into DynamoDB after deploy |
 | DynamoDB | All storage: user accounts, saved queries, ideal items, mod data, GGG response cache (TTL), price cache (TTL) |
@@ -336,7 +335,11 @@ cdk/
 packages/
   functions/
     trade-proxy/                # Lambda: GGG API proxy
-    craft-engine/               # Lambda: solver
+    craft-entry/                # Lambda: validate/start optimizer
+    craft-prepare/              # Lambda: resolve request and evaluation jobs
+    craft-search/               # Lambda: build adaptive policy
+    craft-worker/               # Lambda: evaluate one deterministic shard
+    craft-aggregate/            # Lambda: aggregate compact distributions
     price-sync/                 # Lambda: poe2.ninja price fetcher
 ```
 
@@ -380,17 +383,17 @@ packages/
 | 4b (cache miss) | Lambda | Forward query to GGG API, write result to DynamoDB with 60s TTL, return to frontend |
 | 5 | Frontend | Render listings; if ideal item linked, score each listing |
 
-### 4.7 Data Flow — Crafting Estimation
+### 4.7 Data Flow — Crafting Optimization
 
 | Step | Actor | Detail |
 |---|---|---|
-| 1 | User | Clicks a listing (or opens crafting planner directly) |
-| 2 | Frontend | POST /api/craft/estimate with item state + ideal target |
-| 3 | Lambda: craft-engine | Load mod weights from DynamoDB (permanent — manually updated post-patch) |
-| 4 | Lambda: craft-engine | Load currency prices from DynamoDB (10min TTL item, written by price-sync Lambda) |
-| 5 | Lambda: craft-engine | Run beam search solver across all currency actions |
-| 6 | Lambda | Return: top 3 paths with step sequences, probabilities, expected costs |
-| 7 | Frontend | Render comparison table + recommended step sequence |
+| 1 | User | Supplies starting item, budget, and weighted preferences |
+| 2 | Frontend | POST `/solve`; then poll `/status` using the returned execution ARN |
+| 3 | Prepare Lambda | Validate input; load mod weights and currency prices from DynamoDB; create 10 evaluation jobs |
+| 4 | Search Lambda | Run bounded MCTS/UCB search and store the adaptive policy in S3 |
+| 5 | Step Functions Inline Map | Run 10 evaluation workers with 500 deterministic outcomes each |
+| 6 | Aggregate Lambda | Combine exactly 5,000 outcomes into compact histograms and summaries |
+| 7 | Frontend | Render expected quality/spend, probabilities, representative items, and policy guidance |
 
 ---
 
@@ -492,37 +495,34 @@ Mod weights originate from reviewed datamined sources, then live in the reposito
 > - Annulment probability depends on current mod count
 > - Magic items have a different pool structure to rares
 
-### 6.2 Solver Architecture — Graph Search
+### 6.2 Solver Architecture — Budget-Constrained Policy Search
 
-- **State:** tuple of (prefix mods present, suffix mods present, item rarity)
-- **Action:** a currency use — directed edge from one state to possible next states
-- **Edge weight:** expected chaos cost (currency price × 1/probability of desired transition)
-- **Goal node:** any state satisfying all required target mods at or above target rolls
+- **State:** complete supplied item state plus remaining Exalted-equivalent budget
+- **Action:** a valid existing crafting ingredient applied to that exact item
+- **Reward:** sum of preference weight multiplied by tier quality
+- **Policy:** state key to recommended action, with stopping allowed at any state
 
-**Search strategy:** Beam search with beam width of ~50. At each step the solver expands the cheapest frontier nodes, applies all viable currency actions, and keeps the top N states by expected cumulative cost.
+**Search strategy:** Bounded MCTS/UCB samples ingredient transitions and learns the action with the best terminal weighted quality for each visited state. Unknown-price actions are unavailable, actions that replace the supplied base are excluded, and every transition is checked against the hard budget.
 
-> **Why not exact search?** Full enumeration of all multi-step paths across all currencies is combinatorially explosive. A 6-mod target with 11 currency types and up to 10 steps has billions of possible paths. Beam search finds the optimal or near-optimal path in bounded time (< 10 seconds target).
+The learned policy is evaluated by 10 concurrent workers. Each runs 500 deterministic outcomes, allowing the UI to report distributions rather than implying that one fixed sequence is guaranteed.
 
 ### 6.3 Currency Action Models
 
 | Currency | State Transition Model | Key Probability |
 |---|---|---|
-| Chaos Orb | Reset all mods → sample new prefix + suffix set | P(target) = P(prefixes) × P(suffixes) |
+| Chaos Orb | Remove one random affix, then add one eligible random affix | Weighted selection from the eligible post-removal pool |
 | Exalted Orb | Add one random mod to an open affix slot | P(desired mod) = weight / sum of eligible weights |
 | Orb of Annulment | Remove one random mod | P(removing unwanted) = unwanted count / total mod count |
 | Regal Orb | Magic → rare, add one mod | Same model as Exalt from magic state |
-| Divine Orb | Resample each mod's value within tier range | P(all hit target) = product of per-mod roll probability |
-| Orb of Chance | Normal → magic/rare/unique; mostly destroys | P(unique) ≈ base-specific; solver weights expected cost by destruction rate |
 | Fracturing Orb | Lock one random existing mod permanently | P(desired locked) = 1 / current mod count |
 | Alloy (per type) | Remove one random affix → apply guaranteed alloy mod | P(removing unwanted) = unwanted / total; outcome deterministic |
 | Orb of Augmentation | Add mod to magic item with 1 mod | P(desired mod) = weight / eligible weights |
 | Essence (per type) | Guarantee one mod, reroll all others as chaos | P(remaining) = chaos probability on restricted pool |
 | Omen | Modify next currency outcome | Modelled as edge weight multiplier on the following action |
 
-### 6.4 Path Output Structure
+### 6.4 Optimizer Output Structure
 
-Each of the top 3 returned paths:
-- **Step sequence:** `{ action, currency, quantity, probability, expectedCost, branchCondition }`
+The returned result contains aggregate quality and spend, marginal preferred-mod tier probabilities, desired-mod-count and exact joint-outcome histograms, representative final item states, common policy decisions, action usage counts, and fallback metrics.
 - **Branch conditions:** handle probabilistic outcomes (e.g. "If T1 life hits → step 3, else → repeat step 1")
 - **Total expected cost:** sum of (currency price × expected uses)
 - **Best case cost:** minimum spend if every action hits first try
@@ -539,8 +539,8 @@ Each of the top 3 returned paths:
 | Auth library | NextAuth.js v5 | First-class Google OAuth, JWT sessions |
 | Database | DynamoDB | Serverless; all storage including mod data and cache TTL items |
 | Mod data storage | Code-owned catalog projected to DynamoDB | Queried from DynamoDB at runtime; synchronized after deploy |
-| Solver algorithm | Beam search (width ~50) | Bounds computation to < 10s; exact search is infeasible |
-| Probability validation | Monte Carlo (dev only) | Verify beam search accuracy during development — not at request time |
+| Solver algorithm | Budget-constrained MCTS/UCB policy search | Learns adaptive actions while enforcing a hard spend limit |
+| Policy evaluation | 10 Lambda workers × 500 deterministic outcomes | Produces stable distributions without exceeding Lambda request timeouts |
 | Currency prices | poe2.ninja (10-min polling) | Stored in DynamoDB with TTL |
 | GGG API access | Backend proxy Lambda only | Rate limit protection; frontend never holds GGG credentials |
 
@@ -555,7 +555,7 @@ Each of the top 3 returned paths:
 | 2 — Auth | Google OAuth via NextAuth. DynamoDB user table. Protected routes. | Phase 0 |
 | 3 — Trade search | trade-proxy Lambda. Query builder UI, results feed. | Phase 1, 2 |
 | 4 — Ideal item | Ideal item editor UI, DynamoDB storage, link to saved query. | Phase 2 |
-| 5 — Crafting engine | craft-engine Lambda. Beam search solver. Price sync Lambda + EventBridge. | Phase 1, 4 |
+| 5 — Crafting engine | Async Step Functions budget optimizer. Price sync Lambda + EventBridge. | Phase 1, 4 |
 | 6 — Item comparison | Side-by-side mod diff panel. Colour-coded status dots. Summary score bar. | Phase 3, 4 |
 | 7 — Crafting integration | Wire crafting panel into trade results. Comparison → crafting steps flow. | Phase 5, 6 |
 | 8 — Crafting session log | Session create/edit UI. Currency entry log. Profit/loss summary. | Phase 2 |
@@ -575,7 +575,7 @@ Each of the top 3 returned paths:
 | `/sign-in` | Sign In | Public | Google OAuth sign-in only. |
 | `/dashboard` | Dashboard | Required | Stats overview, recent activity, quick actions, currency prices. |
 | `/trade` | Trade Search | Required | Query builder, results feed, inline comparison, inline craft panel. |
-| `/craft` | Craft Solver | Required | Standalone crafting path solver. |
+| `/craft` | Craft Optimizer | Required | Budget-constrained adaptive crafting optimizer. |
 | `/simulate` | Simulators | Required | Tabbed: Divine Orb + Orb of Chance simulators. |
 | `/listings` | My Listings | Required | Active PoE2 listings + pricing recommendations. |
 | `/queries` | Saved Queries | Required | Manage saved trade query patterns. |

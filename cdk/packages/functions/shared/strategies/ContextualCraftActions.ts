@@ -56,7 +56,14 @@ import {
   withModifiers,
 } from "../modifiers";
 import type { ItemState, ModEntry, TargetMod } from "../types";
-import type { StrategyBuildContext } from "./SolverStrategy";
+
+export interface CraftActionContext {
+  pool: import("../types").ModPool;
+  target: import("../types").TargetSpec;
+  prices: import("../types").PriceTable;
+  baseId: string;
+  ilvl: number;
+}
 
 export interface RefinementAction {
   readonly id: string;
@@ -111,7 +118,7 @@ function catalystExaltAction(catalyst: CraftingIngredient): RefinementAction {
   };
 }
 
-export function generateRefinementActions(state: ItemState, context: StrategyBuildContext): RefinementAction[] {
+export function generateRefinementActions(state: ItemState, context: CraftActionContext): RefinementAction[] {
   const item = CraftedItem.fromState(state);
   const actions: RefinementAction[] = [];
   if (item.corrupted) {
@@ -287,7 +294,7 @@ function addAnnulmentActions(
   }
 }
 
-function addPerfectEssenceActions(actions: RefinementAction[], missing: TargetMod[], context: StrategyBuildContext): void {
+function addPerfectEssenceActions(actions: RefinementAction[], missing: TargetMod[], context: CraftActionContext): void {
   for (const definition of EssenceCatalog.definitions()) {
     if (definition.tier !== "perfect") continue;
     const guaranteed = definition.byBaseId[context.baseId] ?? [];
@@ -310,7 +317,7 @@ function addPerfectEssenceActions(actions: RefinementAction[], missing: TargetMo
   }
 }
 
-function addGreaterEssenceOpenings(actions: RefinementAction[], missing: TargetMod[], context: StrategyBuildContext): void {
+function addGreaterEssenceOpenings(actions: RefinementAction[], missing: TargetMod[], context: CraftActionContext): void {
   for (const definition of EssenceCatalog.definitions()) {
     if (definition.tier !== "greater") continue;
     const guaranteed = definition.byBaseId[context.baseId] ?? [];
@@ -325,7 +332,7 @@ function addGreaterEssenceOpenings(actions: RefinementAction[], missing: TargetM
   }
 }
 
-function addAlloyActions(actions: RefinementAction[], missing: TargetMod[], context: StrategyBuildContext): void {
+function addAlloyActions(actions: RefinementAction[], missing: TargetMod[], context: CraftActionContext): void {
   for (const definition of AlloyCatalog.definitions()) {
     const alloy = AlloyCatalog.create(definition.id, context.baseId, context.ilvl);
     if (!alloy || !missing.some(target => target.group === alloy.guaranteedMod.group)) continue;
@@ -337,7 +344,7 @@ function addCatalystActions(
   actions: RefinementAction[],
   item: CraftedItem,
   missing: TargetMod[],
-  context: StrategyBuildContext,
+  context: CraftActionContext,
 ): void {
   const missingGroups = new Set(missing.map(target => target.group));
   const relevantMods = [...context.pool.prefixes, ...context.pool.suffixes]
@@ -355,7 +362,7 @@ function addDesecrationActions(
   item: CraftedItem,
   missingPrefixes: boolean,
   missingSuffixes: boolean,
-  context: StrategyBuildContext,
+  context: CraftActionContext,
 ): void {
   if (item.allMods().some(mod => mod.hidden && mod.desecrated)) {
     addDesecrationRevealActions(actions);

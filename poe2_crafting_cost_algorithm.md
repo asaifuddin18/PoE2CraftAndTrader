@@ -1,75 +1,41 @@
-# PoE2 Crafting Cost Algorithm
+# PoE2 Budget-Constrained Craft Optimizer
 
-The backend currently exposes one solver strategy: **Adaptive Rare Refinement**.
-
-The crafting ingredient classes are the source of truth for game rules. The
-strategy never reimplements currency behavior. It decides which audited
-ingredient to apply next.
-
-## Why the Solver Is Stochastic
-
-Crafting actions have multiple weighted outcomes. A Chaos Orb, for example,
-removes one random eligible modifier and then adds one weighted random eligible
-modifier. A deterministic shortest-path algorithm would incorrectly treat a
-lucky outcome as selectable.
-
-The solver therefore treats crafting as a bounded stochastic shortest-path
-problem:
+The Craft page optimizes one supplied physical item under a hard currency
+budget. The user assigns a weight from 1-100 to each desired prefix or suffix.
+Better eligible tiers earn a larger fraction of that weight; a missing modifier
+earns zero.
 
 ```text
-expected(action, state) =
-  action price
-  + average optimistic remaining cost across sampled legal outcomes
+item score = sum(preference weight * rolled tier quality)
 ```
 
-The lowest-scoring legal action becomes the policy action for that canonical
-item state. Decisions are cached and reused across Monte Carlo simulations.
+The backend converts Divine budgets to Exalts using the DynamoDB price snapshot.
+Every complete ingredient and omen basket is priced before it is accepted. The
+item is never abandoned for another base, and the policy stops when no
+affordable action improves expected score.
 
-## Current Strategy
+## Workflow
 
-`RareRefinementStrategy` contextually generates legal, target-relevant actions
-using the base type, item level, and current item state. It can choose:
+1. `craft-prepare` validates the complete starting item, resolves preferences,
+   loads the mod pool and prices, and creates ten deterministic evaluation jobs.
+2. `craft-search` runs bounded Monte Carlo tree search and writes the learned
+   state-to-action policy to S3.
+3. Step Functions fans out ten `craft-worker` Lambdas. Each evaluates 500
+   outcomes against the same learned policy and writes a partial histogram to S3.
+4. `craft-aggregate` combines exactly 5,000 outcomes into marginal tier counts,
+   desired-mod counts, a compact joint tier histogram, representative final
+   items, spend/score summaries, and frequently visited policy decisions.
 
-- Alchemy, Transmutation/Augmentation/Regal, and Greater Essence opening routes;
-- regular, Greater, or Perfect Exalted Orb;
-- Greater or side-specific Exaltation omens;
-- regular, Greater, or Perfect Chaos Orb;
-- Whittling or side-specific Erasure omens;
-- regular, Greater, side-specific, or Desecrated Orb of Annulment;
-- Fracturing Orb;
-- target-relevant Perfect Essences and Alloys;
-- Catalyst-weighted Exalted Orbs on jewellery;
-- applicable Desecration Bones, Necromancy/family/Putrefaction omens, and reveal
-  actions including Abyssal Echoes.
+The audited crafting ingredient classes remain the source of truth for game
+rules. Contextual action generation includes every currently modeled legal
+ingredient family and omen combination, while replacement-base opening actions
+are excluded.
 
-The policy is reevaluated after every stochastic outcome. It can decide to fill
-an open slot, replace an affix, create a slot, or abandon the current item.
+## Operational Boundaries
 
-## Weight-Derived Heuristic
-
-For each missing target modifier, the heuristic computes its optimistic weighted
-draw probability from the legal affix pool:
-
-```text
-p(target) = eligible target weight / total eligible pool weight
-optimistic cost = cheapest relevant currency price / p(target)
-```
-
-The heuristic ignores destructive outcomes and other complications, making it
-optimistic. Sampled real ingredient outcomes supply the practical correction.
-
-## Boundaries
-
-- Search samples per action: bounded.
-- Cached canonical states: bounded.
-- Craft actions per Monte Carlo run: bounded.
-- Worker and basket-display simulation counts are separately bounded so one
-  strategy cannot exhaust a Lambda invocation.
-- Aggregate does not rerun the winner because only one strategy currently exists.
-- Runs that exhaust the action budget are marked `solver_failure` and receive a
-  prohibitive cost, so incomplete trajectories cannot appear artificially cheap.
-- The Step Functions pipeline currently emits exactly one strategy job.
-- Monte Carlo verifies the adaptive policy and produces the cost distribution.
-
-Future ingredient families should be added as legal actions or as new strategy
-implementations, without restoring hardcoded pattern chains.
+- Search iterations and maximum actions per trajectory are bounded.
+- Evaluation shards are deterministic for a fixed request and seed.
+- S3 carries scratch data, learned policy, and partial histograms so Step
+  Functions state payloads stay below 256 KB.
+- CloudWatch metrics track search duration, evaluation count, policy fallbacks,
+  rejected crafts, and any attempted budget overspend.

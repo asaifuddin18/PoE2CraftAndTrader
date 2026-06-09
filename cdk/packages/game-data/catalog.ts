@@ -27,6 +27,7 @@ export function rawModsForEquipment(baseId: string): RawMod[] {
 export function buildIdealItemData() {
   return {
     classes: ITEM_CLASSES,
+    equipmentTypes: EQUIPMENT_TYPES.map(type => ({ id: type.id, label: type.label })),
     baseItems: Object.fromEntries(EQUIPMENT_TYPES.map(type => [type.id, type.baseItems])),
     mods: Object.fromEntries(EQUIPMENT_TYPES.map(type => [type.id, rawModsForEquipment(type.id)])),
   };
