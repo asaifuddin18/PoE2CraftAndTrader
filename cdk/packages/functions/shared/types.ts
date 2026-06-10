@@ -188,9 +188,9 @@ export interface SimulationTrace {
   finalItem: SimulationTraceItem;
 }
 
-export interface TraceArchive {
+export interface TraceManifest {
   preferences: ResolvedPreference[];
-  traces: SimulationTrace[];
+  resultKeys: string[];
 }
 
 export interface EvaluationResult {

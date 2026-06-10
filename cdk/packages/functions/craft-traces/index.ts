@@ -1,5 +1,5 @@
 import type { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from "aws-lambda";
-import { readTraceArchive } from "../shared/loaders";
+import { readEvaluation, readTraceManifest } from "../shared/loaders";
 import type { SimulationTrace } from "../shared/types";
 
 const CORS = {
@@ -27,15 +27,28 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
   if (!request.traceKey?.startsWith("traces/")) return reply(400, { error: "Valid traceKey required" });
 
   try {
-    const archive = await readTraceArchive(request.traceKey);
+    const manifest = await readTraceManifest(request.traceKey);
+    if (!Array.isArray(manifest.resultKeys)) {
+      return reply(410, { error: "This trace uses the previous archive format. Rerun the optimizer to inspect exact matches." });
+    }
     const filters = request.filters ?? {};
-    const traces = archive.traces.filter(trace => matches(trace, filters, archive.preferences));
-    if (traces.length > 10) {
-      return reply(409, { error: "Narrow the outcome filter to 10 or fewer items", count: traces.length });
+    const traces: SimulationTrace[] = [];
+    for (const resultKey of manifest.resultKeys) {
+      const result = await readEvaluation(resultKey);
+      for (const trace of result.traces) {
+        if (!matches(trace, filters, manifest.preferences)) continue;
+        traces.push(trace);
+        if (traces.length > 10) {
+          return reply(409, { error: "Narrow the outcome filter to 10 or fewer items", count: "more than 10" });
+        }
+      }
     }
     return reply(200, { count: traces.length, traces });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
+    if (error instanceof Error && (error.name === "NoSuchKey" || message.includes("NoSuchKey"))) {
+      return reply(410, { error: "These exact traces have expired. Rerun the optimizer to inspect exact matches." });
+    }
     console.error("[craft-traces] ERROR:", message);
     return reply(500, { error: message });
   }

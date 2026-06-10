@@ -1,5 +1,5 @@
 import type { EvaluationReference, EvaluationResult, OptimizerOutput, OutcomeBucket } from "../shared/types";
-import { deleteScratch, readEvaluation, readPolicy, readScratch, writeTraceArchive } from "../shared/loaders";
+import { deleteScratch, readEvaluation, readPolicy, readScratch, writeTraceManifest } from "../shared/loaders";
 
 interface AggregateInput {
   scratchKey: string;
@@ -10,14 +10,12 @@ interface AggregateInput {
 }
 
 export async function handler(event: AggregateInput): Promise<OptimizerOutput> {
-  const [scratch, policy, results] = await Promise.all([
+  const [scratch, policy] = await Promise.all([
     readScratch(event.scratchKey),
     readPolicy(event.policyKey),
-    Promise.all((event.results ?? []).map(result => readEvaluation(result.resultKey))),
   ]);
   const buckets = new Map<string, OutcomeBucket>();
   const actionCounts: Record<string, number> = {};
-  const traces = results.flatMap(result => result.traces);
   let iterations = 0;
   let scoreSum = 0;
   let spendSum = 0;
@@ -25,7 +23,8 @@ export async function handler(event: AggregateInput): Promise<OptimizerOutput> {
   let overspendCount = 0;
   let fallbackCount = 0;
 
-  for (const result of results) {
+  for (const reference of event.results ?? []) {
+    const result = await readEvaluation(reference.resultKey);
     iterations += result.iterations;
     scoreSum += result.scoreSum;
     spendSum += result.spendSum;
@@ -62,11 +61,13 @@ export async function handler(event: AggregateInput): Promise<OptimizerOutput> {
   const outcomes = allOutcomes
     .sort((a, b) => b.count - a.count || b.scoreSum / b.count - a.scoreSum / a.count)
     .slice(0, 20);
-  const traceKey = await writeTraceArchive(event.executionName, { preferences: scratch.preferences, traces });
+  const traceKey = await writeTraceManifest(event.executionName, {
+    preferences: scratch.preferences,
+    resultKeys: event.results.map(result => result.resultKey),
+  });
   await Promise.all([
     deleteScratch(event.scratchKey),
     deleteScratch(event.policyKey),
-    ...(event.results ?? []).map(result => deleteScratch(result.resultKey)),
   ]);
   return {
     feasible: true,
