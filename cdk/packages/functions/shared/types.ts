@@ -168,6 +168,7 @@ export interface SimulationTraceStep {
   cost: PriceTable;
   spendAfter: number;
   events: { type: string; message: string; details?: Record<string, unknown> }[];
+  itemAfter: SimulationTraceItem;
 }
 
 export interface SimulationTraceItem {

@@ -45,6 +45,7 @@ export interface SimulationTraceStep {
   cost: Record<string, number>;
   spendAfter: number;
   events: { type: string; message: string; details?: Record<string, unknown> }[];
+  itemAfter: SimulationTraceItem;
 }
 
 export interface SimulationTraceMod {
@@ -62,12 +63,14 @@ export interface SimulationTrace {
   score: number;
   spend: number;
   steps: SimulationTraceStep[];
-  finalItem: {
-    rarity: "normal" | "magic" | "rare";
-    corrupted: boolean;
-    prefixes: SimulationTraceMod[];
-    suffixes: SimulationTraceMod[];
-    fracturedModIds: string[];
-    catalyst?: { type: string; amount: number; maximum: number };
-  };
+  finalItem: SimulationTraceItem;
+}
+
+export interface SimulationTraceItem {
+  rarity: "normal" | "magic" | "rare";
+  corrupted: boolean;
+  prefixes: SimulationTraceMod[];
+  suffixes: SimulationTraceMod[];
+  fracturedModIds: string[];
+  catalyst?: { type: string; amount: number; maximum: number };
 }

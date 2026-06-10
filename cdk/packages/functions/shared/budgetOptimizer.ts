@@ -145,6 +145,7 @@ export function evaluateBudgetPolicy(scratch: ScratchBlob, policy: LearnedPolicy
         cost: result.cost,
         spendAfter: scratch.budgetExalts - remaining,
         events: result.events,
+        itemAfter: traceItem(state),
       });
     }
 
@@ -160,14 +161,7 @@ export function evaluateBudgetPolicy(scratch: ScratchBlob, policy: LearnedPolicy
       score,
       spend,
       steps,
-      finalItem: {
-        rarity: state.rarity,
-        corrupted: state.corrupted,
-        prefixes: state.prefixes,
-        suffixes: state.suffixes,
-        fracturedModIds: [...state.fractured_mod_ids],
-        catalyst: state.catalyst,
-      },
+      finalItem: traceItem(state),
     });
   }
 
@@ -182,6 +176,17 @@ export function evaluateBudgetPolicy(scratch: ScratchBlob, policy: LearnedPolicy
     buckets: [...buckets.values()],
     actionCounts,
     traces,
+  };
+}
+
+function traceItem(state: ItemState) {
+  return {
+    rarity: state.rarity,
+    corrupted: state.corrupted,
+    prefixes: state.prefixes,
+    suffixes: state.suffixes,
+    fracturedModIds: [...state.fractured_mod_ids],
+    catalyst: state.catalyst,
   };
 }
 

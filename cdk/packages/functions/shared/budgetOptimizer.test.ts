@@ -98,6 +98,18 @@ const completedResult = completedDesecration.apply(CraftedItem.fromState(rare), 
 assert.equal(completedResult.applied, true);
 assert.ok(completedResult.item.allMods().some(entry => entry.modId === "desecrated_exclusive_t1" && !entry.hidden));
 
+const traceScratch = {
+  ...scratch,
+  startingItem: rare,
+  budgetExalts: 10,
+  prices: { ...scratch.prices, preserved_jawbone: 1, omen_sinistral_necromancy: 1, omen_abyssal_echoes: 1 },
+  preferences: [{ modId: exclusive.modId, group: exclusive.group, name: exclusive.name, affix: "prefix" as const, weight: 100, eligibleTiers: [1] }],
+  desecrationPool,
+};
+const tracePolicy = searchBudgetPolicy(traceScratch, 9);
+const traced = evaluateBudgetPolicy(traceScratch, tracePolicy, 0, 1, 10);
+assert.ok(traced.traces[0].steps.every(step => step.itemAfter));
+
 const corruptedScratch = {
   ...scratch,
   budgetExalts: 100,
