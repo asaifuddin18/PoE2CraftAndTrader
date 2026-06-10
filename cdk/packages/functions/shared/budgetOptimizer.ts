@@ -22,6 +22,8 @@ import type {
   OutcomeBucket,
   ResolvedPreference,
   ScratchBlob,
+  SimulationTrace,
+  SimulationTraceStep,
   TargetSpec,
 } from "./types";
 
@@ -110,6 +112,7 @@ export function evaluateBudgetPolicy(scratch: ScratchBlob, policy: LearnedPolicy
   const rng = seededRng(seed);
   const buckets = new Map<string, OutcomeBucket>();
   const actionCounts: Record<string, number> = {};
+  const traces: SimulationTrace[] = [];
   let scoreSum = 0;
   let spendSum = 0;
   let maxSpend = 0;
@@ -119,6 +122,7 @@ export function evaluateBudgetPolicy(scratch: ScratchBlob, policy: LearnedPolicy
   for (let run = 0; run < iterations; run++) {
     let state = cloneState(scratch.startingItem);
     let remaining = scratch.budgetExalts;
+    const steps: SimulationTraceStep[] = [];
     for (let step = 0; step < MAX_ACTIONS; step++) {
       const key = budgetStateKey(state, remaining);
       const decision = policy.decisions[key];
@@ -136,6 +140,12 @@ export function evaluateBudgetPolicy(scratch: ScratchBlob, policy: LearnedPolicy
       state = result.item.toState();
       remaining -= cost;
       actionCounts[action.name] = (actionCounts[action.name] ?? 0) + 1;
+      steps.push({
+        action: action.name,
+        cost: result.cost,
+        spendAfter: scratch.budgetExalts - remaining,
+        events: result.events,
+      });
     }
 
     const score = scoreItem(state, scratch.preferences);
@@ -145,6 +155,20 @@ export function evaluateBudgetPolicy(scratch: ScratchBlob, policy: LearnedPolicy
     scoreSum += score;
     spendSum += spend;
     addOutcome(buckets, state, scratch.preferences, score, spend);
+    traces.push({
+      id: `${shard}:${run}`,
+      score,
+      spend,
+      steps,
+      finalItem: {
+        rarity: state.rarity,
+        corrupted: state.corrupted,
+        prefixes: state.prefixes,
+        suffixes: state.suffixes,
+        fracturedModIds: [...state.fractured_mod_ids],
+        catalyst: state.catalyst,
+      },
+    });
   }
 
   return {
@@ -157,6 +181,7 @@ export function evaluateBudgetPolicy(scratch: ScratchBlob, policy: LearnedPolicy
     fallbackCount,
     buckets: [...buckets.values()],
     actionCounts,
+    traces,
   };
 }
 

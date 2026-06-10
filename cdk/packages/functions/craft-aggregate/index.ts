@@ -1,11 +1,12 @@
 import type { EvaluationReference, EvaluationResult, OptimizerOutput, OutcomeBucket } from "../shared/types";
-import { deleteScratch, readEvaluation, readPolicy, readScratch } from "../shared/loaders";
+import { deleteScratch, readEvaluation, readPolicy, readScratch, writeTraceArchive } from "../shared/loaders";
 
 interface AggregateInput {
   scratchKey: string;
   policyKey: string;
   results: EvaluationReference[];
   startedAt: number;
+  executionName: string;
 }
 
 export async function handler(event: AggregateInput): Promise<OptimizerOutput> {
@@ -16,6 +17,7 @@ export async function handler(event: AggregateInput): Promise<OptimizerOutput> {
   ]);
   const buckets = new Map<string, OutcomeBucket>();
   const actionCounts: Record<string, number> = {};
+  const traces = results.flatMap(result => result.traces);
   let iterations = 0;
   let scoreSum = 0;
   let spendSum = 0;
@@ -49,11 +51,6 @@ export async function handler(event: AggregateInput): Promise<OptimizerOutput> {
     desiredModCount[String(outcome.mods.length)] = (desiredModCount[String(outcome.mods.length)] ?? 0) + outcome.count;
   }
 
-  await Promise.all([
-    deleteScratch(event.scratchKey),
-    deleteScratch(event.policyKey),
-    ...(event.results ?? []).map(result => deleteScratch(result.resultKey)),
-  ]);
   const allOutcomes = [...buckets.values()];
   const jointOutcomes = allOutcomes.map(outcome => {
     const tiers = outcome.mods.flatMap(mod => {
@@ -65,6 +62,12 @@ export async function handler(event: AggregateInput): Promise<OptimizerOutput> {
   const outcomes = allOutcomes
     .sort((a, b) => b.count - a.count || b.scoreSum / b.count - a.scoreSum / a.count)
     .slice(0, 20);
+  const traceKey = await writeTraceArchive(event.executionName, { preferences: scratch.preferences, traces });
+  await Promise.all([
+    deleteScratch(event.scratchKey),
+    deleteScratch(event.policyKey),
+    ...(event.results ?? []).map(result => deleteScratch(result.resultKey)),
+  ]);
   return {
     feasible: true,
     budgetExalts: scratch.budgetExalts,
@@ -74,6 +77,7 @@ export async function handler(event: AggregateInput): Promise<OptimizerOutput> {
     fallbackCount,
     outcomes,
     jointOutcomes,
+    traceKey,
     desiredModCount,
     policy: Object.values(policy.decisions).sort((a, b) => b.visits - a.visits).slice(0, 30),
     actionCounts,

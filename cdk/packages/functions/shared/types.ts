@@ -163,6 +163,35 @@ export interface OutcomeBucket {
   mods: { group: string; modId: string; name: string; affix: "prefix" | "suffix"; tier: number }[];
 }
 
+export interface SimulationTraceStep {
+  action: string;
+  cost: PriceTable;
+  spendAfter: number;
+  events: { type: string; message: string; details?: Record<string, unknown> }[];
+}
+
+export interface SimulationTraceItem {
+  rarity: ItemState["rarity"];
+  corrupted: boolean;
+  prefixes: ModEntry[];
+  suffixes: ModEntry[];
+  fracturedModIds: string[];
+  catalyst?: CatalystQuality;
+}
+
+export interface SimulationTrace {
+  id: string;
+  score: number;
+  spend: number;
+  steps: SimulationTraceStep[];
+  finalItem: SimulationTraceItem;
+}
+
+export interface TraceArchive {
+  preferences: ResolvedPreference[];
+  traces: SimulationTrace[];
+}
+
 export interface EvaluationResult {
   shard: number;
   iterations: number;
@@ -173,6 +202,7 @@ export interface EvaluationResult {
   fallbackCount: number;
   buckets: OutcomeBucket[];
   actionCounts: Record<string, number>;
+  traces: SimulationTrace[];
 }
 
 export interface EvaluationReference {
@@ -190,6 +220,7 @@ export interface OptimizerOutput {
   fallbackCount: number;
   outcomes: OutcomeBucket[];
   jointOutcomes: string;
+  traceKey: string;
   desiredModCount: Record<string, number>;
   policy: PolicyDecision[];
   actionCounts: Record<string, number>;

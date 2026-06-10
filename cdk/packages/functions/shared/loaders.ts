@@ -8,7 +8,7 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, QueryCommand, GetCommand } from "@aws-sdk/lib-dynamodb";
 import { S3Client, GetObjectCommand, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
-import type { RawMod, CraftModPools, PriceTable, ScratchBlob, LearnedPolicy, EvaluationResult } from "./types";
+import type { RawMod, CraftModPools, PriceTable, ScratchBlob, LearnedPolicy, EvaluationResult, TraceArchive } from "./types";
 import { build_craft_pools } from "./engine";
 
 const REGION = process.env.AWS_REGION ?? "us-east-1";
@@ -129,6 +129,22 @@ export async function writeEvaluation(executionName: string, result: EvaluationR
 export async function readEvaluation(key: string): Promise<EvaluationResult> {
   const res = await s3.send(new GetObjectCommand({ Bucket: BUCKET, Key: key }));
   return JSON.parse(await res.Body!.transformToString()) as EvaluationResult;
+}
+
+export async function writeTraceArchive(executionName: string, archive: TraceArchive): Promise<string> {
+  const key = `traces/${executionName}.json`;
+  await s3.send(new PutObjectCommand({
+    Bucket: BUCKET,
+    Key: key,
+    ContentType: "application/json",
+    Body: JSON.stringify(archive),
+  }));
+  return key;
+}
+
+export async function readTraceArchive(key: string): Promise<TraceArchive> {
+  const res = await s3.send(new GetObjectCommand({ Bucket: BUCKET, Key: key }));
+  return JSON.parse(await res.Body!.transformToString()) as TraceArchive;
 }
 
 export async function deleteScratch(key: string): Promise<void> {

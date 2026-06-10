@@ -192,6 +192,7 @@ export class ApiStack extends cdk.Stack {
         policyKey: sfn.JsonPath.stringAt("$.search.policyKey"),
         results: sfn.JsonPath.objectAt("$.results"),
         startedAt: sfn.JsonPath.numberAt("$.startedAt"),
+        executionName: sfn.JsonPath.stringAt("$.prep.executionName"),
       }),
     }).addRetry(lambdaRetry);
 
@@ -234,6 +235,12 @@ export class ApiStack extends cdk.Stack {
       timeout: cdk.Duration.seconds(15),
       env: { CORS_ORIGIN: corsOrigin ?? "*" },
     });
+    const tracesFn = makeFn("TracesFn", "craft-traces", {
+      memorySize: 512,
+      timeout: cdk.Duration.seconds(30),
+      env: { CORS_ORIGIN: corsOrigin ?? "*" },
+    });
+    scratch.grantRead(tracesFn);
     // Execution ARNs are arn:...:execution:<machineName>:<execName>. Build it via
     // formatArn from the (token) machine name — string .replace() on the ARN token
     // is a no-op and would scope the policy to the wrong resource.
@@ -280,6 +287,13 @@ export class ApiStack extends cdk.Stack {
       path: "/status",
       methods: [HttpMethod.GET],
       integration: new HttpLambdaIntegration("StatusIntegration", statusFn),
+      authorizer,
+    });
+
+    httpApi.addRoutes({
+      path: "/traces",
+      methods: [HttpMethod.POST],
+      integration: new HttpLambdaIntegration("TracesIntegration", tracesFn),
       authorizer,
     });
 

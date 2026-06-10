@@ -62,6 +62,9 @@ assert.equal(first.maxSpend, 0);
 assert.equal(first.overspendCount, 0);
 assert.equal(first.buckets.reduce((sum, bucket) => sum + bucket.count, 0), 500);
 assert.equal(Object.keys(first.actionCounts).length, 0);
+assert.equal(first.traces.length, 500);
+assert.deepEqual(first.traces[0].finalItem.prefixes, []);
+assert.deepEqual(first.traces[0].steps, []);
 
 const exclusive = { ...mod("exclusive", 1, 1), tags: ["Ulaman"] };
 const desecrationPool = {
