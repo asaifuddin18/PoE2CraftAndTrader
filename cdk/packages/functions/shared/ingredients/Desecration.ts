@@ -148,7 +148,8 @@ function revealOptions(item: CraftedItem, hidden: ModEntry, ctx: CraftContext): 
 }
 
 function drawRevealOptions(item: CraftedItem, hidden: ModEntry, ctx: CraftContext): ModEntry[] {
-  const pool = hidden.gen_type === "prefix" ? ctx.pool.prefixes : ctx.pool.suffixes;
+  const revealPool = ctx.desecrationPool ?? ctx.pool;
+  const pool = hidden.gen_type === "prefix" ? revealPool.prefixes : revealPool.suffixes;
   const present = item.presentGroups();
   present.delete(hidden.group);
   const candidates = pool

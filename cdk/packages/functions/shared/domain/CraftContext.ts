@@ -21,6 +21,7 @@ export interface CraftActionHooks {
 
 export interface CraftContext {
   pool: ModPool;
+  desecrationPool?: ModPool;
   rng: () => number;
   hooks?: CraftActionHooks;
   itemLevel?: number;

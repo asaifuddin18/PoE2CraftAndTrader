@@ -203,7 +203,14 @@ function selectUcb(candidates: ReturnType<typeof affordableOutcomes>, node: Sear
 
 function legalActions(state: ItemState, scratch: ScratchBlob): RefinementAction[] {
   const target = targetFromPreferences(scratch.preferences);
-  const strategyContext = { pool: scratch.pool, target, prices: scratch.prices, baseId: scratch.baseId, ilvl: scratch.ilvl };
+  const strategyContext = {
+    pool: scratch.pool,
+    desecrationPool: scratch.desecrationPool,
+    target,
+    prices: scratch.prices,
+    baseId: scratch.baseId,
+    ilvl: scratch.ilvl,
+  };
   const contextual = generateRefinementActions(state, strategyContext).filter(action => !action.id.startsWith("opening_"));
   const direct: RefinementAction[] = [];
   const ingredient = (id: string, name: string, value: { apply: RefinementAction["apply"] }) =>
@@ -247,7 +254,13 @@ function targetFromPreferences(preferences: ResolvedPreference[]): TargetSpec {
 }
 
 function craftContext(scratch: ScratchBlob, rng: () => number): CraftContext {
-  return { pool: scratch.pool, rng, itemLevel: scratch.ilvl, target: targetFromPreferences(scratch.preferences) };
+  return {
+    pool: scratch.pool,
+    desecrationPool: scratch.desecrationPool,
+    rng,
+    itemLevel: scratch.ilvl,
+    target: targetFromPreferences(scratch.preferences),
+  };
 }
 
 function addOutcome(

@@ -79,11 +79,24 @@ export function build_pools(mods: RawMod[], ilvl: number): ModPool {
       weight:         t.weight,
       name:           m.name,
       tags:           [...m.tags],
+      abyssFamily:    m.tags.find(tag => tag === "Ulaman" || tag === "Amanamu" || tag === "Kurgal"),
     } as ModEntry)));
   return {
     prefixes: eligible.filter(m => m.gen_type === "prefix"),
     suffixes: eligible.filter(m => m.gen_type === "suffix"),
   };
+}
+
+export function build_craft_pools(mods: RawMod[], ilvl: number): import("./types").CraftModPools {
+  return {
+    normal: build_pools(mods.filter(mod => !isDesecrationExclusive(mod)), ilvl),
+    // Revealing a Desecrated modifier can offer both ordinary and exclusive modifiers.
+    desecration: build_pools(mods, ilvl),
+  };
+}
+
+function isDesecrationExclusive(mod: RawMod): boolean {
+  return mod.tags.some(tag => tag === "Ulaman" || tag === "Amanamu" || tag === "Kurgal");
 }
 
 // Weighted draw from pool, excluding present groups (exclusivity blocking).

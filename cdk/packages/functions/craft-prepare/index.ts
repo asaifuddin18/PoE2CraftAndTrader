@@ -12,16 +12,16 @@ interface PrepareInput extends SolveRequest { executionName: string; }
 
 export async function handler(event: PrepareInput) {
   const ilvl = Number(event.ilvl) || 84;
-  const pool = await loadPool(event.baseId, ilvl);
-  if (!pool.prefixes.length && !pool.suffixes.length) return infeasible(`No mod pool found for base "${event.baseId}"`, ilvl);
+  const pools = await loadPool(event.baseId, ilvl);
+  if (!pools.normal.prefixes.length && !pools.normal.suffixes.length) return infeasible(`No mod pool found for base "${event.baseId}"`, ilvl);
   if (!event.preferences?.length) return infeasible("At least one weighted modifier preference is required", ilvl);
   if (!event.budget || !(Number(event.budget.amount) > 0)) return infeasible("Budget must be greater than zero", ilvl);
 
   const prices = { ...(await loadPrices()), ...(event.priceOverrides ?? {}) };
   const budgetExalts = Number(event.budget.amount) * (event.budget.unit === "divine" ? prices.divine : 1);
-  const preferences = resolvePreferences(event.preferences, pool);
+  const preferences = resolvePreferences(event.preferences, pools.desecration);
   if (typeof preferences === "string") return infeasible(preferences, ilvl);
-  const startingItem = resolveStartingItem(event.startingItem, pool);
+  const startingItem = resolveStartingItem(event.startingItem, pools.desecration);
   if (typeof startingItem === "string") return infeasible(startingItem, ilvl);
 
   const jobs: EvaluationJob[] = Array.from({ length: 10 }, (_, shard) => ({
@@ -30,7 +30,14 @@ export async function handler(event: PrepareInput) {
     seed: (0x9e3779b9 ^ Math.imul(shard + 1, 0x85ebca6b)) >>> 0,
   }));
   const scratchKey = await writeScratch(event.executionName, {
-    pool, prices, preferences, startingItem, budgetExalts, ilvl, baseId: event.baseId,
+    pool: pools.normal,
+    desecrationPool: pools.desecration,
+    prices,
+    preferences,
+    startingItem,
+    budgetExalts,
+    ilvl,
+    baseId: event.baseId,
   });
   return { feasible: true, scratchKey, jobs, ilvl, executionName: event.executionName };
 }

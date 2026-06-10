@@ -68,6 +68,11 @@ export interface ModPool {
   suffixes: ModEntry[];
 }
 
+export interface CraftModPools {
+  normal: ModPool;
+  desecration: ModPool;
+}
+
 export interface PriceTable {
   [currency: string]: number;         // price in exalts
 }
@@ -141,6 +146,7 @@ export interface EvaluationJob {
 
 export interface ScratchBlob {
   pool: ModPool;
+  desecrationPool: ModPool;
   prices: PriceTable;
   preferences: ResolvedPreference[];
   startingItem: ItemState;

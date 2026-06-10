@@ -8,8 +8,8 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, QueryCommand, GetCommand } from "@aws-sdk/lib-dynamodb";
 import { S3Client, GetObjectCommand, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
-import type { RawMod, ModPool, PriceTable, ScratchBlob, LearnedPolicy, EvaluationResult } from "./types";
-import { build_pools } from "./engine";
+import type { RawMod, CraftModPools, PriceTable, ScratchBlob, LearnedPolicy, EvaluationResult } from "./types";
+import { build_craft_pools } from "./engine";
 
 const REGION = process.env.AWS_REGION ?? "us-east-1";
 const TABLE  = process.env.DYNAMODB_TABLE ?? "";
@@ -47,8 +47,8 @@ export const DEFAULT_PRICES: PriceTable = {
   omen_sovereign: 1, omen_liege: 1, omen_blackblooded: 1, omen_putrefaction: 1,
 };
 
-/** Load the mod pool for a base from DynamoDB and resolve it for this ilvl. */
-export async function loadPool(baseId: string, ilvl: number): Promise<ModPool> {
+/** Load normal-crafting and Desecration reveal pools for a base at this ilvl. */
+export async function loadPool(baseId: string, ilvl: number): Promise<CraftModPools> {
   const items: RawMod[] = [];
   let lastKey: Record<string, unknown> | undefined;
   do {
@@ -72,7 +72,7 @@ export async function loadPool(baseId: string, ilvl: number): Promise<ModPool> {
     lastKey = res.LastEvaluatedKey;
   } while (lastKey);
 
-  return build_pools(items, ilvl);
+  return build_craft_pools(items, ilvl);
 }
 
 /** Load currency prices from the price cache item, merged over defaults. */

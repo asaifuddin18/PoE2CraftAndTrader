@@ -59,6 +59,7 @@ import type { ItemState, ModEntry, TargetMod } from "../types";
 
 export interface CraftActionContext {
   pool: import("../types").ModPool;
+  desecrationPool: import("../types").ModPool;
   target: import("../types").TargetSpec;
   prices: import("../types").PriceTable;
   baseId: string;
@@ -73,6 +74,26 @@ export interface RefinementAction {
 
 function ingredientAction(id: string, name: string, ingredient: CraftingIngredient): RefinementAction {
   return { id, name, apply: (item, ctx) => ingredient.apply(item, ctx) };
+}
+
+function sequenceAction(id: string, name: string, ingredients: readonly CraftingIngredient[]): RefinementAction {
+  return {
+    id,
+    name,
+    apply: (item, ctx) => {
+      let current = item;
+      let cost: CurrencyBasket = {};
+      const events: CraftResult["events"] = [];
+      for (const ingredient of ingredients) {
+        const result = ingredient.apply(current, ctx);
+        if (!result.applied) return rejectedResult(item, `${name} failed`);
+        current = result.item;
+        cost = mergeCurrency(cost, result.cost);
+        events.push(...result.events);
+      }
+      return craftResult(current, cost, events);
+    },
+  };
 }
 
 function openingAction(id: string, name: string, ingredients: readonly CraftingIngredient[]): RefinementAction {
@@ -371,7 +392,7 @@ function addDesecrationActions(
   if (item.hasDesecratedModifier()) return;
 
   const missingGroups = new Set(missingTargets(item, context.target.required_mods).map(target => target.group));
-  const desiredFamilies = new Set([...context.pool.prefixes, ...context.pool.suffixes]
+  const desiredFamilies = new Set([...context.desecrationPool.prefixes, ...context.desecrationPool.suffixes]
     .filter(mod => missingGroups.has(mod.group))
     .map(mod => mod.abyssFamily)
     .filter((family): family is NonNullable<ModEntry["abyssFamily"]> => Boolean(family)));
@@ -381,7 +402,7 @@ function addDesecrationActions(
     for (const kind of kinds) {
       const bone = DesecrationBoneCatalog.create(tier, kind, context.baseId);
       if (!bone) continue;
-      actions.push(ingredientAction(`desecrate_${tier}_${kind}`, bone.displayName, bone));
+      addCompletedDesecrationActions(actions, `desecrate_${tier}_${kind}`, bone.displayName, bone);
       if (kind === "jawbone" || kind === "collarbone") {
         const familyOmens = [
           new OmenOfTheSovereign(),
@@ -389,26 +410,29 @@ function addDesecrationActions(
           new OmenOfTheBlackblooded(),
         ].filter(omen => desiredFamilies.has(omen.family));
         for (const omen of familyOmens) {
-          actions.push(ingredientAction(
+          addCompletedDesecrationActions(
+            actions,
             `desecrate_${tier}_${kind}_${omen.id}`,
             `${bone.displayName} + ${omen.displayName}`,
             withModifiers(bone, omen),
-          ));
+          );
         }
       }
       if (missingPrefixes) {
-        actions.push(ingredientAction(
+        addCompletedDesecrationActions(
+          actions,
           `desecrate_${tier}_${kind}_prefix`,
           `${bone.displayName} + Omen of Sinistral Necromancy`,
           withModifiers(bone, new OmenOfSinistralNecromancy()),
-        ));
+        );
       }
       if (missingSuffixes) {
-        actions.push(ingredientAction(
+        addCompletedDesecrationActions(
+          actions,
           `desecrate_${tier}_${kind}_suffix`,
           `${bone.displayName} + Omen of Dextral Necromancy`,
           withModifiers(bone, new OmenOfDextralNecromancy()),
-        ));
+        );
       }
       actions.push(ingredientAction(
         `desecrate_${tier}_${kind}_putrefaction`,
@@ -417,6 +441,22 @@ function addDesecrationActions(
       ));
     }
   }
+}
+
+function addCompletedDesecrationActions(
+  actions: RefinementAction[],
+  id: string,
+  name: string,
+  setup: CraftingIngredient,
+): void {
+  actions.push(
+    sequenceAction(`${id}_reveal`, `${name} + Reveal`, [setup, new RevealDesecratedModifier()]),
+    sequenceAction(
+      `${id}_reveal_echoes`,
+      `${name} + Reveal + Omen of Abyssal Echoes`,
+      [setup, withModifiers(new RevealDesecratedModifier(), new OmenOfAbyssalEchoes())],
+    ),
+  );
 }
 
 function addDesecrationRevealActions(actions: RefinementAction[]): void {

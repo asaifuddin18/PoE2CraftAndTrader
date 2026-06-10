@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import { budgetStateKey, evaluateBudgetPolicy, scoreItem, searchBudgetPolicy } from "./budgetOptimizer";
+import { CraftedItem } from "./domain/CraftedItem";
+import { generateRefinementActions } from "./strategies/ContextualCraftActions";
 import type { ModEntry, ScratchBlob } from "./types";
 
 const mod = (modId: string, tier: number, weight = 100): ModEntry => ({
@@ -18,6 +20,7 @@ const empty = { rarity: "normal" as const, prefixes: [], suffixes: [], fractured
 const preference = { modId: "life", group: "life", name: "life", affix: "prefix" as const, weight: 100, eligibleTiers: [1, 2] };
 const scratch: ScratchBlob = {
   pool: { prefixes: [t1, t2], suffixes: [suffix] },
+  desecrationPool: { prefixes: [t1, t2], suffixes: [suffix] },
   prices: { transmute: 1, greater_transmute: 2, perfect_transmute: 3, alch: 10 },
   preferences: [preference],
   startingItem: empty,
@@ -59,6 +62,38 @@ assert.equal(first.maxSpend, 0);
 assert.equal(first.overspendCount, 0);
 assert.equal(first.buckets.reduce((sum, bucket) => sum + bucket.count, 0), 500);
 assert.equal(Object.keys(first.actionCounts).length, 0);
+
+const exclusive = { ...mod("exclusive", 1, 1), tags: ["Ulaman"] };
+const desecrationPool = {
+  prefixes: [t1, t2, exclusive],
+  suffixes: [suffix],
+};
+const rare = { ...empty, rarity: "rare" as const, suffixes: [suffix] };
+const desecrationActions = generateRefinementActions(rare, {
+  pool: scratch.pool,
+  desecrationPool,
+  target: {
+    required_mods: [{ group: "exclusive", min_tier: 1, gen_type: "prefix", name: "exclusive" }],
+    k_required: 1,
+  },
+  prices: scratch.prices,
+  baseId: "25",
+  ilvl: 84,
+});
+const completedDesecration = desecrationActions.find(action => action.id === "desecrate_preserved_jawbone_prefix_reveal");
+assert.ok(completedDesecration);
+const completedResult = completedDesecration.apply(CraftedItem.fromState(rare), {
+  pool: scratch.pool,
+  desecrationPool,
+  rng: () => 0,
+  itemLevel: 84,
+  target: {
+    required_mods: [{ group: "exclusive", min_tier: 1, gen_type: "prefix", name: "exclusive" }],
+    k_required: 1,
+  },
+});
+assert.equal(completedResult.applied, true);
+assert.ok(completedResult.item.allMods().some(entry => entry.modId === "desecrated_exclusive_t1" && !entry.hidden));
 
 const corruptedScratch = {
   ...scratch,

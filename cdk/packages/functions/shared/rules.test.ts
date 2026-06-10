@@ -57,7 +57,7 @@ import {
   OmenOfWhittling,
   withModifiers,
 } from "./modifiers";
-import { build_pools } from "./engine";
+import { build_craft_pools, build_pools } from "./engine";
 import type { ItemState, ModEntry, ModPool, RawMod } from "./types";
 
 type TestFn = () => void;
@@ -104,6 +104,10 @@ function ctx(rng: () => number = rngSequence([0])): CraftContext {
 
 function ctxWithPool(customPool: ModPool, rng: () => number = rngSequence([0])): CraftContext {
   return { pool: customPool, rng };
+}
+
+function ctxWithPools(normal: ModPool, desecrationPool: ModPool, rng: () => number = rngSequence([0])): CraftContext {
+  return { pool: normal, desecrationPool, rng };
 }
 
 function item(prefixes: ModEntry[], suffixes: ModEntry[], fractured: ModEntry[] = []): CraftedItem {
@@ -1179,6 +1183,43 @@ test("Reveal Desecrated Modifier offers three same-side options and chooses the 
   assert.equal(selected?.desecrated, true);
   assert.equal(selected?.hidden, false);
   assert.equal(selected?.abyssFamily, "Ulaman");
+});
+
+test("Normal crafting excludes exclusive Abyss-family mods while Desecration can reveal them", () => {
+  const raw = (modId: string, tags: string[]): RawMod => ({
+    modId,
+    name: modId,
+    affix: "prefix",
+    modgroups: [modId],
+    tags,
+    tiers: [{ tier: 1, ilvl: 65, weight: 1, values: [] }],
+  });
+  const pools = build_craft_pools([
+    raw("ordinary_one", []),
+    raw("ordinary_two", []),
+    raw("exclusive", ["Ulaman"]),
+  ], 84);
+
+  assert.deepEqual(pools.normal.prefixes.map(mod => mod.modId), ["ordinary_one", "ordinary_two"]);
+  assert.deepEqual(pools.desecration.prefixes.map(mod => mod.modId), ["ordinary_one", "ordinary_two", "exclusive"]);
+
+  const exalted = new ExaltedOrb().apply(item([], [s1]), ctxWithPool(pools.normal, rngSequence([0, 0])));
+  assert.equal(exalted.applied, true);
+  assert.ok(!modIds(exalted.item).includes("exclusive"));
+
+  const hidden = new DesecrationBone("jawbone", "preserved")
+    .apply(item([], [s1]), ctxWithPool(pools.normal, rngSequence([0]))).item;
+  const target = {
+    required_mods: [{ group: "exclusive", min_tier: 1, gen_type: "prefix" as const, name: "Exclusive" }],
+    k_required: 1,
+  };
+  const revealed = new RevealDesecratedModifier().apply(
+    hidden,
+    { ...ctxWithPools(pools.normal, pools.desecration, rngSequence([0, 0, 0])), target },
+  );
+
+  assert.equal(revealed.applied, true);
+  assert.ok(modIds(revealed.item).includes("desecrated_exclusive"));
 });
 
 test("Ancient Bone reveal only offers required-level 40+ modifiers", () => {
